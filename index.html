@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' blob: https: data:; media-src 'self' blob: https:; connect-src 'self' https://drive.google.com https://www.googleapis.com https://docs.google.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://drive.google.com https://docs.google.com; object-src 'none'; base-uri 'self'; frame-ancestors 'self';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' blob: https: data:; media-src 'self' blob: https:; connect-src 'self' https://drive.google.com https://www.googleapis.com https://docs.google.com https://script.google.com https://script.googleusercontent.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://drive.google.com https://docs.google.com; object-src 'none'; base-uri 'self'; frame-ancestors 'self';">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#000000">
@@ -74,24 +74,42 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 .nfx-icon-btn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;color:#fff;border-radius:50%;transition:background .2s}
 .nfx-icon-btn:hover{background:rgba(255,255,255,.1)}
 .nfx-profile{width:32px;height:32px;border-radius:6px;background:linear-gradient(135deg,#ffd60a,#ff9500);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.78rem;color:#000;flex-shrink:0}
+
+/* ── REFRESH BTN ── */
+.nfx-refresh-btn{
+  display:flex;align-items:center;gap:.38rem;
+  padding:.32rem .72rem;border-radius:20px;
+  border:1px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.06);
+  color:#fff;font-size:.72rem;font-weight:600;
+  cursor:pointer;transition:background .2s,border-color .2s;
+  white-space:nowrap;flex-shrink:0;
+}
+.nfx-refresh-btn:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.5)}
+.nfx-refresh-btn.loading{opacity:.6;pointer-events:none}
+.nfx-refresh-btn svg{transition:transform .6s}
+.nfx-refresh-btn.loading svg{animation:spinRefresh .8s linear infinite}
+@keyframes spinRefresh{to{transform:rotate(360deg)}}
 @media(max-width:840px){
   .nfx-nav{display:none}
   .nfx-header{padding:0 16px;height:52px}
   :root{--nav-h:52px;--row-px:12px}
   .nfx-logo img{height:32px}
   .nfx-logo-text{font-size:1.35rem}
+  .nfx-refresh-btn span{display:none}
+  .nfx-refresh-btn{padding:.32rem .5rem;gap:0}
 }
 
 /* ── BILLBOARD ── */
 .nfx-billboard{
   position:relative;height:82vh;min-height:520px;
   width:100%;overflow:hidden;
-  margin-bottom:-120px;   /* chevauchement sur desktop */
+  margin-bottom:-120px;
 }
 @media(max-width:780px){
   .nfx-billboard{
     height:68vw;min-height:360px;max-height:520px;
-    margin-bottom:0;   /* FIX: plus de chevauchement sur mobile */
+    margin-bottom:0;
   }
 }
 .nfx-billboard-slide{position:absolute;inset:0;opacity:0;transition:opacity .8s ease;pointer-events:none}
@@ -172,8 +190,8 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 .nfx-bb-dots button.active{background:#fff;width:22px}
 @media(max-width:780px){
   .nfx-billboard-content{bottom:18%;left:16px;right:16px;max-width:none}
-  .nfx-bb-desc{display:none}  /* masquer la description pour gagner de la place */
-  .nfx-bb-meta{display:none}  /* masquer les meta également */
+  .nfx-bb-desc{display:none}
+  .nfx-bb-meta{display:none}
   .nfx-bb-mute,.nfx-bb-rating{display:none}
   .nfx-bb-actions .nfx-btn{font-size:.82rem;padding:.5rem .9rem}
 }
@@ -182,9 +200,8 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 .nfx-rows{
   position:relative;z-index:5;
   padding-bottom:4.5rem;
-  padding-top:.8rem;  /* petit espace au-dessus des rangées sur mobile */
+  padding-top:.8rem;
 }
-/* Sur desktop, compenser le margin-bottom négatif du billboard */
 @media(min-width:781px){
   .nfx-rows{padding-top:0}
 }
@@ -241,7 +258,6 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 }
 .nfx-row-scroll::-webkit-scrollbar{display:none}
 
-/* Desktop uniquement : espace hover-expand + snap */
 @media(hover:hover){
   .nfx-row-scroll{
     overflow-y:visible;
@@ -488,6 +504,19 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 .nfx-route{display:none;padding-top:calc(var(--nav-h) + 1.6rem)}
 .nfx-route.active{display:block}
 
+/* ── LOADING STATE ── */
+.nfx-loading{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:30vh;gap:.9rem;color:#b3b3b3;
+}
+.nfx-loading-spinner{
+  width:36px;height:36px;border-radius:50%;
+  border:3px solid rgba(255,255,255,.1);
+  border-top-color:var(--gold);
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
 /* ── MA LISTE vide ── */
 .nfx-empty{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -519,6 +548,7 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 }
 .nfx-modal-close:hover{background:#333}
 .nfx-modal-hero{position:relative;aspect-ratio:16/9;background:#000;overflow:hidden}
+.nfx-modal-hero iframe{width:100%;height:100%;border:none;display:block}
 .nfx-modal-hero img{width:100%;height:100%;object-fit:cover;display:block}
 .nfx-modal-hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 38%,#141414 100%)}
 .nfx-modal-hero-play{position:absolute;bottom:1.2rem;left:1.2rem;display:flex;gap:.65rem;flex-wrap:wrap}
@@ -599,10 +629,10 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
     <button class="nfx-modal-close" id="nfxModalClose" aria-label="Fermer">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
-    <div class="nfx-modal-hero">
+    <div class="nfx-modal-hero" id="nfxModalHero">
       <img id="nfxModalImg" src="" alt="">
-      <div class="nfx-modal-hero-overlay"></div>
-      <div class="nfx-modal-hero-play">
+      <div class="nfx-modal-hero-overlay" id="nfxModalOverlay"></div>
+      <div class="nfx-modal-hero-play" id="nfxModalHeroPlay">
         <button class="nfx-btn nfx-btn-play" id="nfxModalPlay">
           <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>Lecture
         </button>
@@ -637,6 +667,11 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
     <li><button data-route="mylist">Ma liste</button></li>
   </ul>
   <div class="nfx-header-right">
+    <!-- BOUTON METTRE À JOUR -->
+    <button class="nfx-refresh-btn" id="nfxRefreshBtn" aria-label="Mettre à jour le catalogue">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      <span>Mettre à jour</span>
+    </button>
     <button class="nfx-icon-btn" aria-label="Rechercher">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
     </button>
@@ -723,254 +758,282 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
   </div>
 </section>
 
-<div class="nfx-rows">
-
-  <section class="nfx-row nfx-top10">
-    <div class="nfx-row-header">
-      <h3 class="nfx-row-title">Top 10 LFIAGtube · Cette semaine <span class="nfx-row-explore">Tout explorer ›</span></h3>
-      <span class="nfx-row-seeall">Tout voir <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></span>
-    </div>
-    <div class="nfx-row-track">
-      <button class="nfx-row-arrow left" aria-label="Précédent"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <div class="nfx-row-scroll" id="rowTop10"></div>
-      <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
-    </div>
-  </section>
-
-  <section class="nfx-row">
-    <div class="nfx-row-header">
-      <h3 class="nfx-row-title">Continuer à regarder <span class="nfx-row-explore">Tout explorer ›</span></h3>
-      <span class="nfx-row-seeall">Tout voir <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></span>
-    </div>
-    <div class="nfx-row-track">
-      <button class="nfx-row-arrow left" aria-label="Précédent"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <div class="nfx-row-scroll" id="rowContinue"></div>
-      <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
-    </div>
-  </section>
-
-  <section class="nfx-row">
-    <div class="nfx-row-header">
-      <h3 class="nfx-row-title">Nouveautés Lara <span class="nfx-row-explore">Tout explorer ›</span></h3>
-      <span class="nfx-row-seeall">Tout voir <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></span>
-    </div>
-    <div class="nfx-row-track">
-      <button class="nfx-row-arrow left" aria-label="Précédent"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <div class="nfx-row-scroll" id="rowNew"></div>
-      <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
-    </div>
-  </section>
-
-  <section class="nfx-row">
-    <div class="nfx-row-header">
-      <h3 class="nfx-row-title">Concerts &amp; Émissions <span class="nfx-row-explore">Tout explorer ›</span></h3>
-      <span class="nfx-row-seeall">Tout voir <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></span>
-    </div>
-    <div class="nfx-row-track">
-      <button class="nfx-row-arrow left" aria-label="Précédent"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <div class="nfx-row-scroll" id="rowLive"></div>
-      <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
-    </div>
-  </section>
-
-  <section class="nfx-row">
-    <div class="nfx-row-header">
-      <h3 class="nfx-row-title">Choisissez votre univers <span class="nfx-row-explore">Tout explorer ›</span></h3>
-      <span class="nfx-row-seeall">Tout voir <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></span>
-    </div>
-    <div class="nfx-row-track">
-      <button class="nfx-row-arrow left" aria-label="Précédent"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <div class="nfx-row-scroll" id="rowAlbums"></div>
-      <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
-    </div>
-  </section>
-
-  <section class="nfx-row">
-    <div class="nfx-row-header">
-      <h3 class="nfx-row-title">Archives — Discographie <span class="nfx-row-explore">Tout explorer ›</span></h3>
-      <span class="nfx-row-seeall">Tout voir <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></span>
-    </div>
-    <div class="nfx-row-track">
-      <button class="nfx-row-arrow left" aria-label="Précédent"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <div class="nfx-row-scroll" id="rowArchives"></div>
-      <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
-    </div>
-  </section>
-
+<div class="nfx-rows" id="nfxRows">
+  <div class="nfx-loading" id="nfxLoadingHome">
+    <div class="nfx-loading-spinner"></div>
+    <span style="font-size:.82rem">Chargement du catalogue…</span>
+  </div>
 </div>
 </div>
 
-<div id="view-series" class="nfx-route"><div class="nfx-route-grid" id="grid-series"></div></div>
-<div id="view-docs" class="nfx-route"><div class="nfx-route-grid" id="grid-docs"></div></div>
-<div id="view-concerts" class="nfx-route"><div class="nfx-route-grid" id="grid-concerts"></div></div>
+<div id="view-series" class="nfx-route">
+  <div class="nfx-loading" id="nfxLoadingSeries"><div class="nfx-loading-spinner"></div></div>
+  <div class="nfx-route-grid" id="grid-series"></div>
+</div>
+<div id="view-docs" class="nfx-route">
+  <div class="nfx-loading" id="nfxLoadingDocs"><div class="nfx-loading-spinner"></div></div>
+  <div class="nfx-route-grid" id="grid-docs"></div>
+</div>
+<div id="view-concerts" class="nfx-route">
+  <div class="nfx-loading" id="nfxLoadingConcerts"><div class="nfx-loading-spinner"></div></div>
+  <div class="nfx-route-grid" id="grid-concerts"></div>
+</div>
 <div id="view-mylist" class="nfx-route"><div class="nfx-route-grid" id="grid-mylist"></div></div>
 
 <script>
 (function(){
 'use strict';
 
-const ALL=[
-  {id:'voice2026',t:'The Voice 2026',img:'images/categories-v2/The_Voice_2026.webp',poster:'images/categories-v2-poster/The_Voice_2026.webp',meta:'2026 · Émission · TF1',desc:'Lara Fabian sublime la nouvelle saison de The Voice. Diffusion tous les samedis à 21h10 sur TF1.',cat:'series',new:1,prog:72},
-  {id:'effetlara',t:'L\'Effet Lara — 2026',img:'images/categories-v2/LEffet_Lara_-_2026.webp',poster:'images/categories-v2-poster/LEffet_Lara_-_2026.webp',meta:'2026 · Série · TVA',desc:'Lara Fabian au cœur d\'une nouvelle aventure musicale sur TVA. Disponible chaque lundi.',cat:'series',new:1,prog:45},
-  {id:'starac2025',t:'Star Académie 2025',img:'images/categories-v2/Star_Acadmie_2025.webp',poster:'images/categories-v2-poster/Star_Acadmie_2025.webp',meta:'2025 · Émission · TVA',desc:'Revivez la 7e Académie québécoise avec Lara Fabian au piano. Tous les épisodes en exclu.',cat:'series',new:1,prog:91},
-  {id:'voicekids24',t:'The Voice Kids 2024',img:'images/categories-v2/The_Voice_Kids_2024.webp',poster:'images/categories-v2-poster/The_Voice_Kids_2024.webp',meta:'2024 · Émission · TF1',desc:'Lara Fabian coach de The Voice Kids 2024.',cat:'series',new:0,prog:38},
-  {id:'concerts',t:'Concerts — Lara Fabian',img:'images/categories-v2/Lara_Fabian_-_Concerts.webp',poster:'images/categories-v2-poster/Lara_Fabian_-_Concerts.webp',meta:'2000–2024 · Concerts',desc:'Toutes les tournées mondiales et concerts événements de Lara Fabian.',cat:'concerts',new:0,prog:28},
-  {id:'today',t:'2024 · Aujourd\'hui',img:'images/categories-v2/2024_-_Aujourdhui.webp',poster:'images/categories-v2-poster/2024_-_Aujourdhui.webp',meta:'2024 · Concerts',desc:'La période actuelle de Lara Fabian — concerts et projets récents.',cat:'concerts',new:1,prog:15},
-  {id:'enfoirs',t:'Les Enfoirés — Lara Fabian',img:'images/categories-v2/Lara_Fabian_aux_Enfoirs.webp',poster:'images/categories-v2-poster/Lara_Fabian_aux_Enfoirs.webp',meta:'1993–2020 · Événements',desc:'Toutes les participations de Lara Fabian aux Restos du Cœur.',cat:'concerts',new:0,prog:55},
-  {id:'docs',t:'Documentaires',img:'images/categories-v2/Lara_Fabian_Documentaires.webp',poster:'images/categories-v2-poster/Lara_Fabian_Documentaires.webp',meta:'2010–2024 · Documentaires',desc:'Les documentaires consacrés à la vie et la carrière de Lara Fabian.',cat:'docs',new:0,prog:63},
-  {id:'cinema',t:'Lara Fabian au Cinéma',img:'images/categories-v2/Lara_Fabian_au_Cinma.webp',poster:'images/categories-v2-poster/Lara_Fabian_au_Cinma.webp',meta:'1995–2010 · Films',desc:'Les apparitions et rôles de Lara Fabian au cinéma.',cat:'docs',new:0,prog:20},
-  {id:'divers',t:'Divers',img:'images/categories-v2/Lara_Fabian_-_Divers.webp',poster:'images/categories-v2-poster/Lara_Fabian_-_Divers.webp',meta:'Interviews · TV',desc:'Interviews, émissions TV et apparitions variées.',cat:'docs',new:0,prog:42},
-  {id:'livres',t:'Livres & Lectures',img:'images/categories-v2/Lara_Fabian_-_Livres.webp',poster:'images/categories-v2-poster/Lara_Fabian_-_Livres.webp',meta:'2000–2020 · Livres',desc:'Lara Fabian auteure — présentation de ses ouvrages.',cat:'docs',new:0,prog:10},
-  {id:'debuts',t:'1985–1990 · Les Débuts',img:'images/categories-v2/1985_-_1990_Les_dbuts.webp',poster:'images/categories-v2-poster/1985_-_1990_Les_dbuts.webp',meta:'1985–1990 · Archives',desc:'Les premières années de Lara Fabian en Belgique.',cat:'docs',new:0,prog:5},
-  {id:'francais91',t:'1991–1993 · Lara Fabian',img:'images/categories-v2/1991_-_1993_Lara_Fabian_Franais.webp',poster:'images/categories-v2-poster/1991_-_1993_Lara_Fabian_Franais.webp',meta:'1991–1993 · Albums',desc:'Premier album français et début de la notoriété.',cat:'docs',new:0,prog:8},
-  {id:'carpediem',t:'1994–1995 · Carpe Diem',img:'images/categories-v2/1994_-_1995_Carpe_Diem.webp',poster:'images/categories-v2-poster/1994_-_1995_Carpe_Diem.webp',meta:'1994–1995 · Album',desc:'L\'album Carpe Diem et la percée internationale.',cat:'docs',new:0,prog:12},
-  {id:'pure',t:'1996–1999 · Pure',img:'images/categories-v2/1996_-_1999_Pure.webp',poster:'images/categories-v2-poster/1996_-_1999_Pure.webp',meta:'1996–1999 · Album',desc:'L\'album Pure et le succès mondial de «Je t\'aime».',cat:'docs',new:0,prog:18},
-  {id:'anglais',t:'1999–2001 · Album Anglais',img:'images/categories-v2/1999_-2001_Lara_Fabian_Anglais.webp',poster:'images/categories-v2-poster/1999_-2001_Lara_Fabian_Anglais.webp',meta:'1999–2001 · Album',desc:'L\'album anglophone et la conquête du marché américain.',cat:'docs',new:0,prog:22},
-  {id:'nue',t:'2001–2003 · Nue / ETI',img:'images/categories-v2/2001_-_2003_Nue__ETI.webp',poster:'images/categories-v2-poster/2001_-_2003_Nue__ETI.webp',meta:'2001–2003 · Albums',desc:'Les albums Nue et Every Time I See You.',cat:'docs',new:0,prog:30},
-  {id:'wonderful',t:'2004 · A Wonderful Life',img:'images/categories-v2/2004_A_Wonderful_Life.webp',poster:'images/categories-v2-poster/2004_A_Wonderful_Life.webp',meta:'2004 · Album',desc:'L\'album A Wonderful Life.',cat:'docs',new:0,prog:35},
-  {id:'nine',t:'2005–2008 · 9',img:'images/categories-v2/2005_-_2008_9.webp',poster:'images/categories-v2-poster/2005_-_2008_9.webp',meta:'2005–2008 · Album',desc:'L\'album 9 et la période créative de Lara Fabian.',cat:'docs',new:0,prog:40},
-  {id:'tlfm',t:'2009–2010 · TLFM / EWIM',img:'images/categories-v2/2009_-_2010_TLFM__EWIM.webp',poster:'images/categories-v2-poster/2009_-_2010_TLFM__EWIM.webp',meta:'2009–2010 · Albums',desc:'Two Lonely Hearts on the Map et Embrasse-moi.',cat:'docs',new:0,prog:48},
-  {id:'zhivago',t:'2010–2012 · M. Zhivago',img:'images/categories-v2/2010_-_2012_Mademoiselle_Zhivago.webp',poster:'images/categories-v2-poster/2010_-_2012_Mademoiselle_Zhivago.webp',meta:'2010–2012 · Album',desc:'L\'album Mademoiselle Zhivago.',cat:'docs',new:0,prog:52},
-  {id:'secret',t:'2013–2014 · Le Secret',img:'images/categories-v2/2013_-_2014_Le_Secret.webp',poster:'images/categories-v2-poster/2013_-_2014_Le_Secret.webp',meta:'2013–2014 · Album',desc:'L\'album Le Secret.',cat:'docs',new:0,prog:58},
-  {id:'mavie',t:'2015–2016 · Ma Vie dans La Tienne',img:'images/categories-v2/2015_-_2016_Ma_Vie_dans_La_Tienne.webp',poster:'images/categories-v2-poster/2015_-_2016_Ma_Vie_dans_La_Tienne.webp',meta:'2015–2016 · Album',desc:'L\'album Ma Vie dans la Tienne.',cat:'docs',new:0,prog:65},
-  {id:'camouflage',t:'2017–2018 · Camouflage',img:'images/categories-v2/2017_-_2018_Camouflage.webp',poster:'images/categories-v2-poster/2017_-_2018_Camouflage.webp',meta:'2017–2018 · Album',desc:'L\'album Camouflage et la tournée mondiale.',cat:'docs',new:0,prog:70},
-  {id:'papillon',t:'2019–2021 · Papillon',img:'images/categories-v2/2019_-_2021_Papillon.webp',poster:'images/categories-v2-poster/2019_-_2021_Papillon.webp',meta:'2019–2021 · Album',desc:'L\'album Papillon — renaissance et liberté.',cat:'docs',new:0,prog:78},
-];
+const BACKEND = 'https://script.google.com/macros/s/AKfycbxnNSmAUGIuzBJ2s2f5MmnqZrMjZO9VqNjd7kCyELD-KdZ2XBjWTrW7qpl4HcLgk4bB/exec';
+const CACHE_KEY = 'lfiag_catalogue_v1';
+const CACHE_TS_KEY = 'lfiag_catalogue_ts_v1';
+// Durée du cache local navigateur : 30 min (le backend lui gère 6h côté serveur)
+const LOCAL_TTL = 30 * 60 * 1000;
 
-const BB=ALL.slice(0,3);
-const TOP10=['voice2026','effetlara','starac2025','today','concerts','voicekids24','enfoirs','docs','camouflage','papillon']
-  .map(id=>ALL.find(x=>x.id===id)).filter(Boolean);
-const CONTINUE=[...ALL].reverse().slice(0,14);
-const NEW_I=ALL.filter(x=>x.new);
-const LIVE=ALL.filter(x=>x.cat==='concerts'||x.cat==='series');
-const ALBUMS=ALL.slice(4,16);
-const ARC=ALL.filter(x=>['debuts','francais91','carpediem','pure','anglais','nue','wonderful','nine','tlfm','zhivago','secret','mavie','camouflage','papillon'].includes(x.id));
+let ALL = [];
 
-const $=q=>document.querySelector(q);
-const $$=q=>Array.from(document.querySelectorAll(q));
-
-const getList=()=>{try{return JSON.parse(localStorage.getItem('lfiag_mylist')||'[]');}catch{return[];}};
-const saveList=a=>localStorage.setItem('lfiag_mylist',JSON.stringify(a));
-const inList=id=>getList().includes(id);
-function toggleList(id){
-  let a=getList();
-  if(a.includes(id)){a=a.filter(x=>x!==id);toast('Retiré de votre liste');}
-  else{a.push(id);toast('Ajouté à votre liste ✓');}
-  saveList(a);refreshBadges();
-  if($('#view-mylist.active'))renderMyList();
+// ── Catégories Drive → section/cat interne
+const CAT_MAP = {
+  'lara fabian - concerts': 'concerts',
+  "2024 - aujourd'hui": 'series',
+  "2024 - aujourd\u2019hui": 'series',
+  '2019 - 2021 papillon': 'docs',
+  '2017 - 2018 camouflage': 'docs',
+  '2015 - 2016 ma vie dans la tienne': 'docs',
+  "l'effet lara - 2026": 'series',
+  "lara fabian aux enfoirés": 'concerts',
+  "lara fabian documentaires": 'docs',
+  "lara fabian au cinéma": 'docs',
+  "1999 - 2001 lara fabian (anglais)": 'docs',
+  "lara fabian - divers": 'docs',
+};
+function mapCat(raw) {
+  if (!raw) return 'docs';
+  const k = raw.toLowerCase().trim();
+  for (const [key, val] of Object.entries(CAT_MAP)) {
+    if (k.includes(key)) return val;
+  }
+  if (k.includes('concert')) return 'concerts';
+  if (k.includes('voice') || k.includes('star ac') || k.includes('émission') || k.includes('effet lara') || k.includes("aujourd")) return 'series';
+  return 'docs';
 }
-function refreshBadges(){
-  const l=getList();
-  $$('.nfx-card[data-id],.nfx-file-card[data-id]').forEach(el=>el.classList.toggle('in-mylist',l.includes(el.dataset.id)));
-  const btn=$('#nfxModalAdd');
-  if(btn&&btn.dataset.id){
-    const y=l.includes(btn.dataset.id);
-    btn.classList.toggle('in-list',y);
-    $('#nfxModalAddLabel').textContent=y?'Dans ma liste ✓':'Ajouter à ma liste';
+
+// ── Fetch backend (avec bust-cache optionnel)
+async function fetchCatalogue(bustCache = false) {
+  // Lire cache navigateur
+  if (!bustCache) {
+    try {
+      const ts = parseInt(localStorage.getItem(CACHE_TS_KEY) || '0');
+      if (Date.now() - ts < LOCAL_TTL) {
+        const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+        if (cached && cached.length) return cached;
+      }
+    } catch(e) {}
+  }
+
+  const url = BACKEND + '?action=videos' + (bustCache ? '&bustCache=1' : '');
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error('HTTP ' + resp.status);
+  const data = await resp.json();
+
+  let videos = [];
+  if (data.status === 'ok' && Array.isArray(data.videos)) {
+    videos = data.videos.map(v => ({
+      id: v.id,
+      t: v.name || v.titre || v.id,
+      img: v.thumbnailLink || ('https://drive.google.com/thumbnail?id=' + v.id + '&sz=w640'),
+      poster: v.thumbnailLink || ('https://drive.google.com/thumbnail?id=' + v.id + '&sz=w640'),
+      embed: v.webViewLink || ('https://drive.google.com/file/d/' + v.id + '/preview'),
+      meta: (v._category || 'Lara Fabian') + ' · Vidéo',
+      desc: v.description || '',
+      cat: mapCat(v._category),
+      _category: v._category || '',
+      new: isNew(v),
+      prog: 0,
+      mimeType: v.mimeType || '',
+    }));
+  }
+
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(videos));
+    localStorage.setItem(CACHE_TS_KEY, String(Date.now()));
+  } catch(e) {}
+
+  return videos;
+}
+
+function isNew(v) {
+  if (!v.modifiedTime && !v.createdTime) return 0;
+  const t = new Date(v.modifiedTime || v.createdTime).getTime();
+  return (Date.now() - t) < 30 * 24 * 60 * 60 * 1000 ? 1 : 0;
+}
+
+// ── Helpers UI
+const $ = q => document.querySelector(q);
+const $$ = q => Array.from(document.querySelectorAll(q));
+
+const getList = () => { try { return JSON.parse(localStorage.getItem('lfiag_mylist') || '[]'); } catch { return []; } };
+const saveList = a => localStorage.setItem('lfiag_mylist', JSON.stringify(a));
+const inList = id => getList().includes(id);
+
+function toggleList(id) {
+  let a = getList();
+  if (a.includes(id)) { a = a.filter(x => x !== id); toast('Retiré de votre liste'); }
+  else { a.push(id); toast('Ajouté à votre liste ✓'); }
+  saveList(a); refreshBadges();
+  if ($('#view-mylist.active')) renderMyList();
+}
+
+function refreshBadges() {
+  const l = getList();
+  $$('.nfx-card[data-id],.nfx-file-card[data-id]').forEach(el => el.classList.toggle('in-mylist', l.includes(el.dataset.id)));
+  const btn = $('#nfxModalAdd');
+  if (btn && btn.dataset.id) {
+    const y = l.includes(btn.dataset.id);
+    btn.classList.toggle('in-list', y);
+    $('#nfxModalAddLabel').textContent = y ? 'Dans ma liste ✓' : 'Ajouter à ma liste';
   }
 }
 
-function toast(msg){
-  const t=$('#nfxToast');
-  t.textContent=msg;t.classList.add('show');
-  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2200);
+function toast(msg) {
+  const t = $('#nfxToast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2200);
 }
 
-const splash=$('#nfxSplash');
-setTimeout(()=>splash.classList.add('hide'),2500);
-$('#replaySplashBtn').addEventListener('click',()=>{
+// ── Splash
+const splash = $('#nfxSplash');
+setTimeout(() => splash.classList.add('hide'), 2500);
+$('#replaySplashBtn').addEventListener('click', () => {
   splash.classList.remove('hide');
-  setTimeout(()=>splash.classList.add('hide'),2500);
+  setTimeout(() => splash.classList.add('hide'), 2500);
 });
 
-window.addEventListener('scroll',()=>$('#nfxHeader').classList.toggle('scrolled',scrollY>30),{passive:true});
+window.addEventListener('scroll', () => $('#nfxHeader').classList.toggle('scrolled', scrollY > 30), { passive: true });
 
-const modal=$('#nfxModal');
-let cur=null;
-function openModal(item){
-  cur=item;
-  $('#nfxModalImg').src=item.img;
-  $('#nfxModalImg').alt=item.t;
-  $('#nfxModalTitle').textContent=item.t;
-  const parts=item.meta.split('·').map(s=>s.trim());
-  $('#nfxModalMeta').innerHTML=`<span class="match">98% Match</span>${parts.map(p=>`<span>${p}</span>`).join('')}`;
-  $('#nfxModalDesc').textContent=item.desc||'';
-  const btn=$('#nfxModalAdd');
-  btn.dataset.id=item.id;
-  const y=inList(item.id);
-  btn.classList.toggle('in-list',y);
-  $('#nfxModalAddLabel').textContent=y?'Dans ma liste ✓':'Ajouter à ma liste';
+// ── Modal
+const modal = $('#nfxModal');
+let cur = null;
+function openModal(item) {
+  cur = item;
+  // Afficher thumbnail par défaut, remplacé par iframe au clic sur Lecture
+  const hero = $('#nfxModalHero');
+  // Remettre l'image (au cas où iframe déjà injectée)
+  let img = $('#nfxModalImg');
+  if (!img) {
+    hero.innerHTML = '<img id="nfxModalImg" src="" alt=""><div class="nfx-modal-hero-overlay" id="nfxModalOverlay"></div><div class="nfx-modal-hero-play" id="nfxModalHeroPlay"><button class="nfx-btn nfx-btn-play" id="nfxModalPlay"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>Lecture</button></div>';
+    bindModalPlay();
+  }
+  img = $('#nfxModalImg');
+  if(img) { img.src = item.img; img.alt = item.t; img.style.display = 'block'; }
+  const ov = $('#nfxModalOverlay'); if(ov) ov.style.display = '';
+  const hp = $('#nfxModalHeroPlay'); if(hp) hp.style.display = '';
+
+  $('#nfxModalTitle').textContent = item.t;
+  const parts = (item.meta || '').split('·').map(s => s.trim());
+  $('#nfxModalMeta').innerHTML = `<span class="match">Lara Fabian</span>${parts.map(p => `<span>${p}</span>`).join('')}`;
+  $('#nfxModalDesc').textContent = item.desc || item._category || '';
+  const btn = $('#nfxModalAdd');
+  btn.dataset.id = item.id;
+  const y = inList(item.id);
+  btn.classList.toggle('in-list', y);
+  $('#nfxModalAddLabel').textContent = y ? 'Dans ma liste ✓' : 'Ajouter à ma liste';
   modal.classList.add('open');
-  document.body.style.overflow='hidden';
+  document.body.style.overflow = 'hidden';
 }
-function closeModal(){
+
+function closeModal() {
   modal.classList.remove('open');
-  document.body.style.overflow='';
-  cur=null;
+  document.body.style.overflow = '';
+  // Arrêter la lecture en remettant l'image
+  const hero = $('#nfxModalHero');
+  if (hero.querySelector('iframe')) {
+    hero.innerHTML = '<img id="nfxModalImg" src="" alt=""><div class="nfx-modal-hero-overlay" id="nfxModalOverlay"></div><div class="nfx-modal-hero-play" id="nfxModalHeroPlay"><button class="nfx-btn nfx-btn-play" id="nfxModalPlay"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>Lecture</button></div>';
+    bindModalPlay();
+  }
+  cur = null;
 }
-$('#nfxModalClose').addEventListener('click',closeModal);
-modal.addEventListener('click',e=>{if(e.target===modal)closeModal();});
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
-$('#nfxModalAdd').addEventListener('click',()=>{
-  if(!cur)return;
+
+function bindModalPlay() {
+  const btn = $('#nfxModalPlay');
+  if (btn) btn.addEventListener('click', () => {
+    if (!cur || !cur.embed) return;
+    const hero = $('#nfxModalHero');
+    hero.innerHTML = `<iframe src="${cur.embed}" allowfullscreen allow="autoplay"></iframe>`;
+  });
+}
+bindModalPlay();
+
+$('#nfxModalClose').addEventListener('click', closeModal);
+modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+$('#nfxModalAdd').addEventListener('click', () => {
+  if (!cur) return;
   toggleList(cur.id);
-  const y=inList(cur.id);
-  $('#nfxModalAdd').classList.toggle('in-list',y);
-  $('#nfxModalAddLabel').textContent=y?'Dans ma liste ✓':'Ajouter à ma liste';
+  const y = inList(cur.id);
+  $('#nfxModalAdd').classList.toggle('in-list', y);
+  $('#nfxModalAddLabel').textContent = y ? 'Dans ma liste ✓' : 'Ajouter à ma liste';
 });
-$('#nfxModalPlay').addEventListener('click',()=>{if(cur)toast('▶ '+cur.t);});
 
-function setRoute(name){
-  $$('.nfx-route').forEach(el=>el.classList.remove('active'));
-  const t=$(`#view-${name}`);if(t)t.classList.add('active');
-  $$('.nfx-nav button').forEach(b=>b.classList.toggle('active',b.dataset.route===name));
-  if(name!=='home')scrollTo({top:0,behavior:'smooth'});
-  if(name==='mylist')renderMyList();
+// ── Routing
+function setRoute(name) {
+  $$('.nfx-route').forEach(el => el.classList.remove('active'));
+  const t = $(`#view-${name}`); if (t) t.classList.add('active');
+  $$('.nfx-nav button').forEach(b => b.classList.toggle('active', b.dataset.route === name));
+  if (name !== 'home') scrollTo({ top: 0, behavior: 'smooth' });
+  if (name === 'mylist') renderMyList();
 }
-$$('.nfx-nav [data-route],.nfx-logo[data-route]').forEach(el=>{
-  el.addEventListener('click',e=>{e.preventDefault();setRoute(el.dataset.route);});
+$$('.nfx-nav [data-route],.nfx-logo[data-route]').forEach(el => {
+  el.addEventListener('click', e => { e.preventDefault(); setRoute(el.dataset.route); });
 });
 
-$$('.nfx-btn[data-action]').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    const item=BB[+btn.dataset.idx||0];
-    if(!item)return;
-    btn.dataset.action==='info'?openModal(item):toast('▶ '+item.t);
+// ── Billboard
+$$('.nfx-btn[data-action]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const idx = +btn.dataset.idx || 0;
+    if (btn.dataset.action === 'info') {
+      const item = ALL[idx] || null;
+      if (item) openModal(item);
+    } else {
+      toast('▶ Slide ' + (idx + 1));
+    }
   });
 });
-const slides=$$('.nfx-billboard-slide');
-const dots=$$('#nfxBbDots button');
-let bbI=0,bbT;
-function showSlide(i){
-  slides.forEach((s,j)=>s.classList.toggle('active',j===i));
-  dots.forEach((d,j)=>d.classList.toggle('active',j===i));
-  bbI=i;
-}
-dots.forEach((d,i)=>d.addEventListener('click',()=>{showSlide(i);clearInterval(bbT);bbT=setInterval(()=>showSlide((bbI+1)%slides.length),8000);}));
-bbT=setInterval(()=>showSlide((bbI+1)%slides.length),8000);
 
-$$('.nfx-row-track').forEach(track=>{
-  const sc=track.querySelector('.nfx-row-scroll');
-  if(!sc)return;
-  track.querySelector('.nfx-row-arrow.left')?.addEventListener('click',()=>sc.scrollBy({left:-sc.clientWidth*.8,behavior:'smooth'}));
-  track.querySelector('.nfx-row-arrow.right')?.addEventListener('click',()=>sc.scrollBy({left:sc.clientWidth*.8,behavior:'smooth'}));
+const slides = $$('.nfx-billboard-slide');
+const dots = $$('#nfxBbDots button');
+let bbI = 0, bbT;
+function showSlide(i) {
+  slides.forEach((s, j) => s.classList.toggle('active', j === i));
+  dots.forEach((d, j) => d.classList.toggle('active', j === i));
+  bbI = i;
+}
+dots.forEach((d, i) => d.addEventListener('click', () => { showSlide(i); clearInterval(bbT); bbT = setInterval(() => showSlide((bbI + 1) % slides.length), 8000); }));
+bbT = setInterval(() => showSlide((bbI + 1) % slides.length), 8000);
+
+// ── Arrows
+$$('.nfx-row-track').forEach(track => {
+  const sc = track.querySelector('.nfx-row-scroll');
+  if (!sc) return;
+  track.querySelector('.nfx-row-arrow.left')?.addEventListener('click', () => sc.scrollBy({ left: -sc.clientWidth * .8, behavior: 'smooth' }));
+  track.querySelector('.nfx-row-arrow.right')?.addEventListener('click', () => sc.scrollBy({ left: sc.clientWidth * .8, behavior: 'smooth' }));
 });
 
-const mlBadge=()=>'<span class="nfx-mylist-badge" aria-hidden="true">✓</span>';
+const mlBadge = () => '<span class="nfx-mylist-badge" aria-hidden="true">✓</span>';
 
-function card(item,i,top10=false){
-  if(top10) return `<div class="nfx-card" data-id="${item.id}" tabindex="0" role="button" aria-label="${item.t}">
-    <span class="nfx-top10-num">${i+1}</span>
+function card(item, i, top10 = false) {
+  if (top10) return `<div class="nfx-card" data-id="${item.id}" tabindex="0" role="button" aria-label="${item.t}">
+    <span class="nfx-top10-num">${i + 1}</span>
     <div class="nfx-card-img-wrap">
-      <img class="nfx-card-img" src="${item.poster||item.img}" alt="${item.t}" loading="lazy" draggable="false">
+      <img class="nfx-card-img" src="${item.poster || item.img}" alt="${item.t}" loading="lazy" draggable="false">
     </div>
   </div>`;
-  return `<div class="nfx-card${inList(item.id)?' in-mylist':''}" data-id="${item.id}" tabindex="0" role="button" aria-label="${item.t}">
+  return `<div class="nfx-card${inList(item.id) ? ' in-mylist' : ''}" data-id="${item.id}" tabindex="0" role="button" aria-label="${item.t}">
     ${mlBadge()}
     <div class="nfx-card-img-wrap">
       <img class="nfx-card-img" src="${item.img}" alt="${item.t}" loading="lazy" draggable="false">
-      ${item.new?'<span class="nfx-card-badge-new">Nouveau</span>':''}
-      <div class="nfx-card-progress"><div class="nfx-card-progress-fill" style="width:${item.prog||50}%"></div></div>
+      ${item.new ? '<span class="nfx-card-badge-new">Nouveau</span>' : ''}
+      <div class="nfx-card-progress"><div class="nfx-card-progress-fill" style="width:${item.prog || 0}%"></div></div>
     </div>
     <div class="nfx-card-label">${item.t}</div>
     <div class="nfx-card-expand">
@@ -981,16 +1044,16 @@ function card(item,i,top10=false){
           <button class="nfx-action-btn" data-action="addlist" data-id="${item.id}" aria-label="+ liste"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
           <button class="nfx-action-btn right" data-action="info" data-id="${item.id}" aria-label="Infos"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></button>
         </div>
-        <div class="nfx-card-expand-meta"><span class="match">98%</span><span class="badge">HD</span></div>
+        <div class="nfx-card-expand-meta"><span class="match">Lara Fabian</span><span class="badge">HD</span></div>
         <div class="nfx-card-expand-title">${item.t}</div>
-        <div class="nfx-card-expand-tags"><span>Music</span><span class="dot">•</span><span>Lara Fabian</span></div>
+        <div class="nfx-card-expand-tags"><span>${item._category || 'Vidéo'}</span></div>
       </div>
     </div>
   </div>`;
 }
 
-function gridCard(item){
-  return `<div class="nfx-file-card${inList(item.id)?' in-mylist':''}" data-id="${item.id}" tabindex="0" role="button" aria-label="${item.t}">
+function gridCard(item) {
+  return `<div class="nfx-file-card${inList(item.id) ? ' in-mylist' : ''}" data-id="${item.id}" tabindex="0" role="button" aria-label="${item.t}">
     ${mlBadge()}
     <div class="nfx-file-thumb">
       <img src="${item.img}" alt="${item.t}" loading="lazy" draggable="false">
@@ -999,68 +1062,166 @@ function gridCard(item){
     </div>
     <div class="nfx-file-body">
       <div class="nfx-file-title">${item.t}</div>
-      <div class="nfx-file-meta">${item.meta}</div>
+      <div class="nfx-file-meta">${item._category || item.meta}</div>
     </div>
   </div>`;
 }
 
-function fill(id,items,top10=false){
-  const el=document.getElementById(id);
-  if(el)el.innerHTML=items.map((it,i)=>card(it,i,top10)).join('');
+function rowHtml(id, title, seeAll = true) {
+  return `<section class="nfx-row" id="section-${id}">
+    <div class="nfx-row-header">
+      <h3 class="nfx-row-title">${title} <span class="nfx-row-explore">Tout explorer ›</span></h3>
+      ${seeAll ? '<span class="nfx-row-seeall">Tout voir <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></span>' : ''}
+    </div>
+    <div class="nfx-row-track">
+      <button class="nfx-row-arrow left" aria-label="Précédent"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="nfx-row-scroll" id="row-${id}"></div>
+      <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+  </section>`;
 }
-fill('rowTop10',TOP10,true);
-fill('rowContinue',CONTINUE);
-fill('rowNew',NEW_I);
-fill('rowLive',LIVE);
-fill('rowAlbums',ALBUMS);
-fill('rowArchives',ARC);
 
-['series','docs','concerts'].forEach(r=>{
-  const g=document.getElementById('grid-'+r);
-  const items=ALL.filter(x=>x.cat===r);
-  if(g){g.innerHTML=items.map(gridCard).join('');bindGrid(g);}
-});
+function top10RowHtml() {
+  return `<section class="nfx-row nfx-top10" id="section-top10">
+    <div class="nfx-row-header">
+      <h3 class="nfx-row-title">Top 10 LFIAGtube · Cette semaine <span class="nfx-row-explore">Tout explorer ›</span></h3>
+      <span class="nfx-row-seeall">Tout voir <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></span>
+    </div>
+    <div class="nfx-row-track">
+      <button class="nfx-row-arrow left" aria-label="Précédent"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="nfx-row-scroll" id="row-top10"></div>
+      <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+  </section>`;
+}
 
-function renderMyList(){
-  const g=$('#grid-mylist');
-  if(!g)return;
-  const items=ALL.filter(x=>getList().includes(x.id));
-  if(!items.length){
-    g.innerHTML=`<div class="nfx-empty">
+function renderHome() {
+  const rows = $('#nfxRows');
+  // Construire les rangées dynamiquement par catégorie Drive
+  const cats = {};
+  ALL.forEach(v => { (cats[v._category] = cats[v._category] || []).push(v); });
+
+  const newItems = ALL.filter(v => v.new).slice(0, 20);
+  const top10 = ALL.slice(0, 10);
+
+  let html = top10RowHtml();
+  if (newItems.length) html += rowHtml('new', '🆕 Nouveautés');
+  Object.entries(cats).forEach(([cat, items]) => {
+    if (!cat) return;
+    const safeId = cat.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    html += rowHtml(safeId, cat);
+  });
+
+  rows.innerHTML = html;
+
+  // Remplir top10
+  const t10 = $('#row-top10');
+  if (t10) { t10.innerHTML = top10.map((it, i) => card(it, i, true)).join(''); bindRows(t10); }
+
+  // Remplir nouveautés
+  const rNew = $('#row-new');
+  if (rNew) { rNew.innerHTML = newItems.map((it, i) => card(it, i)).join(''); bindRows(rNew); }
+
+  // Remplir rangées par catégorie
+  Object.entries(cats).forEach(([cat, items]) => {
+    if (!cat) return;
+    const safeId = cat.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const el = $(`#row-${safeId}`);
+    if (el) { el.innerHTML = items.map((it, i) => card(it, i)).join(''); bindRows(el); }
+  });
+
+  // Rebind flèches
+  $$('.nfx-row-track').forEach(track => {
+    const sc = track.querySelector('.nfx-row-scroll');
+    if (!sc) return;
+    track.querySelector('.nfx-row-arrow.left')?.addEventListener('click', () => sc.scrollBy({ left: -sc.clientWidth * .8, behavior: 'smooth' }));
+    track.querySelector('.nfx-row-arrow.right')?.addEventListener('click', () => sc.scrollBy({ left: sc.clientWidth * .8, behavior: 'smooth' }));
+  });
+}
+
+function renderGrids() {
+  ['series', 'docs', 'concerts'].forEach(r => {
+    const g = document.getElementById('grid-' + r);
+    const loading = document.getElementById('nfxLoading' + r.charAt(0).toUpperCase() + r.slice(1));
+    if (loading) loading.style.display = 'none';
+    const items = ALL.filter(x => x.cat === r);
+    if (g) { g.innerHTML = items.map(gridCard).join(''); bindGrid(g); }
+  });
+}
+
+function renderMyList() {
+  const g = $('#grid-mylist');
+  if (!g) return;
+  const items = ALL.filter(x => getList().includes(x.id));
+  if (!items.length) {
+    g.innerHTML = `<div class="nfx-empty">
       <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       <h2>Votre liste est vide</h2>
       <p>Ajoutez des vidéos depuis l'accueil en cliquant sur une carte</p></div>`;
-  }else{g.innerHTML=items.map(gridCard).join('');bindGrid(g);}
+  } else { g.innerHTML = items.map(gridCard).join(''); bindGrid(g); }
 }
 
-function bindRows(container){
-  container.addEventListener('click',e=>{
-    const btn=e.target.closest('[data-action]');
-    if(btn){
+function bindRows(container) {
+  container.addEventListener('click', e => {
+    const btn = e.target.closest('[data-action]');
+    if (btn) {
       e.stopPropagation();
-      const item=ALL.find(x=>x.id===btn.dataset.id);
-      if(!item)return;
-      if(btn.dataset.action==='play')toast('▶ '+item.t);
-      if(btn.dataset.action==='info')openModal(item);
-      if(btn.dataset.action==='addlist'){toggleList(item.id);refreshBadges();}
+      const item = ALL.find(x => x.id === btn.dataset.id);
+      if (!item) return;
+      if (btn.dataset.action === 'play') openModal(item);
+      if (btn.dataset.action === 'info') openModal(item);
+      if (btn.dataset.action === 'addlist') { toggleList(item.id); refreshBadges(); }
       return;
     }
-    const c=e.target.closest('.nfx-card[data-id]');
-    if(c){const item=ALL.find(x=>x.id===c.dataset.id);if(item)openModal(item);}
+    const c = e.target.closest('.nfx-card[data-id]');
+    if (c) { const item = ALL.find(x => x.id === c.dataset.id); if (item) openModal(item); }
   });
 }
-function bindGrid(container){
-  container.addEventListener('click',e=>{
-    const c=e.target.closest('.nfx-file-card[data-id]');
-    if(c){const item=ALL.find(x=>x.id===c.dataset.id);if(item)openModal(item);}
+
+function bindGrid(container) {
+  container.addEventListener('click', e => {
+    const c = e.target.closest('.nfx-file-card[data-id]');
+    if (c) { const item = ALL.find(x => x.id === c.dataset.id); if (item) openModal(item); }
   });
 }
-['rowTop10','rowContinue','rowNew','rowLive','rowAlbums','rowArchives'].forEach(id=>{
-  const el=document.getElementById(id);
-  if(el)bindRows(el);
+
+// ── Bouton Mettre à jour
+const refreshBtn = $('#nfxRefreshBtn');
+refreshBtn.addEventListener('click', async () => {
+  refreshBtn.classList.add('loading');
+  toast('🔄 Mise à jour en cours…');
+  try {
+    // 1. Invalider le cache côté backend Apps Script
+    await fetch(BACKEND + '?action=invalidate&email=admin');
+    // 2. Refetch sans cache local
+    ALL = await fetchCatalogue(true);
+    renderHome();
+    renderGrids();
+    refreshBadges();
+    toast('✅ Catalogue mis à jour !');
+  } catch (e) {
+    toast('⚠️ Erreur de mise à jour');
+  } finally {
+    refreshBtn.classList.remove('loading');
+  }
 });
 
-refreshBadges();
+// ── Init : chargement initial
+async function init() {
+  try {
+    ALL = await fetchCatalogue(false);
+  } catch(e) {
+    console.warn('Backend inaccessible, catalogue vide', e);
+    ALL = [];
+  }
+  $('#nfxLoadingHome').style.display = 'none';
+  renderHome();
+  renderGrids();
+  refreshBadges();
+}
+
+init();
+
 })();
 </script>
 </body>
