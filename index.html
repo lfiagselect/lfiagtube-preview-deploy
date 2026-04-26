@@ -439,6 +439,9 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 </div>
 
 <script>
+// ── Reduce-motion preference (référencé partout) ──
+const _prefersRM = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
 // ── DATA: catégories visuelles (mock à partir des images existantes) ──
 const CATS = [
   {id:'effet-lara', name:"L'Effet Lara — 2026", img:'images/categories-v2/LEffet_Lara_-_2026.webp', new:true, progress:42, year:2026, badge:'TVA'},
@@ -547,7 +550,6 @@ const header = document.getElementById('nfxHeader');
 window.addEventListener('scroll',()=>{ header.classList.toggle('scrolled', window.scrollY>40); }, {passive:true});
 
 // ── Splash auto-hide + Replay button ──
-const _prefersRM = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 setTimeout(()=>document.getElementById('nfxSplash').classList.add('hide'), _prefersRM ? 600 : 2400);
 const _replayBtn = document.getElementById('replaySplashBtn');
 if (_replayBtn) _replayBtn.addEventListener('click', ()=>{
@@ -745,6 +747,3 @@ function fileCardHtml(f){
     +   '</div>'
     +   '<div class="nfx-file-body">'
     +     '<div class="nfx-file-title">'+safe+'</div>'
-    +     '<div class="nfx-file-meta">'+yr+'</div>'
-    +   '</div>'
- 
