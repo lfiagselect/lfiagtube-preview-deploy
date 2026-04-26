@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self'  https://fonts.gstatic.com; img-src 'self'  blob: https:; media-src 'self' blob: https:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'self';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://accounts.google.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' blob: https: data:; media-src 'self' blob: https:; connect-src 'self' https://drive.google.com https://www.googleapis.com https://docs.google.com https://script.google.com https://script.googleusercontent.com https://accounts.google.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://drive.google.com https://docs.google.com https://accounts.google.com; object-src 'none'; base-uri 'self'; frame-ancestors 'self';">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#000000">
-<meta name="description" content="LFIAGtube — Bibliothèque vidéo Lara Fabian. Preview Netflix.">
+<meta name="description" content="LFIAGtube — Bibliothèque vidéo Lara Fabian.">
 <meta property="og:title" content="LFIAGtube">
 <meta property="og:description" content="Bibliothèque vidéo Lara Fabian — design Netflix.">
 <meta property="og:type" content="website">
@@ -17,16 +17,19 @@
 <link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Anton&family=Bebas+Neue&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Anton&family=Bebas+Neue&display=swap" rel="stylesheet">
+<!-- Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#000;--bg2:#0a0a0a;--bg3:#141414;
-  --text:#fff;--text2:#b3b3b3;--text3:#737373;
-  --red:#e50914;--red-h:#f40612;
+  --bg:#000;--bg3:#141414;
+  --text:#fff;--text2:#b3b3b3;
+  --red:#e50914;
   --gold:#ffd60a;
-  --r:6px;
   --nav-h:68px;
+  --row-gap:2.4rem;
+  --row-px:4%;
   --font:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
   --display:'Anton','Bebas Neue',Impact,sans-serif;
   --ease:cubic-bezier(.25,.1,.25,1);
@@ -34,608 +37,931 @@
 }
 html,body{background:#000;color:#fff;font-family:var(--font);min-height:100vh;overflow-x:hidden}
 body{-webkit-font-smoothing:antialiased}
-::-webkit-scrollbar{width:8px;height:8px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:999px}
-
 a{color:inherit;text-decoration:none}
 button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:999px}
 
-/* ── HEADER Netflix-style ── */
-.nfx-header{position:fixed;top:0;left:0;right:0;z-index:100;height:var(--nav-h);display:flex;align-items:center;padding:0 4%;gap:1.5rem;background:linear-gradient(180deg,rgba(0,0,0,.85) 0%,rgba(0,0,0,.4) 60%,transparent 100%);transition:background .3s}
-.nfx-header.scrolled{background:rgba(0,0,0,.95)}
-.nfx-logo{display:flex;align-items:center;gap:.7rem;flex-shrink:0;cursor:pointer}
-.nfx-logo img{height:42px;width:auto;display:block;filter:drop-shadow(0 2px 12px rgba(255,214,10,.25))}
-.nfx-logo-text{font-family:var(--display);font-size:1.7rem;letter-spacing:.06em;color:#fff;font-weight:400;line-height:1}
+/* ── LOGIN SCREEN ── */
+#loginScreen{
+  position:fixed;inset:0;z-index:10000;
+  background:#000;
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;
+  transition:opacity .6s,visibility .6s;
+}
+#loginScreen.hide{opacity:0;visibility:hidden;pointer-events:none}
+.login-bg{
+  position:absolute;inset:0;
+  background:url('images/categories-v2/The_Voice_2026.webp') center/cover no-repeat;
+  opacity:.18;
+  filter:blur(4px);
+}
+.login-box{
+  position:relative;z-index:2;
+  display:flex;flex-direction:column;align-items:center;
+  gap:1.4rem;
+  background:rgba(0,0,0,.85);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:14px;
+  padding:2.8rem 2.6rem 2.6rem;
+  width:min(420px,92vw);
+  box-shadow:0 28px 72px rgba(0,0,0,.9);
+  backdrop-filter:blur(24px);
+}
+.login-logo{display:flex;align-items:center;gap:.55rem;margin-bottom:.2rem}
+.login-logo img{height:44px;width:auto;filter:drop-shadow(0 2px 10px rgba(255,214,10,.3))}
+.login-logo-text{font-family:var(--display);font-size:2rem;letter-spacing:.06em;color:#fff}
+.login-logo-text .dim{color:var(--gold)}
+.login-title{font-size:1.32rem;font-weight:700;text-align:center;color:#fff}
+.login-sub{font-size:.86rem;color:#b3b3b3;text-align:center;line-height:1.5;max-width:300px}
+
+/* Wrapper du bouton Google officiel */
+#googleBtnWrap{
+  width:100%;
+  display:flex;justify-content:center;
+  min-height:44px;
+}
+/* Fallback si le SDK tarde */
+.login-google-fallback{
+  display:flex;align-items:center;justify-content:center;gap:.75rem;
+  width:100%;padding:.85rem 1.4rem;
+  background:#fff;color:#1f1f1f;
+  border-radius:6px;font-size:.95rem;font-weight:700;
+  cursor:pointer;border:none;
+  box-shadow:0 2px 10px rgba(0,0,0,.3);
+  transition:background .15s;
+}
+.login-google-fallback:hover{background:#f0f0f0}
+
+.login-error{
+  background:rgba(229,9,20,.15);border:1px solid rgba(229,9,20,.45);
+  color:#ff6b6b;font-size:.83rem;font-weight:600;
+  padding:.65rem 1rem;border-radius:6px;text-align:center;
+  width:100%;display:none;
+}
+.login-error.show{display:block}
+.login-loader{
+  display:none;flex-direction:column;align-items:center;gap:.75rem;
+  color:#b3b3b3;font-size:.85rem;width:100%;text-align:center;
+}
+.login-loader.show{display:flex}
+.login-spinner{
+  width:34px;height:34px;border-radius:50%;
+  border:3px solid rgba(255,255,255,.1);
+  border-top-color:var(--gold);
+  animation:spin .8s linear infinite;
+}
+.login-unauthorized{
+  text-align:center;display:none;flex-direction:column;align-items:center;gap:1rem;width:100%;
+}
+.login-unauthorized.show{display:flex}
+.login-unauth-icon{font-size:2.6rem}
+.login-unauth-title{font-size:1.1rem;font-weight:700;color:#fff}
+.login-unauth-msg{font-size:.85rem;color:#b3b3b3;line-height:1.5;max-width:280px}
+.login-unauth-email{
+  font-size:.78rem;color:#ffd60a;background:rgba(255,214,10,.1);
+  padding:.3rem .7rem;border-radius:20px;font-weight:600;
+}
+.login-unauth-retry{
+  margin-top:.5rem;padding:.6rem 1.4rem;border-radius:6px;
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+  color:#fff;font-size:.86rem;font-weight:600;cursor:pointer;
+  transition:background .2s;
+}
+.login-unauth-retry:hover{background:rgba(255,255,255,.2)}
+
+/* ── DEMO BAR ── */
+.demo-bar{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  z-index:200;background:rgba(0,0,0,.82);backdrop-filter:blur(20px);
+  color:#fff;padding:.4rem .9rem;border-radius:12px 12px 0 0;
+  font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;
+  display:flex;gap:1rem;align-items:center;
+  border:1px solid rgba(255,255,255,.12);border-bottom:none;
+}
+.demo-bar strong{color:var(--gold)}
+.demo-bar button{padding:.25rem .55rem;border:1px solid rgba(255,255,255,.2);border-radius:6px;background:rgba(255,255,255,.06);color:#fff;font-size:.63rem;cursor:pointer}
+.demo-bar button:hover{background:rgba(255,255,255,.14)}
+
+/* ── HEADER ── */
+.nfx-header{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  height:var(--nav-h);
+  display:flex;align-items:center;padding:0 var(--row-px);gap:1.5rem;
+  background:linear-gradient(180deg,rgba(0,0,0,.9) 0%,rgba(0,0,0,.5) 55%,transparent 100%);
+  transition:background .35s;
+}
+.nfx-header.scrolled{background:rgba(0,0,0,.96)}
+.nfx-logo{display:flex;align-items:center;gap:.6rem;flex-shrink:0;cursor:pointer}
+.nfx-logo img{height:40px;width:auto;display:block;filter:drop-shadow(0 2px 10px rgba(255,214,10,.25))}
+.nfx-logo-text{font-family:var(--display);font-size:1.65rem;letter-spacing:.06em;color:#fff;line-height:1}
 .nfx-logo-text .dim{color:var(--gold)}
-@media(max-width:600px){.nfx-logo img{height:34px}.nfx-logo-text{font-size:1.3rem}}
 .nfx-nav{display:flex;gap:1.4rem;list-style:none;font-size:.86rem;font-weight:500;color:#e5e5e5}
 .nfx-nav button{transition:color .2s}
-.nfx-nav button:hover{color:var(--text2)}
-.nfx-nav .active{font-weight:700;color:#fff}
-.nfx-header-right{margin-left:auto;display:flex;align-items:center;gap:1rem}
-.nfx-search-btn,.nfx-bell{width:32px;height:32px;display:flex;align-items:center;justify-content:center;color:#fff;border-radius:50%;transition:background .2s}
-.nfx-search-btn:hover,.nfx-bell:hover{background:rgba(255,255,255,.1)}
-.nfx-profile{width:32px;height:32px;border-radius:6px;background:linear-gradient(135deg,#ffd60a,#ff9500);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem;color:#000}
-
+.nfx-nav button:hover,.nfx-nav .active{color:#fff;font-weight:700}
+.nfx-header-right{margin-left:auto;display:flex;align-items:center;gap:.85rem}
+.nfx-icon-btn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;color:#fff;border-radius:50%;transition:background .2s}
+.nfx-icon-btn:hover{background:rgba(255,255,255,.1)}
+.nfx-profile{
+  width:32px;height:32px;border-radius:6px;
+  background:linear-gradient(135deg,#ffd60a,#ff9500);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:.78rem;color:#000;flex-shrink:0;
+  cursor:pointer;position:relative;
+}
+.nfx-profile-menu{
+  position:absolute;top:calc(100% + 8px);right:0;
+  background:#141414;border:1px solid rgba(255,255,255,.15);
+  border-radius:8px;min-width:200px;
+  box-shadow:0 16px 48px rgba(0,0,0,.8);
+  overflow:hidden;display:none;z-index:200;
+}
+.nfx-profile-menu.open{display:block}
+.nfx-profile-menu-header{padding:.75rem 1rem;border-bottom:1px solid rgba(255,255,255,.1);font-size:.8rem;color:#b3b3b3}
+.nfx-profile-menu-email{font-size:.75rem;color:var(--gold);font-weight:600;margin-top:.2rem;word-break:break-all}
+.nfx-profile-menu button{
+  width:100%;text-align:left;padding:.7rem 1rem;
+  font-size:.84rem;color:#fff;
+  transition:background .15s;display:flex;align-items:center;gap:.6rem;
+}
+.nfx-profile-menu button:hover{background:rgba(255,255,255,.08)}
+.nfx-logout-btn{color:#ff6b6b !important}
+.nfx-refresh-btn{
+  display:flex;align-items:center;gap:.38rem;
+  padding:.32rem .72rem;border-radius:20px;
+  border:1px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.06);
+  color:#fff;font-size:.72rem;font-weight:600;
+  cursor:pointer;transition:background .2s,border-color .2s;
+  white-space:nowrap;flex-shrink:0;
+}
+.nfx-refresh-btn:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.5)}
+.nfx-refresh-btn.loading{opacity:.6;pointer-events:none}
+.nfx-refresh-btn svg{transition:transform .6s}
+.nfx-refresh-btn.loading svg{animation:spinRefresh .8s linear infinite}
+@keyframes spinRefresh{to{transform:rotate(360deg)}}
 @media(max-width:840px){
   .nfx-nav{display:none}
-  .nfx-header{padding:0 1rem;height:56px}
-  :root{--nav-h:56px}
+  .nfx-header{padding:0 16px;height:52px}
+  :root{--nav-h:52px;--row-px:12px}
+  .nfx-logo img{height:32px}
+  .nfx-logo-text{font-size:1.35rem}
+  .nfx-refresh-btn span{display:none}
+  .nfx-refresh-btn{padding:.32rem .5rem;gap:0}
 }
 
-/* ── BILLBOARD HERO Netflix-exact ── */
-.nfx-billboard{position:relative;height:85vh;min-height:560px;width:100%;overflow:hidden;margin-bottom:-160px}
-.nfx-billboard-slide{position:absolute;inset:0;opacity:0;transition:opacity .9s ease;pointer-events:none}
+/* ── BILLBOARD ── */
+.nfx-billboard{position:relative;height:82vh;min-height:520px;width:100%;overflow:hidden;margin-bottom:-120px}
+@media(max-width:780px){.nfx-billboard{height:68vw;min-height:360px;max-height:520px;margin-bottom:0}}
+.nfx-billboard-slide{position:absolute;inset:0;opacity:0;transition:opacity .8s ease;pointer-events:none}
 .nfx-billboard-slide.active{opacity:1;pointer-events:auto}
-.nfx-billboard-bg{position:absolute;inset:0;background-size:cover;background-position:center top;will-change:transform;animation:bbZoom 20s ease-out forwards}
-.nfx-billboard-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .8s}
-.nfx-billboard-video.show{opacity:1}
+.nfx-billboard-bg{position:absolute;inset:0;background-size:cover;background-position:center top;animation:bbZoom 18s ease-out forwards}
 @keyframes bbZoom{from{transform:scale(1.04)}to{transform:scale(1)}}
-.nfx-billboard::after{content:'';position:absolute;inset:0;background:
-  linear-gradient(77deg,rgba(0,0,0,.78) 0%,rgba(0,0,0,.55) 28%,rgba(0,0,0,.18) 55%,transparent 80%),
-  linear-gradient(180deg,transparent 50%,rgba(0,0,0,.85) 100%);
-  pointer-events:none;z-index:2}
-.nfx-billboard-content{position:absolute;left:4%;bottom:22%;max-width:600px;z-index:3;color:#fff}
-.nfx-bb-tag{display:inline-flex;align-items:center;gap:.4rem;background:rgba(229,9,20,.92);color:#fff;font-size:.7rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase;padding:.32rem .65rem;border-radius:3px;margin-bottom:1rem}
-.nfx-bb-title{font-family:var(--display);font-size:clamp(2.6rem,6vw,5.2rem);line-height:.95;letter-spacing:.01em;margin-bottom:.85rem;text-shadow:0 2px 10px rgba(0,0,0,.7)}
-.nfx-bb-meta{display:flex;gap:.85rem;align-items:center;color:#dcdcdc;font-size:.85rem;font-weight:600;margin-bottom:1rem}
-.nfx-bb-meta .badge{padding:.18rem .5rem;border:1px solid rgba(255,255,255,.4);border-radius:3px;font-size:.7rem}
-.nfx-bb-desc{font-size:1.05rem;line-height:1.45;color:#e5e5e5;text-shadow:0 1px 4px rgba(0,0,0,.6);max-width:520px;margin-bottom:1.6rem;-webkit-line-clamp:3;-webkit-box-orient:vertical;display:-webkit-box;overflow:hidden}
-.nfx-bb-actions{display:flex;gap:.7rem;flex-wrap:wrap}
-.nfx-btn{display:inline-flex;align-items:center;gap:.5rem;padding:.7rem 1.55rem;border-radius:4px;font-weight:700;font-size:1rem;cursor:pointer;transition:opacity .15s,background .15s,transform .1s;border:none}
-.nfx-btn:active{transform:scale(.98)}
+.nfx-billboard::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:2;background:linear-gradient(77deg,rgba(0,0,0,.82) 0%,rgba(0,0,0,.58) 26%,rgba(0,0,0,.14) 52%,transparent 78%),linear-gradient(180deg,rgba(0,0,0,.2) 0%,transparent 38%,rgba(0,0,0,.9) 100%)}
+.nfx-billboard-content{position:absolute;left:var(--row-px);bottom:24%;max-width:580px;z-index:3}
+.nfx-bb-tag{display:inline-flex;align-items:center;gap:.35rem;background:rgba(229,9,20,.92);color:#fff;font-size:.68rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase;padding:.28rem .6rem;border-radius:3px;margin-bottom:.9rem}
+.nfx-bb-title{font-family:var(--display);font-size:clamp(2.4rem,5.5vw,5rem);line-height:.93;letter-spacing:.01em;margin-bottom:.8rem;text-shadow:0 2px 12px rgba(0,0,0,.75)}
+.nfx-bb-meta{display:flex;gap:.8rem;align-items:center;color:#dcdcdc;font-size:.84rem;font-weight:600;margin-bottom:.9rem}
+.nfx-bb-meta .badge{padding:.15rem .45rem;border:1px solid rgba(255,255,255,.4);border-radius:3px;font-size:.68rem}
+.nfx-bb-desc{font-size:.98rem;line-height:1.5;color:#e5e5e5;text-shadow:0 1px 4px rgba(0,0,0,.6);max-width:500px;margin-bottom:1.4rem;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.nfx-bb-actions{display:flex;gap:.6rem;flex-wrap:wrap}
+.nfx-btn{display:inline-flex;align-items:center;gap:.45rem;padding:.65rem 1.45rem;border-radius:4px;font-weight:700;font-size:.96rem;cursor:pointer;transition:opacity .15s,background .15s;border:none}
 .nfx-btn-play{background:#fff;color:#000}
-.nfx-btn-play:hover{background:rgba(255,255,255,.78)}
-.nfx-btn-info{background:rgba(109,109,110,.7);color:#fff}
-.nfx-btn-info:hover{background:rgba(109,109,110,.4)}
-.nfx-bb-mute{position:absolute;right:5%;bottom:32%;width:42px;height:42px;border-radius:50%;border:2px solid rgba(255,255,255,.6);background:transparent;color:#fff;display:flex;align-items:center;justify-content:center;z-index:4;transition:border-color .2s}
+.nfx-btn-play:hover{background:rgba(255,255,255,.8)}
+.nfx-btn-info{background:rgba(109,109,110,.68);color:#fff}
+.nfx-btn-info:hover{background:rgba(109,109,110,.42)}
+.nfx-bb-mute{position:absolute;right:5%;bottom:30%;width:40px;height:40px;border-radius:50%;border:2px solid rgba(255,255,255,.55);background:transparent;color:#fff;display:flex;align-items:center;justify-content:center;z-index:4;transition:border-color .2s}
 .nfx-bb-mute:hover{border-color:#fff}
-.nfx-bb-rating{position:absolute;right:0;bottom:32%;background:rgba(0,0,0,.6);border-left:3px solid rgba(255,255,255,.6);padding:.4rem 1.5rem .4rem .8rem;font-size:.95rem;font-weight:600;z-index:4;letter-spacing:.04em}
-.nfx-bb-dots{position:absolute;left:4%;bottom:11%;display:flex;gap:.4rem;z-index:4}
-.nfx-bb-dots button{width:14px;height:3px;border-radius:2px;background:rgba(255,255,255,.3);transition:background .2s,width .2s;border:none}
-.nfx-bb-dots button.active{background:#fff;width:24px}
+.nfx-bb-rating{position:absolute;right:0;bottom:30%;background:rgba(0,0,0,.6);border-left:3px solid rgba(255,255,255,.55);padding:.38rem 1.4rem .38rem .7rem;font-size:.9rem;font-weight:600;z-index:4}
+.nfx-bb-dots{position:absolute;left:var(--row-px);bottom:13%;display:flex;gap:.4rem;z-index:4}
+.nfx-bb-dots button{width:12px;height:3px;border-radius:2px;background:rgba(255,255,255,.28);border:none;transition:background .2s,width .2s}
+.nfx-bb-dots button.active{background:#fff;width:22px}
+@media(max-width:780px){.nfx-billboard-content{bottom:18%;left:16px;right:16px;max-width:none}.nfx-bb-desc{display:none}.nfx-bb-meta{display:none}.nfx-bb-mute,.nfx-bb-rating{display:none}.nfx-bb-actions .nfx-btn{font-size:.82rem;padding:.5rem .9rem}}
 
-@media(max-width:780px){
-  .nfx-billboard{height:72vh;min-height:480px;margin-bottom:-100px}
-  .nfx-billboard-content{bottom:24%;left:5%;right:5%;max-width:none}
-  .nfx-bb-desc{font-size:.92rem;-webkit-line-clamp:2}
-  .nfx-bb-mute{display:none}
-  .nfx-bb-rating{display:none}
-}
-
-/* ── ROWS Netflix ── */
-.nfx-rows{position:relative;z-index:5;padding-bottom:5rem}
-.nfx-row{margin-bottom:3vw;position:relative}
-.nfx-row-header{display:flex;align-items:center;justify-content:space-between;padding:0 4% .55rem;color:#e5e5e5}
-.nfx-row-title{font-size:1.4vw;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:.5rem;cursor:pointer;transition:color .2s}
+/* ── ROWS ── */
+.nfx-rows{position:relative;z-index:5;padding-bottom:4.5rem;padding-top:.8rem}
+@media(min-width:781px){.nfx-rows{padding-top:0}}
+.nfx-row{margin-bottom:var(--row-gap);position:relative}
+.nfx-row-header{display:flex;align-items:center;justify-content:space-between;padding:0 var(--row-px) .65rem}
+.nfx-row-title{font-size:1.05rem;font-weight:700;color:#e5e5e5;letter-spacing:-.01em;display:flex;align-items:center;gap:.45rem;cursor:pointer}
 .nfx-row-title:hover .nfx-row-explore{opacity:1;transform:translateX(0)}
-.nfx-row-explore{font-size:.78rem;font-weight:600;color:#54b9c5;letter-spacing:.04em;opacity:0;transform:translateX(-6px);transition:opacity .25s,transform .25s}
-@media(max-width:840px){
-  .nfx-row-title{font-size:1.1rem}
-  .nfx-row-explore{display:none}
-}
-
-.nfx-row-track{position:relative;padding:0 4%}
-.nfx-row-scroll{display:flex;gap:4px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;padding:60px 0;margin:-60px 0;-ms-overflow-style:none;scrollbar-width:none}
+.nfx-row-explore{font-size:.78rem;font-weight:600;color:#54b9c5;opacity:0;transform:translateX(-6px);transition:opacity .25s,transform .25s}
+@media(max-width:840px){.nfx-row-title{font-size:.92rem;font-weight:700}.nfx-row-explore{display:none}:root{--row-gap:1.8rem}}
+.nfx-row-seeall{display:none;font-size:.82rem;font-weight:600;color:#b3b3b3;align-items:center;gap:.2rem;white-space:nowrap}
+@media(max-width:840px){.nfx-row-seeall{display:flex}}
+.nfx-row-track{position:relative;padding:0 var(--row-px)}
+.nfx-row-scroll{display:flex;gap:8px;overflow-x:scroll;overflow-y:hidden;-webkit-overflow-scrolling:touch;-ms-overflow-style:none;scrollbar-width:none;will-change:scroll-position}
 .nfx-row-scroll::-webkit-scrollbar{display:none}
-.nfx-row-arrow{position:absolute;top:60px;bottom:60px;width:4%;display:flex;align-items:center;justify-content:center;background:rgba(20,20,20,.5);border:none;color:#fff;cursor:pointer;z-index:6;opacity:0;transition:opacity .2s,background .2s}
+@media(hover:hover){.nfx-row-scroll{overflow-y:visible;padding-top:72px;padding-bottom:48px;margin-top:-72px;margin-bottom:-48px;scroll-snap-type:x mandatory;scroll-behavior:smooth}.nfx-card{scroll-snap-align:start}}
+.nfx-row-arrow{position:absolute;top:0;bottom:0;width:4%;display:flex;align-items:center;justify-content:center;background:rgba(20,20,20,.5);border:none;color:#fff;cursor:pointer;z-index:6;opacity:0;transition:opacity .2s,background .2s}
 .nfx-row:hover .nfx-row-arrow{opacity:1}
-.nfx-row-arrow:hover{background:rgba(20,20,20,.85)}
+.nfx-row-arrow:hover{background:rgba(20,20,20,.88)}
 .nfx-row-arrow.left{left:0}
 .nfx-row-arrow.right{right:0}
-.nfx-row-arrow svg{transition:transform .2s}
-.nfx-row-arrow:hover svg{transform:scale(1.4)}
+.nfx-row-arrow svg{transition:transform .15s}
+.nfx-row-arrow:hover svg{transform:scale(1.35)}
 @media(hover:none){.nfx-row-arrow{display:none}}
-
-/* ── CARDS Netflix hover-expand ── */
-.nfx-card{flex:0 0 calc((100% - 16px)/5);scroll-snap-align:start;position:relative;border-radius:4px;overflow:visible;cursor:pointer;transition:transform .25s var(--ease)}
-@media(min-width:1400px){.nfx-card{flex-basis:calc((100% - 20px)/6)}}
-@media(max-width:1100px){.nfx-card{flex-basis:calc((100% - 12px)/4)}}
-@media(max-width:780px){.nfx-card{flex-basis:calc((100% - 8px)/3)}}
-@media(max-width:520px){.nfx-card{flex-basis:calc((100% - 4px)/2.3)}}
-
+.nfx-card{flex:0 0 calc((100% - 40px)/5);position:relative;border-radius:4px;cursor:pointer;transition:transform .3s var(--ease)}
+@media(min-width:1400px){.nfx-card{flex-basis:calc((100% - 48px)/6)}}
+@media(max-width:1100px){.nfx-card{flex-basis:calc((100% - 32px)/4)}}
+@media(max-width:780px){.nfx-card{flex-basis:calc((100% - 16px)/2.4)}.nfx-row-scroll{gap:7px}}
+@media(max-width:440px){.nfx-card{flex-basis:calc((100% - 10px)/2.1)}.nfx-row-scroll{gap:5px}}
 .nfx-card-img-wrap{position:relative;aspect-ratio:16/9;border-radius:4px;overflow:hidden;background:#181818}
-.nfx-card-img{width:100%;height:100%;object-fit:cover;transition:transform .3s;display:block}
-.nfx-card-progress{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.18)}
+.nfx-card-img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none}
+.nfx-card-progress{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.16)}
 .nfx-card-progress-fill{height:100%;background:#e50914}
-.nfx-card-badge-new{position:absolute;top:8px;right:8px;background:#e50914;color:#fff;font-size:.6rem;font-weight:800;letter-spacing:.06em;padding:.18rem .4rem;border-radius:3px;text-transform:uppercase;z-index:3}
-
-/* HOVER expand: only desktop hover devices */
+.nfx-card-badge-new{position:absolute;top:6px;right:6px;background:#e50914;color:#fff;font-size:.58rem;font-weight:800;letter-spacing:.06em;padding:.15rem .38rem;border-radius:3px;text-transform:uppercase;z-index:3}
+.nfx-card-label{display:none;padding:.42rem .1rem 0;font-size:.75rem;font-weight:600;color:#d0d0d0;height:2rem;line-height:1.25rem;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+@media(max-width:840px){.nfx-card-label{display:block}}
+.nfx-card-expand{display:none}
 @media(hover:hover){
-  .nfx-card{transition:transform .35s var(--ease) .1s}
-  .nfx-card:hover{transform:scale(1.4) translateY(-12%);z-index:30;transition-delay:.45s}
-  /* Adjust edge cards so they don't get clipped */
-  .nfx-row-scroll>.nfx-card:first-child:hover{transform:scale(1.4) translate(13%,-12%)}
-  .nfx-row-scroll>.nfx-card:last-child:hover{transform:scale(1.4) translate(-13%,-12%)}
+  .nfx-card-expand{display:block;position:absolute;left:0;right:0;top:0;background:#181818;border-radius:6px;box-shadow:0 20px 55px rgba(0,0,0,.88);opacity:0;pointer-events:none;transform:translateY(-4px);transition:opacity .22s,transform .22s;overflow:hidden;z-index:20}
+  .nfx-card:hover{transform:scale(1.36) translateY(-13%);z-index:30;transition:transform .3s var(--ease) .38s}
+  .nfx-row-scroll>.nfx-card:first-child:hover{transform:scale(1.36) translate(11%,-13%)}
+  .nfx-row-scroll>.nfx-card:last-child:hover{transform:scale(1.36) translate(-11%,-13%)}
+  .nfx-card:hover .nfx-card-expand{opacity:1;pointer-events:auto;transform:translateY(0);transition-delay:.38s}
 }
-.nfx-card-expand{position:absolute;left:0;right:0;top:0;background:#181818;border-radius:6px;box-shadow:0 24px 60px rgba(0,0,0,.85);opacity:0;pointer-events:none;transform:translateY(-6px);transition:opacity .3s,transform .3s;overflow:hidden;z-index:20}
+@media(hover:none){.nfx-card,.nfx-top10 .nfx-card{transform:none !important}}
 .nfx-card-expand-img{position:relative;aspect-ratio:16/9;overflow:hidden}
-.nfx-card-expand-img img,.nfx-card-expand-img video{width:100%;height:100%;object-fit:cover;display:block}
-.nfx-card-expand-img::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,#181818 100%)}
-.nfx-card-expand-body{padding:.85rem 1rem 1rem}
-.nfx-card-expand-actions{display:flex;align-items:center;gap:.4rem;margin-bottom:.7rem}
-.nfx-action-btn{width:36px;height:36px;border-radius:50%;border:2px solid rgba(255,255,255,.5);background:rgba(0,0,0,.3);color:#fff;display:flex;align-items:center;justify-content:center;transition:border-color .15s,background .15s}
+.nfx-card-expand-img img{width:100%;height:100%;object-fit:cover;display:block}
+.nfx-card-expand-img::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 58%,#181818 100%)}
+.nfx-card-expand-body{padding:.8rem .95rem .95rem}
+.nfx-card-expand-actions{display:flex;align-items:center;gap:.38rem;margin-bottom:.65rem}
+.nfx-action-btn{width:34px;height:34px;border-radius:50%;border:2px solid rgba(255,255,255,.45);background:rgba(0,0,0,.3);color:#fff;display:flex;align-items:center;justify-content:center;transition:border-color .15s,background .15s;cursor:pointer}
 .nfx-action-btn:hover{border-color:#fff;background:rgba(255,255,255,.1)}
 .nfx-action-btn.primary{background:#fff;color:#000;border-color:#fff}
-.nfx-action-btn.primary:hover{background:rgba(255,255,255,.78)}
+.nfx-action-btn.primary:hover{background:rgba(255,255,255,.8)}
 .nfx-action-btn.right{margin-left:auto}
-.nfx-card-expand-meta{display:flex;gap:.55rem;align-items:center;font-size:.75rem;color:#dcdcdc;margin-bottom:.35rem}
+.nfx-card-expand-meta{display:flex;gap:.5rem;align-items:center;font-size:.73rem;color:#dcdcdc;margin-bottom:.3rem}
 .nfx-card-expand-meta .match{color:#46d369;font-weight:700}
-.nfx-card-expand-meta .badge{padding:.04rem .35rem;border:1px solid rgba(255,255,255,.4);border-radius:2px;font-size:.62rem}
-.nfx-card-expand-title{font-size:.95rem;font-weight:700;color:#fff;margin-bottom:.3rem}
-.nfx-card-expand-tags{display:flex;gap:.35rem;flex-wrap:wrap;font-size:.7rem;color:#dcdcdc}
-.nfx-card-expand-tags .dot{color:#646464}
-
-/* ── TOP 10 row ── */
-.nfx-top10 .nfx-row-scroll{padding:80px 0 60px;gap:8px}
-.nfx-top10 .nfx-card{flex:0 0 calc((100% - 24px)/4);display:grid;grid-template-columns:42% 58%;align-items:end;overflow:visible;background:transparent}
-@media(min-width:1400px){.nfx-top10 .nfx-card{flex-basis:calc((100% - 40px)/6)}}
-@media(max-width:1100px){.nfx-top10 .nfx-card{flex-basis:calc((100% - 16px)/3)}}
-@media(max-width:780px){.nfx-top10 .nfx-card{flex-basis:calc((100% - 8px)/2.3);grid-template-columns:38% 62%}}
-.nfx-top10 .nfx-card-img-wrap{aspect-ratio:16/9;width:100%;border-radius:4px;overflow:hidden;background:#181818}
-.nfx-top10-num{font-family:var(--display);font-size:11vw;line-height:.78;color:#000;-webkit-text-stroke:3px #5a5a5a;letter-spacing:-.06em;font-weight:900;pointer-events:none;user-select:none;text-align:center;align-self:end;justify-self:center;padding-bottom:0;margin-right:-12%;position:relative;z-index:1}
-@media(min-width:1400px){.nfx-top10-num{font-size:9vw}}
-@media(max-width:780px){.nfx-top10-num{font-size:16vw;-webkit-text-stroke:2px #5a5a5a;margin-right:-15%}}
-@media(hover:hover){.nfx-top10 .nfx-card:hover{transform:scale(1.18) translateY(-6%);z-index:30}}
-.nfx-top10 .nfx-card .nfx-card-expand{display:none}
-
-/* ── SPLASH "TUDUM"-like ── */
-.nfx-splash{position:fixed;inset:0;background:#000;z-index:9999;display:flex;align-items:center;justify-content:center;transition:opacity .8s,visibility .8s;flex-direction:column}
+.nfx-card-expand-meta .badge{padding:.03rem .32rem;border:1px solid rgba(255,255,255,.38);border-radius:2px;font-size:.6rem}
+.nfx-card-expand-title{font-size:.9rem;font-weight:700;color:#fff;margin-bottom:.28rem}
+.nfx-card-expand-tags{display:flex;gap:.32rem;flex-wrap:wrap;font-size:.68rem;color:#dcdcdc}
+.nfx-top10 .nfx-row-scroll{gap:10px}
+.nfx-top10 .nfx-card{flex:0 0 calc((100% - 32px)/4);display:grid;grid-template-columns:42% 58%;align-items:end;background:transparent}
+@media(min-width:1400px){.nfx-top10 .nfx-card{flex-basis:calc((100% - 48px)/6)}}
+@media(max-width:1100px){.nfx-top10 .nfx-card{flex-basis:calc((100% - 24px)/3)}}
+@media(max-width:780px){.nfx-top10 .nfx-card{flex-basis:calc((100% - 20px)/2.2);grid-template-columns:36% 64%}}
+.nfx-top10 .nfx-card-img-wrap{aspect-ratio:2/3;width:100%;border-radius:4px;overflow:hidden;background:#181818}
+.nfx-top10-num{font-family:var(--display);font-size:10.5vw;line-height:.8;color:#000;-webkit-text-stroke:3px #5a5a5a;letter-spacing:-.06em;font-weight:900;pointer-events:none;user-select:none;text-align:center;align-self:end;justify-self:center;margin-right:-14%;position:relative;z-index:1}
+@media(min-width:1400px){.nfx-top10-num{font-size:8.5vw}}
+@media(max-width:780px){.nfx-top10-num{font-size:15vw;-webkit-text-stroke:2px #5a5a5a;margin-right:-16%}}
+@media(hover:hover){.nfx-top10 .nfx-card:hover{transform:scale(1.15) translateY(-5%);z-index:30;transition-delay:.38s}}
+.nfx-top10 .nfx-card-label{display:none !important}
+.nfx-splash{position:fixed;inset:0;background:#000;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;transition:opacity .8s,visibility .8s}
 .nfx-splash.hide{opacity:0;visibility:hidden;pointer-events:none}
-.nfx-splash-logo{display:flex;align-items:center;justify-content:center;gap:0;animation:tudumPop 1.4s var(--spring) forwards}
-.nfx-splash-letter{font-family:var(--display);font-size:14vw;color:var(--gold);text-shadow:0 0 40px rgba(255,214,10,.65);opacity:0;animation:tudumLetter 1.6s var(--spring) forwards}
-.nfx-splash-letter:nth-child(1){animation-delay:.1s}
-.nfx-splash-letter:nth-child(2){animation-delay:.2s}
-.nfx-splash-letter:nth-child(3){animation-delay:.3s}
-.nfx-splash-letter:nth-child(4){animation-delay:.4s}
-.nfx-splash-letter:nth-child(5){animation-delay:.5s}
-.nfx-splash-letter:nth-child(6){animation-delay:.6s}
-.nfx-splash-letter:nth-child(7){animation-delay:.7s}
-.nfx-splash-letter:nth-child(8){animation-delay:.75s;color:#fff;font-size:8vw;align-self:flex-start;margin-left:.3rem;text-shadow:0 0 20px rgba(255,255,255,.4)}
-.nfx-splash-bar{width:0;max-width:340px;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin-top:1.2rem;animation:tudumBar 1.4s ease-out .8s forwards;box-shadow:0 0 20px rgba(255,214,10,.7)}
-@keyframes tudumLetter{0%{opacity:0;transform:translateY(28px) scale(.6);filter:blur(6px)}60%{opacity:1;transform:translateY(0) scale(1.06);filter:blur(0)}100%{opacity:1;transform:translateY(0) scale(1)}}
-@keyframes tudumPop{0%,80%{transform:scale(1)}90%{transform:scale(1.04)}100%{transform:scale(1)}}
-@keyframes tudumBar{0%{width:0}50%{width:280px}100%{width:0}}
-
-/* ── DEMO BAR (preview only) ── */
-.demo-bar{position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:200;background:rgba(0,0,0,.85);backdrop-filter:blur(20px);color:#fff;padding:.4rem .9rem;border-radius:0 0 12px 12px;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;display:flex;gap:1rem;align-items:center;border:1px solid rgba(255,255,255,.15);border-top:none}
-.demo-bar strong{color:var(--gold)}
-.demo-bar button{padding:.25rem .55rem;border:1px solid rgba(255,255,255,.2);border-radius:6px;background:rgba(255,255,255,.06);color:#fff;font-size:.65rem;letter-spacing:.05em;cursor:pointer}
-.demo-bar button:hover{background:rgba(255,255,255,.14)}
-@media(max-width:600px){.demo-bar{font-size:.6rem;padding:.3rem .55rem}}
-
-/* ── ROUTE GRID (Documentaires/Concerts/Séries listing) ── */
-.nfx-route-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem 1rem;padding:0 4% 4rem}
-@media(max-width:780px){.nfx-route-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.7rem}}
-@media(max-width:480px){.nfx-route-grid{grid-template-columns:repeat(2,1fr);gap:.6rem}}
-
-.nfx-file-card{position:relative;border-radius:6px;overflow:hidden;cursor:pointer;background:#181818;transition:transform .2s var(--ease),box-shadow .2s}
-.nfx-file-card:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 16px 36px rgba(0,0,0,.6)}
-.nfx-file-card:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.nfx-splash-logo{display:flex;align-items:center;justify-content:center}
+.nfx-splash-letter{font-family:var(--display);font-size:13vw;color:var(--gold);text-shadow:0 0 40px rgba(255,214,10,.65);opacity:0;animation:tudumLetter 1.5s var(--spring) forwards}
+.nfx-splash-letter:nth-child(1){animation-delay:.1s}.nfx-splash-letter:nth-child(2){animation-delay:.2s}.nfx-splash-letter:nth-child(3){animation-delay:.3s}.nfx-splash-letter:nth-child(4){animation-delay:.4s}.nfx-splash-letter:nth-child(5){animation-delay:.5s}.nfx-splash-letter:nth-child(6){animation-delay:.6s}.nfx-splash-letter:nth-child(7){animation-delay:.68s}
+.nfx-splash-letter:nth-child(8){animation-delay:.74s;color:#fff;font-size:7.5vw;align-self:flex-start;margin-left:.3rem;text-shadow:0 0 18px rgba(255,255,255,.4)}
+.nfx-splash-bar{width:0;max-width:320px;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin-top:1.1rem;animation:tudumBar 1.3s ease-out .8s forwards;box-shadow:0 0 18px rgba(255,214,10,.7)}
+@keyframes tudumLetter{0%{opacity:0;transform:translateY(26px) scale(.6);filter:blur(6px)}60%{opacity:1;transform:translateY(0) scale(1.05);filter:blur(0)}100%{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes tudumBar{0%{width:0}50%{width:260px}100%{width:0}}
+.nfx-route-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1.1rem;padding:0 var(--row-px) 4rem}
+@media(max-width:780px){.nfx-route-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.7rem}}
+@media(max-width:440px){.nfx-route-grid{grid-template-columns:repeat(2,1fr);gap:.5rem}}
+.nfx-file-card{position:relative;border-radius:5px;overflow:hidden;cursor:pointer;background:#181818;transition:transform .2s var(--ease),box-shadow .2s}
+.nfx-file-card:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 14px 32px rgba(0,0,0,.65)}
 .nfx-file-thumb{position:relative;aspect-ratio:16/9;overflow:hidden;background:#0a0a0a}
-.nfx-file-thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s ease}
+.nfx-file-thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s ease}
 .nfx-file-card:hover .nfx-file-thumb img{transform:scale(1.05)}
-.nfx-file-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,.55) 100%);pointer-events:none}
-.nfx-file-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:46px;height:46px;border-radius:50%;background:rgba(229,9,20,.92);color:#fff;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s,transform .2s;box-shadow:0 6px 18px rgba(0,0,0,.5)}
-.nfx-file-card:hover .nfx-file-play{opacity:1;transform:translate(-50%,-50%) scale(1)}
-@media(hover:none){.nfx-file-play{opacity:.85}}
-.nfx-file-dur{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.78);color:#fff;font-size:.7rem;font-weight:600;padding:.18rem .4rem;border-radius:3px;letter-spacing:.02em}
-.nfx-file-body{padding:.7rem .85rem .85rem}
-.nfx-file-title{font-size:.88rem;font-weight:600;color:#fff;line-height:1.3;margin-bottom:.25rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.nfx-file-meta{font-size:.74rem;color:#b3b3b3;font-weight:500}
-
-/* Route sections hidden by default */
-.nfx-route{display:none;padding-top:calc(var(--nav-h) + 2rem)}
+.nfx-file-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 48%,rgba(0,0,0,.5) 100%);pointer-events:none}
+.nfx-file-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:44px;height:44px;border-radius:50%;background:rgba(229,9,20,.9);color:#fff;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;box-shadow:0 6px 16px rgba(0,0,0,.5)}
+.nfx-file-card:hover .nfx-file-play{opacity:1}
+@media(hover:none){.nfx-file-play{opacity:.8}}
+.nfx-file-body{padding:.6rem .8rem .8rem}
+.nfx-file-title{font-size:.84rem;font-weight:600;color:#fff;line-height:1.3;margin-bottom:.2rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.nfx-file-meta{font-size:.72rem;color:#b3b3b3}
+.nfx-route{display:none;padding-top:calc(var(--nav-h) + 1.6rem)}
 .nfx-route.active{display:block}
-
-@media (prefers-reduced-motion: reduce){
-  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
-}
+.nfx-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:30vh;gap:.9rem;color:#b3b3b3}
+.nfx-loading-spinner{width:36px;height:36px;border-radius:50%;border:3px solid rgba(255,255,255,.1);border-top-color:var(--gold);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.nfx-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:40vh;gap:.9rem;color:#b3b3b3;text-align:center;padding:2rem}
+.nfx-empty svg{opacity:.25}
+.nfx-empty h2{font-size:1.3rem;font-weight:700;color:#fff}
+.nfx-empty p{font-size:.9rem;max-width:340px;line-height:1.5}
+.nfx-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:opacity .28s,visibility .28s;backdrop-filter:blur(8px)}
+.nfx-modal-overlay.open{opacity:1;visibility:visible}
+.nfx-modal{background:#141414;border-radius:8px;width:min(860px,96vw);max-height:92vh;overflow-y:auto;position:relative;box-shadow:0 28px 72px rgba(0,0,0,.92)}
+.nfx-modal-close{position:absolute;top:10px;right:10px;z-index:10;width:36px;height:36px;border-radius:50%;background:rgba(20,20,20,.92);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.nfx-modal-close:hover{background:#333}
+.nfx-modal-hero{position:relative;aspect-ratio:16/9;background:#000;overflow:hidden}
+.nfx-modal-hero iframe{width:100%;height:100%;border:none;display:block}
+.nfx-modal-hero img{width:100%;height:100%;object-fit:cover;display:block}
+.nfx-modal-hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 38%,#141414 100%)}
+.nfx-modal-hero-play{position:absolute;bottom:1.2rem;left:1.2rem;display:flex;gap:.65rem;flex-wrap:wrap}
+.nfx-modal-body{padding:1.1rem 1.5rem 1.8rem}
+.nfx-modal-title{font-family:var(--display);font-size:clamp(1.3rem,3vw,2rem);margin-bottom:.45rem}
+.nfx-modal-meta{display:flex;gap:.65rem;align-items:center;font-size:.83rem;color:#dcdcdc;margin-bottom:.9rem;flex-wrap:wrap}
+.nfx-modal-meta .match{color:#46d369;font-weight:700}
+.nfx-modal-meta .badge{padding:.16rem .42rem;border:1px solid rgba(255,255,255,.32);border-radius:3px;font-size:.7rem}
+.nfx-modal-desc{font-size:.94rem;line-height:1.52;color:#e5e5e5;margin-bottom:1.1rem}
+.nfx-modal-add{display:inline-flex;align-items:center;gap:.45rem;padding:.52rem 1.1rem;border:2px solid rgba(255,255,255,.32);border-radius:4px;font-size:.86rem;font-weight:600;cursor:pointer;transition:border-color .2s,background .2s;color:#fff;background:transparent}
+.nfx-modal-add:hover{border-color:#fff;background:rgba(255,255,255,.07)}
+.nfx-modal-add.in-list{border-color:var(--gold);color:var(--gold)}
+.nfx-toast{position:fixed;bottom:4.2rem;left:50%;transform:translateX(-50%) translateY(18px);background:#fff;color:#000;padding:.55rem 1.1rem;border-radius:6px;font-weight:700;font-size:.83rem;opacity:0;transition:opacity .28s,transform .28s;pointer-events:none;z-index:600;white-space:nowrap}
+.nfx-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.nfx-mylist-badge{display:none;position:absolute;top:7px;left:7px;width:24px;height:24px;border-radius:50%;background:var(--gold);color:#000;font-size:.62rem;font-weight:800;align-items:center;justify-content:center;z-index:4}
+.in-mylist .nfx-mylist-badge{display:flex}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}}
 </style>
 </head>
 <body>
 
+<!-- ── LOGIN SCREEN ── -->
+<div id="loginScreen">
+  <div class="login-bg"></div>
+  <div class="login-box">
+    <div class="login-logo">
+      <picture>
+        <source type="image/webp" srcset="images/logo-alune.webp">
+        <img src="images/logo-alune.webp" alt="LFIAGtube" onerror="this.style.display='none'">
+      </picture>
+      <span class="login-logo-text">LFIAG<span class="dim">tube</span></span>
+    </div>
+    <div class="login-title">Connexion requise</div>
+    <div class="login-sub">Connectez-vous avec votre compte Google pour accéder à la bibliothèque vidéo.</div>
+
+    <!-- Bouton Google officiel rendu par le SDK (remplace notre bouton custom) -->
+    <div id="googleBtnWrap"></div>
+
+    <div class="login-error" id="loginError"></div>
+
+    <!-- État : chargement vérification -->
+    <div class="login-loader" id="loginLoader">
+      <div class="login-spinner"></div>
+      <span id="loginLoaderMsg">Vérification de l'accès…</span>
+    </div>
+
+    <!-- État : accès refusé -->
+    <div class="login-unauthorized" id="loginUnauth">
+      <div class="login-unauth-icon">🚫</div>
+      <div class="login-unauth-title">Accès non autorisé</div>
+      <div class="login-unauth-msg">Votre compte n'est pas dans la liste des membres autorisés.</div>
+      <div class="login-unauth-email" id="loginUnauthEmail"></div>
+      <button class="login-unauth-retry" id="loginRetryBtn" type="button">Essayer avec un autre compte</button>
+    </div>
+  </div>
+</div>
+
 <!-- DEMO BAR -->
 <div class="demo-bar">
-  <span><strong>Preview Phase 1</strong> · LFIAGtube → Netflix</span>
+  <span><strong>Preview Phase 1</strong> · LFIAGtube</span>
   <button id="replaySplashBtn" type="button">Replay Splash</button>
 </div>
 
-<!-- SPLASH TUDUM-like -->
+<!-- SPLASH -->
 <div class="nfx-splash" id="nfxSplash">
   <div class="nfx-splash-logo">
-    <span class="nfx-splash-letter">L</span>
-    <span class="nfx-splash-letter">F</span>
-    <span class="nfx-splash-letter">I</span>
-    <span class="nfx-splash-letter">A</span>
-    <span class="nfx-splash-letter">G</span>
-    <span class="nfx-splash-letter">t</span>
-    <span class="nfx-splash-letter">u</span>
-    <span class="nfx-splash-letter">b</span>
-    <span class="nfx-splash-letter">e</span>
+    <span class="nfx-splash-letter">L</span><span class="nfx-splash-letter">F</span><span class="nfx-splash-letter">I</span><span class="nfx-splash-letter">A</span><span class="nfx-splash-letter">G</span><span class="nfx-splash-letter">t</span><span class="nfx-splash-letter">u</span><span class="nfx-splash-letter">b</span><span class="nfx-splash-letter">e</span>
   </div>
   <div class="nfx-splash-bar"></div>
 </div>
 
+<div class="nfx-toast" id="nfxToast"></div>
+
+<!-- MODAL -->
+<div class="nfx-modal-overlay" id="nfxModal" role="dialog" aria-modal="true" aria-label="Détails">
+  <div class="nfx-modal">
+    <button class="nfx-modal-close" id="nfxModalClose" aria-label="Fermer">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="nfx-modal-hero" id="nfxModalHero">
+      <img id="nfxModalImg" src="" alt="">
+      <div class="nfx-modal-hero-overlay" id="nfxModalOverlay"></div>
+      <div class="nfx-modal-hero-play" id="nfxModalHeroPlay">
+        <button class="nfx-btn nfx-btn-play" id="nfxModalPlay">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>Lecture
+        </button>
+      </div>
+    </div>
+    <div class="nfx-modal-body">
+      <div class="nfx-modal-title" id="nfxModalTitle"></div>
+      <div class="nfx-modal-meta" id="nfxModalMeta"></div>
+      <div class="nfx-modal-desc" id="nfxModalDesc"></div>
+      <button class="nfx-modal-add" id="nfxModalAdd">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span id="nfxModalAddLabel">Ajouter à ma liste</span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- HEADER -->
 <header class="nfx-header" id="nfxHeader">
-  <a class="nfx-logo" href="#" data-route="home" aria-label="LFIAGtube accueil">
+  <a class="nfx-logo" href="#" data-route="home" aria-label="LFIAGtube">
     <picture>
       <source type="image/webp" srcset="images/logo-alune.webp">
-      <img src="images/logo-alune.webp" alt="LFIAGtube" id="nfxLogoImg" onerror="this.style.display='none'">
+      <img src="images/logo-alune.webp" alt="LFIAGtube" onerror="this.style.display='none'">
     </picture>
     <span class="nfx-logo-text">LFIAG<span class="dim">tube</span></span>
   </a>
-  <ul class="nfx-nav" id="nfxNav">
+  <ul class="nfx-nav">
     <li><button class="active" data-route="home">Accueil</button></li>
-    <li><button data-route="series">Séries</button></li>
+    <li><button data-route="series">Séries &amp; Émissions</button></li>
     <li><button data-route="docs">Documentaires</button></li>
     <li><button data-route="concerts">Concerts</button></li>
     <li><button data-route="mylist">Ma liste</button></li>
   </ul>
   <div class="nfx-header-right">
-    <button class="nfx-search-btn" aria-label="Rechercher">
+    <button class="nfx-refresh-btn" id="nfxRefreshBtn" aria-label="Mettre à jour le catalogue">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      <span>Mettre à jour</span>
+    </button>
+    <button class="nfx-icon-btn" aria-label="Rechercher">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
     </button>
-    <button class="nfx-bell" aria-label="Notifications">
+    <button class="nfx-icon-btn" aria-label="Notifications">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
     </button>
-    <div class="nfx-profile">N</div>
+    <div class="nfx-profile" id="nfxProfile">
+      <span id="nfxProfileInitial">N</span>
+      <div class="nfx-profile-menu" id="nfxProfileMenu">
+        <div class="nfx-profile-menu-header">
+          <div id="nfxProfileName" style="font-weight:600;color:#fff"></div>
+          <div class="nfx-profile-menu-email" id="nfxProfileEmail"></div>
+        </div>
+        <button id="nfxLogoutBtn" class="nfx-logout-btn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Se déconnecter
+        </button>
+      </div>
+    </div>
   </div>
 </header>
 
-<!-- HOME VIEW -->
+<!-- HOME -->
 <div id="view-home" class="nfx-route active">
-
-<!-- BILLBOARD -->
 <section class="nfx-billboard" id="nfxBillboard">
-  <!-- Slide 1: The Voice 2026 -->
   <div class="nfx-billboard-slide active" data-slide="0">
     <div class="nfx-billboard-bg" style="background-image:url('images/categories-v2/The_Voice_2026.webp')"></div>
-    <video class="nfx-billboard-video" muted loop playsinline preload="metadata" data-src="images/alune-thevoice-preview.mp4"></video>
     <div class="nfx-billboard-content">
       <div class="nfx-bb-tag">★ Top 1 LFIAGtube · Cette semaine</div>
       <h1 class="nfx-bb-title">The Voice 2026</h1>
-      <div class="nfx-bb-meta">
-        <span class="match" style="color:#46d369;font-weight:700">98% Recommandé</span>
-        <span>2026</span>
-        <span class="badge">TF1</span>
-        <span>Saison en cours</span>
-      </div>
-      <p class="nfx-bb-desc">Lara Fabian sublime la nouvelle saison de The Voice. Diffusion tous les samedis à 21h10 sur TF1, disponible sur LFIAGtube le lundi. La plus belle voix.</p>
+      <div class="nfx-bb-meta"><span style="color:#46d369;font-weight:700">98% Recommandé</span><span>2026</span><span class="badge">TF1</span></div>
+      <p class="nfx-bb-desc">Lara Fabian sublime la nouvelle saison de The Voice. Diffusion tous les samedis à 21h10 sur TF1.</p>
       <div class="nfx-bb-actions">
-        <button class="nfx-btn nfx-btn-play">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Lecture
-        </button>
-        <button class="nfx-btn nfx-btn-info">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-          Plus d'infos
-        </button>
+        <button class="nfx-btn nfx-btn-play" data-action="play" data-idx="0"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>Lecture</button>
+        <button class="nfx-btn nfx-btn-info" data-action="info" data-idx="0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Plus d'infos</button>
       </div>
     </div>
-    <button class="nfx-bb-mute" data-mute="1" aria-label="Activer le son">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
-    </button>
+    <button class="nfx-bb-mute" aria-label="Son"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></button>
     <div class="nfx-bb-rating">TV-G</div>
   </div>
-
-  <!-- Slide 2: L'Effet Lara 2026 -->
   <div class="nfx-billboard-slide" data-slide="1">
     <div class="nfx-billboard-bg" style="background-image:url('images/categories-v2/LEffet_Lara_-_2026.webp')"></div>
-    <video class="nfx-billboard-video" muted loop playsinline preload="metadata" data-src="images/alune-effetlara-preview.mp4"></video>
     <div class="nfx-billboard-content">
       <div class="nfx-bb-tag">✦ Nouveauté 2026</div>
       <h1 class="nfx-bb-title">L'Effet Lara</h1>
-      <div class="nfx-bb-meta">
-        <span class="match" style="color:#46d369;font-weight:700">95% Recommandé</span>
-        <span>2026</span>
-        <span class="badge">TVA</span>
-        <span>Saison 1</span>
-      </div>
-      <p class="nfx-bb-desc">Lara Fabian au cœur d'une nouvelle aventure musicale. Diffusion dès le dimanche 12 avril sur TVA, disponible sur LFIAGtube les lundis.</p>
+      <div class="nfx-bb-meta"><span style="color:#46d369;font-weight:700">95% Recommandé</span><span>2026</span><span class="badge">TVA</span></div>
+      <p class="nfx-bb-desc">Lara Fabian au cœur d'une nouvelle aventure musicale sur TVA.</p>
       <div class="nfx-bb-actions">
-        <button class="nfx-btn nfx-btn-play">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Lecture
-        </button>
-        <button class="nfx-btn nfx-btn-info">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-          Plus d'infos
-        </button>
+        <button class="nfx-btn nfx-btn-play" data-action="play" data-idx="1"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>Lecture</button>
+        <button class="nfx-btn nfx-btn-info" data-action="info" data-idx="1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Plus d'infos</button>
       </div>
     </div>
-    <button class="nfx-bb-mute" data-mute="1" aria-label="Activer le son">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
-    </button>
     <div class="nfx-bb-rating">TV-G</div>
   </div>
-
-  <!-- Slide 3: Star Académie 2025 -->
   <div class="nfx-billboard-slide" data-slide="2">
     <div class="nfx-billboard-bg" style="background-image:url('images/categories-v2/Star_Acadmie_2025.webp')"></div>
     <div class="nfx-billboard-content">
-      <div class="nfx-bb-tag">⚡ Phénomène</div>
+      <div class="nfx-bb-tag">⚡ Phénomène québécois</div>
       <h1 class="nfx-bb-title">Star Académie 2025</h1>
-      <div class="nfx-bb-meta">
-        <span class="match" style="color:#46d369;font-weight:700">97% Recommandé</span>
-        <span>2025</span>
-        <span class="badge">TVA</span>
-        <span>Édition complète</span>
-      </div>
-      <p class="nfx-bb-desc">Revivez la 7e Académie québécoise avec Lara Fabian au piano. Tous les épisodes, performances et coulisses, en exclu sur LFIAGtube.</p>
+      <div class="nfx-bb-meta"><span style="color:#46d369;font-weight:700">97% Recommandé</span><span>2025</span><span class="badge">TVA</span></div>
+      <p class="nfx-bb-desc">Revivez la 7e Académie québécoise avec Lara Fabian au piano.</p>
       <div class="nfx-bb-actions">
-        <button class="nfx-btn nfx-btn-play">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Lecture
-        </button>
-        <button class="nfx-btn nfx-btn-info">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-          Plus d'infos
-        </button>
+        <button class="nfx-btn nfx-btn-play" data-action="play" data-idx="2"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>Lecture</button>
+        <button class="nfx-btn nfx-btn-info" data-action="info" data-idx="2"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Plus d'infos</button>
       </div>
     </div>
     <div class="nfx-bb-rating">TV-G</div>
   </div>
-
-  <!-- DOTS -->
   <div class="nfx-bb-dots" id="nfxBbDots">
-    <button class="active" data-dot="0" aria-label="Diapositive 1"></button>
-    <button data-dot="1" aria-label="Diapositive 2"></button>
-    <button data-dot="2" aria-label="Diapositive 3"></button>
+    <button class="active" data-dot="0" aria-label="Slide 1"></button>
+    <button data-dot="1" aria-label="Slide 2"></button>
+    <button data-dot="2" aria-label="Slide 3"></button>
   </div>
 </section>
-
-<!-- ROWS -->
-<div class="nfx-rows">
-
-  <!-- ROW: Top 10 -->
-  <section class="nfx-row nfx-top10">
-    <div class="nfx-row-header">
-      <h3 class="nfx-row-title">Top 10 LFIAGtube · Cette semaine <span class="nfx-row-explore">Tout explorer ›</span></h3>
-    </div>
-    <div class="nfx-row-track">
-      <button class="nfx-row-arrow left" aria-label="Précédent"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <div class="nfx-row-scroll" id="rowTop10"></div>
-      <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
-    </div>
-  </section>
-
-  <!-- ROW: Continuer à regarder -->
-  <section class="nfx-row" data-row="continue">
-    <div class="nfx-row-header"><h3 class="nfx-row-title">Continuer à regarder <span class="nfx-row-explore">Tout explorer ›</span></h3></div>
-    <div class="nfx-row-track">
-      <button class="nfx-row-arrow left" aria-label="Précédent"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <div class="nfx-row-scroll" id="rowContinue"></div>
-      <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
-    </div>
-  </section>
-
-  <!-- ROW: Nouveautés Lara -->
-  <section class="nfx-row" data-row="new">
-    <div class="nfx-row-header"><h3 class="nfx-row-title">Nouveautés Lara <span class="nfx-row-explore">Tout explorer ›</span></h3></div>
-    <div class="nfx-row-track">
-      <button class="nfx-row-arrow left" aria-label="Précédent"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <div class="nfx-row-scroll" id="rowNew"></div>
-      <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
-    </div>
-  </section>
-
-  <!-- ROW: Albums -->
-  <section class="nfx-row" data-row="albums">
-    <div class="nfx-row-header"><h3 class="nfx-row-title">Choisissez votre univers <span class="nfx-row-explore">Tout explorer ›</span></h3></div>
-    <div class="nfx-row-track">
-      <button class="nfx-row-arrow left" aria-label="Précédent"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <div class="nfx-row-scroll" id="rowAlbums"></div>
-      <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
-    </div>
-  </section>
-
-  <!-- ROW: Concerts & Émissions -->
-  <section class="nfx-row" data-row="live">
-    <div class="nfx-row-header"><h3 class="nfx-row-title">Concerts & Émissions <span class="nfx-row-explore">Tout explorer ›</span></h3></div>
-    <div class="nfx-row-track">
-      <button class="nfx-row-arrow left" aria-label="Précédent"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <div class="nfx-row-scroll" id="rowLive"></div>
-      <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
-    </div>
-  </section>
-
+<div class="nfx-rows" id="nfxRows">
+  <div class="nfx-loading" id="nfxLoadingHome">
+    <div class="nfx-loading-spinner"></div>
+    <span style="font-size:.82rem">Chargement du catalogue…</span>
+  </div>
 </div>
-</div><!-- /view-home -->
+</div>
 
-<!-- ROUTE VIEWS (series, docs, concerts, mylist) -->
-<div id="view-series" class="nfx-route"><div class="nfx-route-grid" id="grid-series"></div></div>
-<div id="view-docs" class="nfx-route"><div class="nfx-route-grid" id="grid-docs"></div></div>
-<div id="view-concerts" class="nfx-route"><div class="nfx-route-grid" id="grid-concerts"></div></div>
+<div id="view-series" class="nfx-route">
+  <div class="nfx-loading" id="nfxLoadingSeries"><div class="nfx-loading-spinner"></div></div>
+  <div class="nfx-route-grid" id="grid-series"></div>
+</div>
+<div id="view-docs" class="nfx-route">
+  <div class="nfx-loading" id="nfxLoadingDocs"><div class="nfx-loading-spinner"></div></div>
+  <div class="nfx-route-grid" id="grid-docs"></div>
+</div>
+<div id="view-concerts" class="nfx-route">
+  <div class="nfx-loading" id="nfxLoadingConcerts"><div class="nfx-loading-spinner"></div></div>
+  <div class="nfx-route-grid" id="grid-concerts"></div>
+</div>
 <div id="view-mylist" class="nfx-route"><div class="nfx-route-grid" id="grid-mylist"></div></div>
 
 <script>
 (function(){
-  'use strict';
+'use strict';
 
-  /* ── DATA ── */
-  const DEMO_CARDS = [
-    {t:'The Voice 2026 — Blind Audition',img:'images/categories-v2/The_Voice_2026.webp',meta:'2026 · Émission · 2h10',new:1},
-    {t:'L\'Effet Lara — Épisode 1',img:'images/categories-v2/LEffet_Lara_-_2026.webp',meta:'2026 · Série · 45 min',new:1},
-    {t:'Star Académie — Gala 1',img:'images/categories-v2/Star_Acadmie_2025.webp',meta:'2025 · Émission · 2h',new:0},
-    {t:'Lara Fabian — Nuit Magique',img:'images/categories-v2/Concert_Palais.webp',meta:'2024 · Concert · 1h50',new:0},
-    {t:'Je t\'aime — Live Symphonique',img:'images/categories-v2/Je_taime_symphonique.webp',meta:'2023 · Concert · 4 min',new:0},
-    {t:'Papillon — Documentaire',img:'images/categories-v2/Papillon_Doc.webp',meta:'2022 · Doc · 1h20',new:0},
-    {t:'50 World Tour — Paris',img:'images/categories-v2/50_World_Tour.webp',meta:'2024 · Concert · 2h05',new:1},
-    {t:'The Voice — La finale',img:'images/categories-v2/The_Voice_Finale.webp',meta:'2025 · Émission · 2h30',new:0}
-  ];
+const GOOGLE_CLIENT_ID = '770493413843-8lbbr6fpthfjk2t8o9t2hqm03tlspif6.apps.googleusercontent.com';
+const BACKEND = 'https://script.google.com/macros/s/AKfycbxnNSmAUGIuzBJ2s2f5MmnqZrMjZO9VqNjd7kCyELD-KdZ2XBjWTrW7qpl4HcLgk4bB/exec';
+const CACHE_KEY = 'lfiag_catalogue_v1';
+const CACHE_TS_KEY = 'lfiag_catalogue_ts_v1';
+const LOCAL_TTL = 30 * 60 * 1000;
+const SESSION_KEY = 'lfiag_user_session';
 
-  const TOP10 = DEMO_CARDS.slice(0,6);
+let ALL = [];
+let currentUser = null;
 
-  /* ── UTILS ── */
-  const $ = q => document.querySelector(q);
-  const $$ = q => Array.from(document.querySelectorAll(q));
+function saveSession(u){try{sessionStorage.setItem(SESSION_KEY,JSON.stringify(u));}catch(e){}}
+function loadSession(){try{return JSON.parse(sessionStorage.getItem(SESSION_KEY)||'null');}catch(e){return null;}}
+function clearSession(){try{sessionStorage.removeItem(SESSION_KEY);}catch(e){}}
 
-  /* ── SPLASH ── */
-  const splash = $('#nfxSplash');
-  const replayBtn = $('#replaySplashBtn');
+const loginScreen=document.getElementById('loginScreen');
+const loginLoader=document.getElementById('loginLoader');
+const loginUnauth=document.getElementById('loginUnauth');
+const loginError=document.getElementById('loginError');
+const loginLoaderMsg=document.getElementById('loginLoaderMsg');
+const googleBtnWrap=document.getElementById('googleBtnWrap');
 
-  function showSplash(){
-    splash.classList.remove('hide');
-    setTimeout(()=> splash.classList.add('hide'), 2600);
-  }
-  setTimeout(()=> splash.classList.add('hide'), 2600);
-  if(replayBtn) replayBtn.addEventListener('click', showSplash);
+function showLoginMain(){
+  googleBtnWrap.style.display='flex';
+  loginLoader.classList.remove('show');
+  loginUnauth.classList.remove('show');
+  loginError.classList.remove('show');
+}
+function showLoginLoader(msg){
+  googleBtnWrap.style.display='none';
+  loginLoader.classList.add('show');
+  loginUnauth.classList.remove('show');
+  loginLoaderMsg.textContent=msg||"Vérification de l'accès\u2026";
+}
+function showLoginError(msg){
+  googleBtnWrap.style.display='flex';
+  loginError.textContent=msg;
+  loginError.classList.add('show');
+  loginLoader.classList.remove('show');
+  loginUnauth.classList.remove('show');
+}
+function showLoginUnauth(email){
+  googleBtnWrap.style.display='none';
+  loginLoader.classList.remove('show');
+  loginUnauth.classList.add('show');
+  document.getElementById('loginUnauthEmail').textContent=email;
+}
 
-  /* ── HEADER SCROLL ── */
-  const header = $('#nfxHeader');
-  window.addEventListener('scroll', ()=>{
-    header.classList.toggle('scrolled', window.scrollY > 40);
-  }, {passive:true});
-
-  /* ── ROUTING ── */
-  function setRoute(name){
-    $$('.nfx-route').forEach(el=>el.classList.remove('active'));
-    const target = $(`#view-${name}`);
-    if(target) target.classList.add('active');
-
-    $$('.nfx-nav button').forEach(b=>b.classList.toggle('active', b.dataset.route===name));
-
-    if(name!=='home') window.scrollTo({top:0,behavior:'smooth'});
-  }
-
-  $$('[data-route]').forEach(el=>{
-    el.addEventListener('click', e=>{
-      e.preventDefault();
-      const r = el.dataset.route;
-      if(r) setRoute(r);
-    });
-  });
-
-  /* ── BILLBOARD CAROUSEL ── */
-  const slides = $$('.nfx-billboard-slide');
-  const dots = $$('.nfx-bb-dots button');
-  let bbIndex = 0, bbTimer;
-
-  function showSlide(i){
-    slides.forEach((s,idx)=>{
-      s.classList.toggle('active', idx===i);
-      const vid = s.querySelector('video');
-      if(vid){
-        if(idx===i){
-          if(vid.dataset.src && !vid.src) vid.src = vid.dataset.src;
-          vid.play().catch(()=>{});
-          setTimeout(()=> vid.classList.add('show'), 100);
-        }else{
-          vid.classList.remove('show');
-          vid.pause();
-          vid.currentTime = 0;
-        }
-      }
-    });
-    dots.forEach((d,idx)=> d.classList.toggle('active', idx===i));
-    bbIndex = i;
-  }
-
-  function nextSlide(){ showSlide((bbIndex+1)%slides.length); }
-  function startBB(){ bbTimer = setInterval(nextSlide, 8000); }
-  function resetBB(){ clearInterval(bbTimer); startBB(); }
-
-  dots.forEach((d,i)=> d.addEventListener('click', ()=>{ showSlide(i); resetBB(); }));
-  startBB();
-
-  /* ── BILLBOARD MUTE ── */
-  $$('.nfx-bb-mute').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const slide = btn.closest('.nfx-billboard-slide');
-      const vid = slide.querySelector('video');
-      if(!vid) return;
-      const muted = !vid.muted;
-      vid.muted = muted;
-      btn.setAttribute('aria-label', muted ? 'Activer le son' : 'Couper le son');
-      btn.dataset.mute = muted ? '1' : '0';
-      btn.innerHTML = muted
-        ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>'
-        : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
-    });
-  });
-
-  /* ── ROW ARROWS ── */
-  $$('.nfx-row-track').forEach(track=>{
-    const scroll = track.querySelector('.nfx-row-scroll');
-    if(!scroll) return;
-    const left = track.querySelector('.nfx-row-arrow.left');
-    const right = track.querySelector('.nfx-row-arrow.right');
-    const step = () => scroll.clientWidth * 0.85;
-
-    if(left) left.addEventListener('click', ()=> scroll.scrollBy({left:-step(), behavior:'smooth'}));
-    if(right) right.addEventListener('click', ()=> scroll.scrollBy({left:step(), behavior:'smooth'}));
-  });
-
-  /* ── BUILD CARDS ── */
-  function makeCard(item, idx, isTop10=false){
-    if(isTop10){
-      return `
-      <div class="nfx-card">
-        <span class="nfx-top10-num">${idx+1}</span>
-        <div class="nfx-card-img-wrap">
-          <img class="nfx-card-img" src="${item.img}" alt="${item.t}" loading="lazy">
-        </div>
-      </div>`;
+// Callback Google Sign-In
+window.handleGoogleCredential=async function(response){
+  if(!response||!response.credential){showLoginError('Erreur Google. Réessayez.');return;}
+  showLoginLoader('Connexion en cours\u2026');
+  let payload;
+  try{payload=JSON.parse(atob(response.credential.split('.')[1]));}catch(e){showLoginError('Token invalide.');return;}
+  const email=payload.email, name=payload.name||email;
+  showLoginLoader('Vérification pour '+email+'\u2026');
+  try{
+    // FIX: action=check (et non checkAccess) — correspond au doGet Apps Script
+    const url=BACKEND+'?action=check&email='+encodeURIComponent(email);
+    const resp=await fetch(url);
+    if(!resp.ok)throw new Error('HTTP '+resp.status);
+    const data=await resp.json();
+    if(data.status==='ok'&&data.authorized===true){
+      grantAccess({email,name,role:data.role||'user'});
+    }else if(data.status==='error'&&data.message==='Compte désactivé'){
+      showLoginUnauth(email);
+    }else{
+      showLoginUnauth(email);
     }
-    return `
-    <div class="nfx-card">
-      <div class="nfx-card-img-wrap">
-        <img class="nfx-card-img" src="${item.img}" alt="${item.t}" loading="lazy">
-        ${item.new?'<span class="nfx-card-badge-new">Nouveau</span>':''}
-        <div class="nfx-card-progress"><div class="nfx-card-progress-fill" style="width:${Math.random()*60+20}%"></div></div>
-      </div>
-      <div class="nfx-card-expand">
-        <div class="nfx-card-expand-img"><img src="${item.img}" alt=""></div>
-        <div class="nfx-card-expand-body">
-          <div class="nfx-card-expand-actions">
-            <button class="nfx-action-btn primary" aria-label="Lire"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></button>
-            <button class="nfx-action-btn" aria-label="Ajouter à ma liste"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
-            <button class="nfx-action-btn right" aria-label="J'aime"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>
-          </div>
-          <div class="nfx-card-expand-meta"><span class="match">98% Match</span><span class="badge">HD</span><span>${item.meta.split('·').pop()}</span></div>
-          <div class="nfx-card-expand-title">${item.t}</div>
-          <div class="nfx-card-expand-tags"><span>Music</span><span class="dot">•</span><span>Français</span><span class="dot">•</span><span>Lara Fabian</span></div>
-        </div>
-      </div>
-    </div>`;
+  }catch(e){
+    // Fallback : essaie de charger le catalogue directement
+    try{
+      showLoginLoader('Vérification alternative\u2026');
+      const url2=BACKEND+'?action=videos&email='+encodeURIComponent(email);
+      const r2=await fetch(url2);
+      const d2=await r2.json();
+      if(d2.status==='ok'||(Array.isArray(d2.videos)&&d2.videos.length>0)){
+        grantAccess({email,name});
+      }else{
+        showLoginUnauth(email);
+      }
+    }catch(e2){
+      showLoginError('Serveur inaccessible. Vérifiez votre connexion.');
+    }
   }
+};
 
-  function makeGridCard(item){
-    return `
-    <div class="nfx-file-card" tabindex="0">
-      <div class="nfx-file-thumb">
-        <img src="${item.img}" alt="${item.t}" loading="lazy">
-        <div class="nfx-file-overlay"></div>
-        <div class="nfx-file-play"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
-        <span class="nfx-file-dur">${item.meta.split('·').pop().trim()}</span>
-      </div>
-      <div class="nfx-file-body">
-        <div class="nfx-file-title">${item.t}</div>
-        <div class="nfx-file-meta">${item.meta}</div>
-      </div>
-    </div>`;
-  }
+async function grantAccess(user){
+  currentUser=user;
+  saveSession(user);
+  loginScreen.classList.add('hide');
+  updateProfileUI(user);
+  await startApp();
+}
 
-  /* ── FILL ROWS ── */
-  function fill(id, items, top10=false){
-    const el = document.getElementById(id);
-    if(!el) return;
-    el.innerHTML = items.map((it,i)=> makeCard(it,i,top10)).join('');
-  }
+function updateProfileUI(user){
+  const i=document.getElementById('nfxProfileInitial');
+  if(i)i.textContent=(user.name||user.email||'U').charAt(0).toUpperCase();
+  const n=document.getElementById('nfxProfileName');
+  if(n)n.textContent=user.name||user.email;
+  const em=document.getElementById('nfxProfileEmail');
+  if(em)em.textContent=user.email;
+}
 
-  fill('rowTop10', TOP10, true);
-  fill('rowContinue', DEMO_CARDS.slice().reverse());
-  fill('rowNew', DEMO_CARDS.filter(x=>x.new));
-  fill('rowAlbums', DEMO_CARDS.slice(2,6));
-  fill('rowLive', DEMO_CARDS.filter(x=>x.meta.includes('Concert')||x.meta.includes('Émission')));
-
-  ['series','docs','concerts','mylist'].forEach(r=>{
-    const grid = document.getElementById('grid-'+r);
-    if(grid) grid.innerHTML = DEMO_CARDS.map(makeGridCard).join('');
+// Initialise le bouton Google officiel via renderButton
+function initGoogleBtn(){
+  if(!window.google||!google.accounts||!google.accounts.id){return;}
+  google.accounts.id.initialize({
+    client_id:GOOGLE_CLIENT_ID,
+    callback:handleGoogleCredential,
+    ux_mode:'popup',
+    auto_select:false,
   });
+  google.accounts.id.renderButton(
+    googleBtnWrap,
+    {
+      type:'standard',
+      theme:'outline',
+      size:'large',
+      text:'signin_with',
+      shape:'rectangular',
+      logo_alignment:'left',
+      width:320,
+      locale:'fr',
+    }
+  );
+}
+
+// Attendre que le SDK Google soit chargé
+function waitForGoogle(cb,tries=0){
+  if(window.google&&google.accounts&&google.accounts.id){cb();return;}
+  if(tries>40){showLoginError('Google Sign-In non chargé. Actualisez la page.');return;}
+  setTimeout(()=>waitForGoogle(cb,tries+1),150);
+}
+
+window.addEventListener('load',()=>{
+  // Session déjà présente ?
+  const session=loadSession();
+  if(session&&session.email){
+    currentUser=session;
+    updateProfileUI(currentUser);
+    loginScreen.classList.add('hide');
+    startApp();
+    return;
+  }
+  // Attendre SDK puis rendre le bouton
+  waitForGoogle(initGoogleBtn);
+});
+
+// Retry
+document.getElementById('loginRetryBtn').addEventListener('click',()=>{
+  showLoginMain();
+  if(window.google&&google.accounts&&google.accounts.id){
+    google.accounts.id.disableAutoSelect();
+    if(!googleBtnWrap.querySelector('iframe'))initGoogleBtn();
+  }
+});
+
+// Profile menu
+const profileBtn=document.getElementById('nfxProfile');
+const profileMenu=document.getElementById('nfxProfileMenu');
+profileBtn.addEventListener('click',e=>{e.stopPropagation();profileMenu.classList.toggle('open');});
+document.addEventListener('click',()=>profileMenu.classList.remove('open'));
+
+// Logout
+document.getElementById('nfxLogoutBtn').addEventListener('click',()=>{
+  clearSession();currentUser=null;ALL=[];
+  if(window.google&&google.accounts&&google.accounts.id)google.accounts.id.disableAutoSelect();
+  profileMenu.classList.remove('open');
+  loginScreen.classList.remove('hide');
+  googleBtnWrap.innerHTML='';
+  showLoginMain();
+  waitForGoogle(initGoogleBtn);
+});
+
+// ── DATA
+const CAT_MAP={'lara fabian - concerts':'concerts',"2024 - aujourd'hui":'series',"2024 - aujourd\u2019hui":'series','2019 - 2021 papillon':'docs','2017 - 2018 camouflage':'docs','2015 - 2016 ma vie dans la tienne':'docs',"l'effet lara - 2026":'series',"lara fabian aux enfoirés":'concerts',"lara fabian documentaires":'docs',"lara fabian au cinéma":'docs',"1999 - 2001 lara fabian (anglais)":'docs',"lara fabian - divers":'docs'};
+function mapCat(raw){
+  if(!raw)return'docs';
+  const k=raw.toLowerCase().trim();
+  for(const[key,val]of Object.entries(CAT_MAP)){if(k.includes(key))return val;}
+  if(k.includes('concert'))return'concerts';
+  if(k.includes('voice')||k.includes('star ac')||k.includes('\u00e9mission')||k.includes('effet lara')||k.includes('aujourd'))return'series';
+  return'docs';
+}
+function extractVideos(data){
+  if(!data)return[];
+  if(data.status==='ok'&&Array.isArray(data.videos)&&data.videos.length)return data.videos;
+  if(Array.isArray(data.videos)&&data.videos.length)return data.videos;
+  if(Array.isArray(data.data)&&data.data.length)return data.data;
+  if(Array.isArray(data.items)&&data.items.length)return data.items;
+  if(Array.isArray(data)&&data.length)return data;
+  if(Array.isArray(data.files)&&data.files.length)return data.files;
+  return[];
+}
+function normalizeVideo(v){
+  return{id:v.id||v.fileId||v.driveId||'',t:v.name||v.titre||v.title||v.nom||v.id||'',img:v.thumbnailLink||v.thumbnail||('https://drive.google.com/thumbnail?id='+(v.id||v.fileId)+'&sz=w640'),poster:v.thumbnailLink||v.thumbnail||('https://drive.google.com/thumbnail?id='+(v.id||v.fileId)+'&sz=w640'),embed:v.webViewLink||v.embedLink||('https://drive.google.com/file/d/'+(v.id||v.fileId)+'/preview'),meta:(v._category||v.category||v.categorie||'Lara Fabian')+' \u00b7 Vid\u00e9o',desc:v.description||v.desc||'',cat:mapCat(v._category||v.category||v.categorie||''),_category:v._category||v.category||v.categorie||'',new:isNew(v),prog:0,mimeType:v.mimeType||''};
+}
+async function fetchCatalogue(bustCache=false){
+  if(!bustCache){try{const ts=parseInt(localStorage.getItem(CACHE_TS_KEY)||'0');if(Date.now()-ts<LOCAL_TTL){const cached=JSON.parse(localStorage.getItem(CACHE_KEY)||'null');if(cached&&cached.length)return cached;}}catch(e){}}
+  const email=currentUser?currentUser.email:'';
+  const url=BACKEND+'?action=videos&email='+encodeURIComponent(email)+(bustCache?'&bustCache=1':'');
+  const resp=await fetch(url);
+  if(!resp.ok)throw new Error('HTTP '+resp.status);
+  const data=await resp.json();
+  console.log('[LFIAGtube] Backend keys:',Object.keys(data));
+  if(data.status==='error'||data.status==='unauthorized')throw new Error(data.message||'Accès refusé');
+  const raw=extractVideos(data);
+  const videos=raw.map(normalizeVideo).filter(v=>v.id);
+  console.log('[LFIAGtube] Videos:',videos.length);
+  try{localStorage.setItem(CACHE_KEY,JSON.stringify(videos));localStorage.setItem(CACHE_TS_KEY,String(Date.now()));}catch(e){}
+  return videos;
+}
+function isNew(v){
+  if(!v.modifiedTime&&!v.createdTime)return 0;
+  const t=new Date(v.modifiedTime||v.createdTime).getTime();
+  return(Date.now()-t)<30*24*60*60*1000?1:0;
+}
+
+const $=q=>document.querySelector(q);
+const $$=q=>Array.from(document.querySelectorAll(q));
+const getList=()=>{try{return JSON.parse(localStorage.getItem('lfiag_mylist')||'[]');}catch{return[];}};
+const saveList=a=>localStorage.setItem('lfiag_mylist',JSON.stringify(a));
+const inList=id=>getList().includes(id);
+
+function toggleList(id){
+  let a=getList();
+  if(a.includes(id)){a=a.filter(x=>x!==id);toast('Retiré de votre liste');}
+  else{a.push(id);toast('Ajouté à votre liste ✓');}
+  saveList(a);refreshBadges();
+  if($('#view-mylist.active'))renderMyList();
+}
+function refreshBadges(){
+  const l=getList();
+  $$('.nfx-card[data-id],.nfx-file-card[data-id]').forEach(el=>el.classList.toggle('in-mylist',l.includes(el.dataset.id)));
+  const btn=$('#nfxModalAdd');
+  if(btn&&btn.dataset.id){const y=l.includes(btn.dataset.id);btn.classList.toggle('in-list',y);$('#nfxModalAddLabel').textContent=y?'Dans ma liste ✓':'Ajouter à ma liste';}
+}
+function toast(msg){
+  const t=$('#nfxToast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+const splash=$('#nfxSplash');
+$('#replaySplashBtn').addEventListener('click',()=>{splash.classList.remove('hide');setTimeout(()=>splash.classList.add('hide'),2500);});
+window.addEventListener('scroll',()=>$('#nfxHeader').classList.toggle('scrolled',scrollY>30),{passive:true});
+
+const modal=$('#nfxModal');
+let cur=null;
+function openModal(item){
+  cur=item;
+  const hero=$('#nfxModalHero');
+  let img=$('#nfxModalImg');
+  if(!img){hero.innerHTML='<img id="nfxModalImg" src="" alt=""><div class="nfx-modal-hero-overlay" id="nfxModalOverlay"></div><div class="nfx-modal-hero-play" id="nfxModalHeroPlay"><button class="nfx-btn nfx-btn-play" id="nfxModalPlay"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>Lecture</button></div>';bindModalPlay();}
+  img=$('#nfxModalImg');
+  if(img){img.src=item.img;img.alt=item.t;img.style.display='block';}
+  const ov=$('#nfxModalOverlay');if(ov)ov.style.display='';
+  const hp=$('#nfxModalHeroPlay');if(hp)hp.style.display='';
+  $('#nfxModalTitle').textContent=item.t;
+  const parts=(item.meta||'').split('·').map(s=>s.trim());
+  $('#nfxModalMeta').innerHTML='<span class="match">Lara Fabian</span>'+parts.map(p=>'<span>'+p+'</span>').join('');
+  $('#nfxModalDesc').textContent=item.desc||item._category||'';
+  const btn=$('#nfxModalAdd');btn.dataset.id=item.id;
+  const y=inList(item.id);btn.classList.toggle('in-list',y);
+  $('#nfxModalAddLabel').textContent=y?'Dans ma liste ✓':'Ajouter à ma liste';
+  modal.classList.add('open');document.body.style.overflow='hidden';
+}
+function closeModal(){
+  modal.classList.remove('open');document.body.style.overflow='';
+  const hero=$('#nfxModalHero');
+  if(hero.querySelector('iframe')){hero.innerHTML='<img id="nfxModalImg" src="" alt=""><div class="nfx-modal-hero-overlay" id="nfxModalOverlay"></div><div class="nfx-modal-hero-play" id="nfxModalHeroPlay"><button class="nfx-btn nfx-btn-play" id="nfxModalPlay"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>Lecture</button></div>';bindModalPlay();}
+  cur=null;
+}
+function bindModalPlay(){
+  const btn=$('#nfxModalPlay');
+  if(btn)btn.addEventListener('click',()=>{if(!cur||!cur.embed)return;$('#nfxModalHero').innerHTML='<iframe src="'+cur.embed+'" allowfullscreen allow="autoplay"></iframe>';});
+}
+bindModalPlay();
+$('#nfxModalClose').addEventListener('click',closeModal);
+modal.addEventListener('click',e=>{if(e.target===modal)closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+$('#nfxModalAdd').addEventListener('click',()=>{
+  if(!cur)return;
+  toggleList(cur.id);
+  const y=inList(cur.id);
+  $('#nfxModalAdd').classList.toggle('in-list',y);
+  $('#nfxModalAddLabel').textContent=y?'Dans ma liste ✓':'Ajouter à ma liste';
+});
+
+function setRoute(name){
+  $$('.nfx-route').forEach(el=>el.classList.remove('active'));
+  const t=$('#view-'+name);if(t)t.classList.add('active');
+  $$('.nfx-nav button').forEach(b=>b.classList.toggle('active',b.dataset.route===name));
+  if(name!=='home')scrollTo({top:0,behavior:'smooth'});
+  if(name==='mylist')renderMyList();
+}
+$$('.nfx-nav [data-route],.nfx-logo[data-route]').forEach(el=>{el.addEventListener('click',e=>{e.preventDefault();setRoute(el.dataset.route);});});
+
+$$('.nfx-btn[data-action]').forEach(btn=>{btn.addEventListener('click',()=>{const idx=+btn.dataset.idx||0;if(btn.dataset.action==='info'){const item=ALL[idx]||null;if(item)openModal(item);}else{toast('▶ Slide '+(idx+1));}});});
+
+const slides=$$('.nfx-billboard-slide'),dots=$$('#nfxBbDots button');
+let bbI=0,bbT;
+function showSlide(i){slides.forEach((s,j)=>s.classList.toggle('active',j===i));dots.forEach((d,j)=>d.classList.toggle('active',j===i));bbI=i;}
+dots.forEach((d,i)=>d.addEventListener('click',()=>{showSlide(i);clearInterval(bbT);bbT=setInterval(()=>showSlide((bbI+1)%slides.length),8000);}));
+bbT=setInterval(()=>showSlide((bbI+1)%slides.length),8000);
+
+const mlBadge=()=>'<span class="nfx-mylist-badge" aria-hidden="true">✓</span>';
+
+function card(item,i,top10=false){
+  if(top10)return '<div class="nfx-card" data-id="'+item.id+'" tabindex="0" role="button" aria-label="'+item.t+'"><span class="nfx-top10-num">'+(i+1)+'</span><div class="nfx-card-img-wrap"><img class="nfx-card-img" src="'+item.poster+'" alt="'+item.t+'" loading="lazy" draggable="false"></div></div>';
+  return '<div class="nfx-card'+(inList(item.id)?' in-mylist':'')+'" data-id="'+item.id+'" tabindex="0" role="button" aria-label="'+item.t+'">'+mlBadge()+'<div class="nfx-card-img-wrap"><img class="nfx-card-img" src="'+item.img+'" alt="'+item.t+'" loading="lazy" draggable="false">'+(item.new?'<span class="nfx-card-badge-new">Nouveau</span>':'')+'<div class="nfx-card-progress"><div class="nfx-card-progress-fill" style="width:'+(item.prog||0)+'%"></div></div></div><div class="nfx-card-label">'+item.t+'</div><div class="nfx-card-expand"><div class="nfx-card-expand-img"><img src="'+item.img+'" alt="" draggable="false"></div><div class="nfx-card-expand-body"><div class="nfx-card-expand-actions"><button class="nfx-action-btn primary" data-action="play" data-id="'+item.id+'" aria-label="Lire"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></button><button class="nfx-action-btn" data-action="addlist" data-id="'+item.id+'" aria-label="+ liste"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button><button class="nfx-action-btn right" data-action="info" data-id="'+item.id+'" aria-label="Infos"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></button></div><div class="nfx-card-expand-meta"><span class="match">Lara Fabian</span><span class="badge">HD</span></div><div class="nfx-card-expand-title">'+item.t+'</div><div class="nfx-card-expand-tags"><span>'+(item._category||'Vidéo')+'</span></div></div></div></div>';
+}
+function gridCard(item){
+  return '<div class="nfx-file-card'+(inList(item.id)?' in-mylist':'')+'" data-id="'+item.id+'" tabindex="0" role="button" aria-label="'+item.t+'">'+mlBadge()+'<div class="nfx-file-thumb"><img src="'+item.img+'" alt="'+item.t+'" loading="lazy" draggable="false"><div class="nfx-file-overlay"></div><div class="nfx-file-play"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></div></div><div class="nfx-file-body"><div class="nfx-file-title">'+item.t+'</div><div class="nfx-file-meta">'+(item._category||item.meta)+'</div></div></div>';
+}
+function rowHtml(id,title,seeAll=true){
+  return '<section class="nfx-row" id="section-'+id+'"><div class="nfx-row-header"><h3 class="nfx-row-title">'+title+' <span class="nfx-row-explore">Tout explorer ›</span></h3>'+(seeAll?'<span class="nfx-row-seeall">Tout voir <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></span>':'')+'</div><div class="nfx-row-track"><button class="nfx-row-arrow left" aria-label="Précédent"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button><div class="nfx-row-scroll" id="row-'+id+'"></div><button class="nfx-row-arrow right" aria-label="Suivant"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button></div></section>';
+}
+function top10RowHtml(){
+  return '<section class="nfx-row nfx-top10" id="section-top10"><div class="nfx-row-header"><h3 class="nfx-row-title">Top 10 LFIAGtube · Cette semaine <span class="nfx-row-explore">Tout explorer ›</span></h3><span class="nfx-row-seeall">Tout voir <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></span></div><div class="nfx-row-track"><button class="nfx-row-arrow left" aria-label="Précédent"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button><div class="nfx-row-scroll" id="row-top10"></div><button class="nfx-row-arrow right" aria-label="Suivant"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button></div></section>';
+}
+
+function renderHome(){
+  const rows=$('#nfxRows');
+  const cats={};
+  ALL.forEach(v=>{(cats[v._category]=cats[v._category]||[]).push(v);});
+  const newItems=ALL.filter(v=>v.new).slice(0,20);
+  const top10=ALL.slice(0,10);
+  let html=top10RowHtml();
+  if(newItems.length)html+=rowHtml('new','🆕 Nouveautés');
+  Object.entries(cats).forEach(([cat,items])=>{if(!cat)return;const sid=cat.replace(/[^a-z0-9]/gi,'_').toLowerCase();html+=rowHtml(sid,cat);});
+  if(!ALL.length){
+    rows.innerHTML='<div class="nfx-empty" style="margin-top:4rem"><svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><h2>Catalogue indisponible</h2><p>Le backend n\'a pas renvoyé de vidéos. F12 → console pour plus de détails.</p></div>';
+    return;
+  }
+  rows.innerHTML=html;
+  const t10=$('#row-top10');if(t10){t10.innerHTML=top10.map((it,i)=>card(it,i,true)).join('');bindRows(t10);}
+  const rNew=$('#row-new');if(rNew){rNew.innerHTML=newItems.map((it,i)=>card(it,i)).join('');bindRows(rNew);}
+  Object.entries(cats).forEach(([cat,items])=>{if(!cat)return;const sid=cat.replace(/[^a-z0-9]/gi,'_').toLowerCase();const el=$('#row-'+sid);if(el){el.innerHTML=items.map((it,i)=>card(it,i)).join('');bindRows(el);}});
+  $$('.nfx-row-track').forEach(track=>{const sc=track.querySelector('.nfx-row-scroll');if(!sc)return;track.querySelector('.nfx-row-arrow.left')?.addEventListener('click',()=>sc.scrollBy({left:-sc.clientWidth*.8,behavior:'smooth'}));track.querySelector('.nfx-row-arrow.right')?.addEventListener('click',()=>sc.scrollBy({left:sc.clientWidth*.8,behavior:'smooth'}));});
+}
+function renderGrids(){
+  ['series','docs','concerts'].forEach(r=>{
+    const g=document.getElementById('grid-'+r);
+    const loading=document.getElementById('nfxLoading'+r.charAt(0).toUpperCase()+r.slice(1));
+    if(loading)loading.style.display='none';
+    const items=ALL.filter(x=>x.cat===r);
+    if(g){g.innerHTML=items.map(gridCard).join('');bindGrid(g);}
+  });
+}
+function renderMyList(){
+  const g=$('#grid-mylist');if(!g)return;
+  const items=ALL.filter(x=>getList().includes(x.id));
+  if(!items.length){g.innerHTML='<div class="nfx-empty"><svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><h2>Votre liste est vide</h2><p>Ajoutez des vidéos depuis l\'accueil</p></div>';}
+  else{g.innerHTML=items.map(gridCard).join('');bindGrid(g);}
+}
+function bindRows(container){
+  container.addEventListener('click',e=>{
+    const btn=e.target.closest('[data-action]');
+    if(btn){e.stopPropagation();const item=ALL.find(x=>x.id===btn.dataset.id);if(!item)return;if(btn.dataset.action==='play'||btn.dataset.action==='info')openModal(item);if(btn.dataset.action==='addlist'){toggleList(item.id);refreshBadges();}return;}
+    const c=e.target.closest('.nfx-card[data-id]');if(c){const item=ALL.find(x=>x.id===c.dataset.id);if(item)openModal(item);}
+  });
+}
+function bindGrid(container){
+  container.addEventListener('click',e=>{const c=e.target.closest('.nfx-file-card[data-id]');if(c){const item=ALL.find(x=>x.id===c.dataset.id);if(item)openModal(item);}});
+}
+
+const refreshBtn=$('#nfxRefreshBtn');
+refreshBtn.addEventListener('click',async()=>{
+  refreshBtn.classList.add('loading');toast('🔄 Mise à jour en cours…');
+  try{
+    const email=currentUser?currentUser.email:'';
+    await fetch(BACKEND+'?action=invalidate&email='+encodeURIComponent(email));
+    ALL=await fetchCatalogue(true);
+    renderHome();renderGrids();refreshBadges();
+    toast(ALL.length?'✅ '+ALL.length+' vidéos chargées !':'⚠️ Catalogue vide — voir console');
+  }catch(e){console.error('[LFIAGtube] refresh:',e);toast('⚠️ Erreur de mise à jour');}
+  finally{refreshBtn.classList.remove('loading');}
+});
+
+async function startApp(){
+  splash.classList.remove('hide');
+  setTimeout(()=>splash.classList.add('hide'),2500);
+  try{
+    ALL=await fetchCatalogue(false);
+    console.log('[LFIAGtube] Vidéos:',ALL.length);
+  }catch(e){console.warn('[LFIAGtube] Backend:',e);ALL=[];}
+  $('#nfxLoadingHome').style.display='none';
+  renderHome();renderGrids();refreshBadges();
+  if(!ALL.length)toast('⚠️ Backend vide — voir console (F12)');
+}
 
 })();
 </script>
