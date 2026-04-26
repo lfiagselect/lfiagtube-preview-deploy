@@ -7,7 +7,7 @@
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#000000">
-<meta name="description" content="LFIAGtube — Bibliothèque vidéo Lara Fabian. Preview Netflix.">
+<meta name="description" content="LFIAGtube — Bibliothèque vidéo Lara Fabian.">
 <meta property="og:title" content="LFIAGtube">
 <meta property="og:description" content="Bibliothèque vidéo Lara Fabian — design Netflix.">
 <meta property="og:type" content="website">
@@ -17,16 +17,17 @@
 <link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Anton&family=Bebas+Neue&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Anton&family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#000;--bg2:#0a0a0a;--bg3:#141414;
-  --text:#fff;--text2:#b3b3b3;--text3:#737373;
-  --red:#e50914;--red-h:#f40612;
+  --bg:#000;--bg3:#141414;
+  --text:#fff;--text2:#b3b3b3;
+  --red:#e50914;
   --gold:#ffd60a;
-  --r:6px;
   --nav-h:68px;
+  --row-gap:2.6rem;     /* espace vertical entre rangées — aéré */
+  --row-px:4%;          /* padding latéral identique Netflix */
   --font:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
   --display:'Anton','Bebas Neue',Impact,sans-serif;
   --ease:cubic-bezier(.25,.1,.25,1);
@@ -34,269 +35,556 @@
 }
 html,body{background:#000;color:#fff;font-family:var(--font);min-height:100vh;overflow-x:hidden}
 body{-webkit-font-smoothing:antialiased}
-::-webkit-scrollbar{width:8px;height:8px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:999px}
 a{color:inherit;text-decoration:none}
 button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 
+/* ── SCROLLBAR desktop ── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:999px}
+
 /* ── DEMO BAR ── */
-.demo-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:200;background:rgba(0,0,0,.85);backdrop-filter:blur(20px);color:#fff;padding:.4rem .9rem;border-radius:12px 12px 0 0;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;display:flex;gap:1rem;align-items:center;border:1px solid rgba(255,255,255,.15);border-bottom:none}
+.demo-bar{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  z-index:200;background:rgba(0,0,0,.82);backdrop-filter:blur(20px);
+  color:#fff;padding:.4rem .9rem;border-radius:12px 12px 0 0;
+  font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;
+  display:flex;gap:1rem;align-items:center;
+  border:1px solid rgba(255,255,255,.12);border-bottom:none;
+}
 .demo-bar strong{color:var(--gold)}
-.demo-bar button{padding:.25rem .55rem;border:1px solid rgba(255,255,255,.2);border-radius:6px;background:rgba(255,255,255,.06);color:#fff;font-size:.65rem;letter-spacing:.05em;cursor:pointer}
+.demo-bar button{padding:.25rem .55rem;border:1px solid rgba(255,255,255,.2);border-radius:6px;background:rgba(255,255,255,.06);color:#fff;font-size:.63rem;cursor:pointer}
 .demo-bar button:hover{background:rgba(255,255,255,.14)}
-@media(max-width:600px){.demo-bar{font-size:.6rem;padding:.3rem .55rem}}
 
 /* ── HEADER ── */
-.nfx-header{position:fixed;top:0;left:0;right:0;z-index:100;height:var(--nav-h);display:flex;align-items:center;padding:0 4%;gap:1.5rem;background:linear-gradient(180deg,rgba(0,0,0,.85) 0%,rgba(0,0,0,.4) 60%,transparent 100%);transition:background .3s}
-.nfx-header.scrolled{background:rgba(0,0,0,.95)}
-.nfx-logo{display:flex;align-items:center;gap:.7rem;flex-shrink:0;cursor:pointer}
-.nfx-logo img{height:42px;width:auto;display:block;filter:drop-shadow(0 2px 12px rgba(255,214,10,.25))}
-.nfx-logo-text{font-family:var(--display);font-size:1.7rem;letter-spacing:.06em;color:#fff;font-weight:400;line-height:1}
+.nfx-header{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  height:var(--nav-h);
+  display:flex;align-items:center;padding:0 var(--row-px);gap:1.5rem;
+  background:linear-gradient(180deg,rgba(0,0,0,.9) 0%,rgba(0,0,0,.5) 55%,transparent 100%);
+  transition:background .35s;
+}
+.nfx-header.scrolled{background:rgba(0,0,0,.96)}
+.nfx-logo{display:flex;align-items:center;gap:.6rem;flex-shrink:0;cursor:pointer}
+.nfx-logo img{height:40px;width:auto;display:block;filter:drop-shadow(0 2px 10px rgba(255,214,10,.25))}
+.nfx-logo-text{font-family:var(--display);font-size:1.65rem;letter-spacing:.06em;color:#fff;line-height:1}
 .nfx-logo-text .dim{color:var(--gold)}
-@media(max-width:600px){.nfx-logo img{height:34px}.nfx-logo-text{font-size:1.3rem}}
 .nfx-nav{display:flex;gap:1.4rem;list-style:none;font-size:.86rem;font-weight:500;color:#e5e5e5}
 .nfx-nav button{transition:color .2s}
-.nfx-nav button:hover{color:var(--text2)}
-.nfx-nav .active{font-weight:700;color:#fff}
-.nfx-header-right{margin-left:auto;display:flex;align-items:center;gap:1rem}
-.nfx-search-btn,.nfx-bell{width:32px;height:32px;display:flex;align-items:center;justify-content:center;color:#fff;border-radius:50%;transition:background .2s}
-.nfx-search-btn:hover,.nfx-bell:hover{background:rgba(255,255,255,.1)}
-.nfx-profile{width:32px;height:32px;border-radius:6px;background:linear-gradient(135deg,#ffd60a,#ff9500);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem;color:#000}
+.nfx-nav button:hover,.nfx-nav .active{color:#fff;font-weight:700}
+.nfx-header-right{margin-left:auto;display:flex;align-items:center;gap:.85rem}
+.nfx-icon-btn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;color:#fff;border-radius:50%;transition:background .2s}
+.nfx-icon-btn:hover{background:rgba(255,255,255,.1)}
+.nfx-profile{width:32px;height:32px;border-radius:6px;background:linear-gradient(135deg,#ffd60a,#ff9500);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.78rem;color:#000;flex-shrink:0}
 @media(max-width:840px){
   .nfx-nav{display:none}
-  .nfx-header{padding:0 1rem;height:56px}
-  :root{--nav-h:56px}
+  .nfx-header{padding:0 16px;height:52px}
+  :root{--nav-h:52px;--row-px:16px}
+  .nfx-logo img{height:32px}
+  .nfx-logo-text{font-size:1.35rem}
 }
 
 /* ── BILLBOARD ── */
-.nfx-billboard{position:relative;height:85vh;min-height:560px;width:100%;overflow:hidden;margin-bottom:-160px}
-.nfx-billboard-slide{position:absolute;inset:0;opacity:0;transition:opacity .9s ease;pointer-events:none}
-.nfx-billboard-slide.active{opacity:1;pointer-events:auto}
-.nfx-billboard-bg{position:absolute;inset:0;background-size:cover;background-position:center top;will-change:transform;animation:bbZoom 20s ease-out forwards}
-@keyframes bbZoom{from{transform:scale(1.04)}to{transform:scale(1)}}
-.nfx-billboard::after{content:'';position:absolute;inset:0;background:
-  linear-gradient(77deg,rgba(0,0,0,.78) 0%,rgba(0,0,0,.55) 28%,rgba(0,0,0,.18) 55%,transparent 80%),
-  linear-gradient(180deg,transparent 50%,rgba(0,0,0,.85) 100%);
-  pointer-events:none;z-index:2}
-.nfx-billboard-content{position:absolute;left:4%;bottom:22%;max-width:600px;z-index:3;color:#fff}
-.nfx-bb-tag{display:inline-flex;align-items:center;gap:.4rem;background:rgba(229,9,20,.92);color:#fff;font-size:.7rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase;padding:.32rem .65rem;border-radius:3px;margin-bottom:1rem}
-.nfx-bb-title{font-family:var(--display);font-size:clamp(2.6rem,6vw,5.2rem);line-height:.95;letter-spacing:.01em;margin-bottom:.85rem;text-shadow:0 2px 10px rgba(0,0,0,.7)}
-.nfx-bb-meta{display:flex;gap:.85rem;align-items:center;color:#dcdcdc;font-size:.85rem;font-weight:600;margin-bottom:1rem}
-.nfx-bb-meta .badge{padding:.18rem .5rem;border:1px solid rgba(255,255,255,.4);border-radius:3px;font-size:.7rem}
-.nfx-bb-desc{font-size:1.05rem;line-height:1.45;color:#e5e5e5;text-shadow:0 1px 4px rgba(0,0,0,.6);max-width:520px;margin-bottom:1.6rem;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.nfx-bb-actions{display:flex;gap:.7rem;flex-wrap:wrap}
-.nfx-btn{display:inline-flex;align-items:center;gap:.5rem;padding:.7rem 1.55rem;border-radius:4px;font-weight:700;font-size:1rem;cursor:pointer;transition:opacity .15s,background .15s,transform .1s;border:none}
-.nfx-btn:active{transform:scale(.98)}
-.nfx-btn-play{background:#fff;color:#000}
-.nfx-btn-play:hover{background:rgba(255,255,255,.78)}
-.nfx-btn-info{background:rgba(109,109,110,.7);color:#fff}
-.nfx-btn-info:hover{background:rgba(109,109,110,.4)}
-.nfx-bb-mute{position:absolute;right:5%;bottom:32%;width:42px;height:42px;border-radius:50%;border:2px solid rgba(255,255,255,.6);background:transparent;color:#fff;display:flex;align-items:center;justify-content:center;z-index:4;transition:border-color .2s}
-.nfx-bb-mute:hover{border-color:#fff}
-.nfx-bb-rating{position:absolute;right:0;bottom:32%;background:rgba(0,0,0,.6);border-left:3px solid rgba(255,255,255,.6);padding:.4rem 1.5rem .4rem .8rem;font-size:.95rem;font-weight:600;z-index:4;letter-spacing:.04em}
-.nfx-bb-dots{position:absolute;left:4%;bottom:11%;display:flex;gap:.4rem;z-index:4}
-.nfx-bb-dots button{width:14px;height:3px;border-radius:2px;background:rgba(255,255,255,.3);transition:background .2s,width .2s;border:none}
-.nfx-bb-dots button.active{background:#fff;width:24px}
+.nfx-billboard{
+  position:relative;height:82vh;min-height:520px;
+  width:100%;overflow:hidden;
+  /* chevauchement naturel avec les rangées, comme Netflix */
+  margin-bottom:-120px;
+}
 @media(max-width:780px){
-  .nfx-billboard{height:72vh;min-height:480px;margin-bottom:-100px}
-  .nfx-billboard-content{bottom:24%;left:5%;right:5%;max-width:none}
-  .nfx-bb-desc{font-size:.92rem;-webkit-line-clamp:2}
-  .nfx-bb-mute{display:none}
-  .nfx-bb-rating{display:none}
+  .nfx-billboard{height:68vw;min-height:360px;max-height:520px;margin-bottom:-80px}
+}
+.nfx-billboard-slide{position:absolute;inset:0;opacity:0;transition:opacity .8s ease;pointer-events:none}
+.nfx-billboard-slide.active{opacity:1;pointer-events:auto}
+.nfx-billboard-bg{
+  position:absolute;inset:0;
+  background-size:cover;background-position:center top;
+  animation:bbZoom 18s ease-out forwards;
+}
+@keyframes bbZoom{from{transform:scale(1.04)}to{transform:scale(1)}}
+.nfx-billboard::after{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:2;
+  background:
+    linear-gradient(77deg,rgba(0,0,0,.82) 0%,rgba(0,0,0,.58) 26%,rgba(0,0,0,.14) 52%,transparent 78%),
+    linear-gradient(180deg,rgba(0,0,0,.2) 0%,transparent 38%,rgba(0,0,0,.9) 100%);
+}
+.nfx-billboard-content{
+  position:absolute;left:var(--row-px);bottom:24%;max-width:580px;z-index:3;
+}
+.nfx-bb-tag{
+  display:inline-flex;align-items:center;gap:.35rem;
+  background:rgba(229,9,20,.92);color:#fff;
+  font-size:.68rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase;
+  padding:.28rem .6rem;border-radius:3px;margin-bottom:.9rem;
+}
+.nfx-bb-title{
+  font-family:var(--display);
+  font-size:clamp(2.4rem,5.5vw,5rem);
+  line-height:.93;letter-spacing:.01em;margin-bottom:.8rem;
+  text-shadow:0 2px 12px rgba(0,0,0,.75);
+}
+.nfx-bb-meta{
+  display:flex;gap:.8rem;align-items:center;
+  color:#dcdcdc;font-size:.84rem;font-weight:600;margin-bottom:.9rem;
+}
+.nfx-bb-meta .badge{padding:.15rem .45rem;border:1px solid rgba(255,255,255,.4);border-radius:3px;font-size:.68rem}
+.nfx-bb-desc{
+  font-size:.98rem;line-height:1.5;color:#e5e5e5;
+  text-shadow:0 1px 4px rgba(0,0,0,.6);
+  max-width:500px;margin-bottom:1.4rem;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+}
+.nfx-bb-actions{display:flex;gap:.6rem;flex-wrap:wrap}
+.nfx-btn{
+  display:inline-flex;align-items:center;gap:.45rem;
+  padding:.65rem 1.45rem;border-radius:4px;
+  font-weight:700;font-size:.96rem;
+  cursor:pointer;transition:opacity .15s,background .15s;
+  border:none;
+}
+.nfx-btn-play{background:#fff;color:#000}
+.nfx-btn-play:hover{background:rgba(255,255,255,.8)}
+.nfx-btn-info{background:rgba(109,109,110,.68);color:#fff}
+.nfx-btn-info:hover{background:rgba(109,109,110,.42)}
+.nfx-bb-mute{
+  position:absolute;right:5%;bottom:30%;
+  width:40px;height:40px;border-radius:50%;
+  border:2px solid rgba(255,255,255,.55);background:transparent;
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  z-index:4;transition:border-color .2s;
+}
+.nfx-bb-mute:hover{border-color:#fff}
+.nfx-bb-rating{
+  position:absolute;right:0;bottom:30%;
+  background:rgba(0,0,0,.6);border-left:3px solid rgba(255,255,255,.55);
+  padding:.38rem 1.4rem .38rem .7rem;
+  font-size:.9rem;font-weight:600;z-index:4;
+}
+.nfx-bb-dots{
+  position:absolute;left:var(--row-px);bottom:13%;
+  display:flex;gap:.4rem;z-index:4;
+}
+.nfx-bb-dots button{
+  width:12px;height:3px;border-radius:2px;
+  background:rgba(255,255,255,.28);border:none;
+  transition:background .2s,width .2s;
+}
+.nfx-bb-dots button.active{background:#fff;width:22px}
+@media(max-width:780px){
+  .nfx-billboard-content{bottom:20%;left:16px;right:16px;max-width:none}
+  .nfx-bb-desc{-webkit-line-clamp:2;font-size:.9rem}
+  .nfx-bb-mute,.nfx-bb-rating{display:none}
+  .nfx-bb-actions .nfx-btn{font-size:.88rem;padding:.58rem 1.1rem}
 }
 
-/* ── ROWS ── */
-.nfx-rows{position:relative;z-index:5;padding-bottom:5rem}
-.nfx-row{margin-bottom:3vw;position:relative}
-.nfx-row-header{display:flex;align-items:center;justify-content:space-between;padding:0 4% .55rem;color:#e5e5e5}
-.nfx-row-title{font-size:1.4vw;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:.5rem;cursor:pointer;transition:color .2s}
+/* ════════════════════════════════════════
+   ROWS — espacement aéré façon Netflix mobile
+   ════════════════════════════════════════ */
+.nfx-rows{
+  position:relative;z-index:5;
+  /* espace en bas pour la demo-bar */
+  padding-bottom:4.5rem;
+}
+.nfx-row{
+  /* espacement vertical généreux entre sections */
+  margin-bottom:var(--row-gap);
+  position:relative;
+}
+
+/* Titre de section — plus grand et respirant, comme Netflix */
+.nfx-row-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 var(--row-px) .7rem;
+}
+.nfx-row-title{
+  font-size:1.05rem;          /* desktop */
+  font-weight:700;
+  color:#e5e5e5;
+  letter-spacing:-.01em;
+  display:flex;align-items:center;gap:.45rem;
+  cursor:pointer;
+}
 .nfx-row-title:hover .nfx-row-explore{opacity:1;transform:translateX(0)}
-.nfx-row-explore{font-size:.78rem;font-weight:600;color:#54b9c5;letter-spacing:.04em;opacity:0;transform:translateX(-6px);transition:opacity .25s,transform .25s}
-@media(max-width:840px){.nfx-row-title{font-size:1.1rem}.nfx-row-explore{display:none}}
+.nfx-row-explore{
+  font-size:.78rem;font-weight:600;color:#54b9c5;
+  opacity:0;transform:translateX(-6px);transition:opacity .25s,transform .25s;
+}
+/* Sur mobile : titre plus petit mais texte clair */
+@media(max-width:840px){
+  .nfx-row-title{font-size:.92rem;font-weight:700}
+  .nfx-row-explore{display:none}
+  :root{--row-gap:2rem}
+}
 
-.nfx-row-track{position:relative;padding:0 4%}
+/* Lien "Tout voir" affiché en permanence sur mobile (comme Netflix) */
+.nfx-row-seeall{
+  display:none;
+  font-size:.82rem;font-weight:600;
+  color:#b3b3b3;
+  align-items:center;gap:.2rem;
+  white-space:nowrap;
+}
+@media(max-width:840px){.nfx-row-seeall{display:flex}}
 
-/* ── FIX CRITIQUE : scroll sans déplacer les vignettes au doigt ── */
-/* overflow-x:scroll + touch-action:pan-x empêche le translateX involontaire sur les cards */
+/* ── Track + scroll ── */
+.nfx-row-track{
+  position:relative;
+  padding:0 var(--row-px);
+}
+
+/*
+  SCROLL NATIF FLUIDE — principe Netflix mobile :
+  - overflow-x:scroll avec -webkit-overflow-scrolling:touch = momentum iOS natif
+  - PAS de scroll-snap sur mobile (Netflix n'en utilise pas, le scroll est libre)
+  - PAS de touch-action restrictif sur les cartes
+  - PAS de pointerEvents hack JS
+  - will-change uniquement sur le conteneur
+*/
 .nfx-row-scroll{
   display:flex;
-  gap:4px;
+  gap:8px;             /* espace entre cartes — plus respirant */
   overflow-x:scroll;
   overflow-y:visible;
-  scroll-snap-type:x mandatory;
-  scroll-behavior:smooth;
-  /* Espace pour le hover-expand vertical sans clipper */
-  padding-top:80px;
-  padding-bottom:60px;
-  margin-top:-80px;
-  margin-bottom:-60px;
+  -webkit-overflow-scrolling:touch;   /* momentum iOS */
   -ms-overflow-style:none;
   scrollbar-width:none;
-  /* CRITIQUE: empêche le déplacement des cards lors du scroll tactile */
-  touch-action:pan-x;
-  /* CRITIQUE: évite le glissement du transform au scroll */
+  /* Espace pour hover-expand vertical (desktop) */
+  padding-top:72px;
+  padding-bottom:48px;
+  margin-top:-72px;
+  margin-bottom:-48px;
   will-change:scroll-position;
 }
 .nfx-row-scroll::-webkit-scrollbar{display:none}
+/* Desktop uniquement : scroll-snap */
+@media(hover:hover){
+  .nfx-row-scroll{
+    scroll-snap-type:x mandatory;
+    scroll-behavior:smooth;
+  }
+  .nfx-card{scroll-snap-align:start}
+}
 
-.nfx-row-arrow{position:absolute;top:0;bottom:0;width:4%;display:flex;align-items:center;justify-content:center;background:rgba(20,20,20,.5);border:none;color:#fff;cursor:pointer;z-index:6;opacity:0;transition:opacity .2s,background .2s}
+/* Flèches de navigation — desktop uniquement */
+.nfx-row-arrow{
+  position:absolute;top:0;bottom:0;width:4%;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(20,20,20,.5);border:none;color:#fff;
+  cursor:pointer;z-index:6;
+  opacity:0;transition:opacity .2s,background .2s;
+}
 .nfx-row:hover .nfx-row-arrow{opacity:1}
-.nfx-row-arrow:hover{background:rgba(20,20,20,.85)}
+.nfx-row-arrow:hover{background:rgba(20,20,20,.88)}
 .nfx-row-arrow.left{left:0}
 .nfx-row-arrow.right{right:0}
-.nfx-row-arrow svg{transition:transform .2s}
-.nfx-row-arrow:hover svg{transform:scale(1.4)}
+.nfx-row-arrow svg{transition:transform .15s}
+.nfx-row-arrow:hover svg{transform:scale(1.35)}
 @media(hover:none){.nfx-row-arrow{display:none}}
 
-/* ── CARDS ── */
+/* ── CARDS — taille et aspect ── */
 .nfx-card{
-  flex:0 0 calc((100% - 16px)/5);
-  scroll-snap-align:start;
+  /* Desktop : 5 par rangée */
+  flex:0 0 calc((100% - 40px)/5);
   position:relative;
   border-radius:4px;
   cursor:pointer;
-  /* CRITIQUE: transition uniquement au hover, pas pendant scroll */
-  transition:transform .35s var(--ease);
-  /* CRITIQUE: empêche le mouvement pendant le scroll tactile */
-  touch-action:pan-x;
+  /* Transition UNIQUEMENT sur desktop/hover */
+  transition:transform .3s var(--ease);
 }
-@media(min-width:1400px){.nfx-card{flex-basis:calc((100% - 20px)/6)}}
-@media(max-width:1100px){.nfx-card{flex-basis:calc((100% - 12px)/4)}}
-@media(max-width:780px){.nfx-card{flex-basis:calc((100% - 8px)/3)}}
-@media(max-width:520px){.nfx-card{flex-basis:calc((100% - 4px)/2.3)}}
+@media(min-width:1400px){.nfx-card{flex-basis:calc((100% - 48px)/6)}}
+@media(max-width:1100px){.nfx-card{flex-basis:calc((100% - 32px)/4)}}
+/* Mobile : 2 cartes visibles + 1/3 de la suivante = scroll naturel */
+@media(max-width:780px){
+  .nfx-card{flex-basis:calc((100% - 16px)/2.4)}
+  .nfx-row-scroll{gap:6px}
+}
+@media(max-width:440px){
+  .nfx-card{flex-basis:calc((100% - 12px)/2.1)}
+}
 
-.nfx-card-img-wrap{position:relative;aspect-ratio:16/9;border-radius:4px;overflow:hidden;background:#181818}
-.nfx-card-img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none}
-.nfx-card-progress{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.18)}
+.nfx-card-img-wrap{
+  position:relative;aspect-ratio:16/9;
+  border-radius:4px;overflow:hidden;
+  background:#181818;
+}
+.nfx-card-img{
+  width:100%;height:100%;object-fit:cover;display:block;
+  pointer-events:none;user-select:none;-webkit-user-drag:none;
+  /* Optimisation rendu mobile */
+  will-change:auto;
+}
+.nfx-card-progress{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.16)}
 .nfx-card-progress-fill{height:100%;background:#e50914}
-.nfx-card-badge-new{position:absolute;top:8px;right:8px;background:#e50914;color:#fff;font-size:.6rem;font-weight:800;letter-spacing:.06em;padding:.18rem .4rem;border-radius:3px;text-transform:uppercase;z-index:3}
+.nfx-card-badge-new{
+  position:absolute;top:6px;right:6px;
+  background:#e50914;color:#fff;
+  font-size:.58rem;font-weight:800;letter-spacing:.06em;
+  padding:.15rem .38rem;border-radius:3px;text-transform:uppercase;z-index:3;
+}
 
-/* ── HOVER EXPAND — DESKTOP UNIQUEMENT — CORRIGÉ ── */
-/* On applique le scale uniquement sur desktop (hover:hover) et seulement après un délai */
-/* Les cartes ne bougent PAS pendant le scroll tactile (touch-action:pan-x + pas de transform au toucher) */
+/* Titre sous la carte sur mobile (comme Netflix) */
+.nfx-card-label{
+  display:none;
+  padding:.45rem .1rem .1rem;
+  font-size:.78rem;font-weight:600;
+  color:#e5e5e5;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+@media(max-width:840px){.nfx-card-label{display:block}}
+
+/* ── HOVER EXPAND — desktop uniquement ── */
 @media(hover:hover){
   .nfx-card:hover{
-    transform:scale(1.38) translateY(-14%);
+    transform:scale(1.36) translateY(-13%);
     z-index:30;
-    transition:transform .35s var(--ease) .4s;
+    transition:transform .3s var(--ease) .38s;
   }
-  .nfx-row-scroll>.nfx-card:first-child:hover{transform:scale(1.38) translate(12%,-14%)}
-  .nfx-row-scroll>.nfx-card:last-child:hover{transform:scale(1.38) translate(-12%,-14%)}
-  .nfx-card:hover .nfx-card-expand{opacity:1;pointer-events:auto;transform:translateY(0);transition-delay:.4s}
-  /* Pendant le scroll, on retire le hover via JS — fallback CSS : no hover on scrolling row */
+  .nfx-row-scroll>.nfx-card:first-child:hover{transform:scale(1.36) translate(11%,-13%)}
+  .nfx-row-scroll>.nfx-card:last-child:hover{transform:scale(1.36) translate(-11%,-13%)}
+  .nfx-card:hover .nfx-card-expand{
+    opacity:1;pointer-events:auto;transform:translateY(0);
+    transition-delay:.38s;
+  }
 }
-/* Sur mobile (touch), jamais de scale */
 @media(hover:none){
-  .nfx-card:hover{transform:none !important}
+  .nfx-card:hover,.nfx-top10 .nfx-card:hover{transform:none !important}
 }
 
-.nfx-card-expand{position:absolute;left:0;right:0;top:0;background:#181818;border-radius:6px;box-shadow:0 24px 60px rgba(0,0,0,.85);opacity:0;pointer-events:none;transform:translateY(-6px);transition:opacity .25s,transform .25s;overflow:hidden;z-index:20}
+/* Expand card */
+.nfx-card-expand{
+  position:absolute;left:0;right:0;top:0;
+  background:#181818;border-radius:6px;
+  box-shadow:0 20px 55px rgba(0,0,0,.88);
+  opacity:0;pointer-events:none;
+  transform:translateY(-4px);
+  transition:opacity .22s,transform .22s;
+  overflow:hidden;z-index:20;
+}
 .nfx-card-expand-img{position:relative;aspect-ratio:16/9;overflow:hidden}
 .nfx-card-expand-img img{width:100%;height:100%;object-fit:cover;display:block}
-.nfx-card-expand-img::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,#181818 100%)}
-.nfx-card-expand-body{padding:.85rem 1rem 1rem}
-.nfx-card-expand-actions{display:flex;align-items:center;gap:.4rem;margin-bottom:.7rem}
-.nfx-action-btn{width:36px;height:36px;border-radius:50%;border:2px solid rgba(255,255,255,.5);background:rgba(0,0,0,.3);color:#fff;display:flex;align-items:center;justify-content:center;transition:border-color .15s,background .15s;cursor:pointer}
+.nfx-card-expand-img::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 58%,#181818 100%)
+}
+.nfx-card-expand-body{padding:.8rem .95rem .95rem}
+.nfx-card-expand-actions{display:flex;align-items:center;gap:.38rem;margin-bottom:.65rem}
+.nfx-action-btn{
+  width:34px;height:34px;border-radius:50%;
+  border:2px solid rgba(255,255,255,.45);background:rgba(0,0,0,.3);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  transition:border-color .15s,background .15s;cursor:pointer;
+}
 .nfx-action-btn:hover{border-color:#fff;background:rgba(255,255,255,.1)}
 .nfx-action-btn.primary{background:#fff;color:#000;border-color:#fff}
-.nfx-action-btn.primary:hover{background:rgba(255,255,255,.78)}
+.nfx-action-btn.primary:hover{background:rgba(255,255,255,.8)}
 .nfx-action-btn.right{margin-left:auto}
-.nfx-card-expand-meta{display:flex;gap:.55rem;align-items:center;font-size:.75rem;color:#dcdcdc;margin-bottom:.35rem}
+.nfx-card-expand-meta{
+  display:flex;gap:.5rem;align-items:center;
+  font-size:.73rem;color:#dcdcdc;margin-bottom:.3rem;
+}
 .nfx-card-expand-meta .match{color:#46d369;font-weight:700}
-.nfx-card-expand-meta .badge{padding:.04rem .35rem;border:1px solid rgba(255,255,255,.4);border-radius:2px;font-size:.62rem}
-.nfx-card-expand-title{font-size:.95rem;font-weight:700;color:#fff;margin-bottom:.3rem}
-.nfx-card-expand-tags{display:flex;gap:.35rem;flex-wrap:wrap;font-size:.7rem;color:#dcdcdc}
-.nfx-card-expand-tags .dot{color:#646464}
+.nfx-card-expand-meta .badge{
+  padding:.03rem .32rem;border:1px solid rgba(255,255,255,.38);
+  border-radius:2px;font-size:.6rem;
+}
+.nfx-card-expand-title{font-size:.9rem;font-weight:700;color:#fff;margin-bottom:.28rem}
+.nfx-card-expand-tags{display:flex;gap:.32rem;flex-wrap:wrap;font-size:.68rem;color:#dcdcdc}
+.nfx-card-expand-tags .dot{color:#555}
 
-/* ── TOP 10 — format poster 2/3 ── */
-.nfx-top10 .nfx-row-scroll{gap:8px}
-.nfx-top10 .nfx-card{flex:0 0 calc((100% - 24px)/4);display:grid;grid-template-columns:42% 58%;align-items:end;background:transparent}
-@media(min-width:1400px){.nfx-top10 .nfx-card{flex-basis:calc((100% - 40px)/6)}}
-@media(max-width:1100px){.nfx-top10 .nfx-card{flex-basis:calc((100% - 16px)/3)}}
-@media(max-width:780px){.nfx-top10 .nfx-card{flex-basis:calc((100% - 8px)/2.3);grid-template-columns:38% 62%}}
+/* ── TOP 10 ── */
+.nfx-top10 .nfx-row-scroll{gap:10px}
+.nfx-top10 .nfx-card{
+  flex:0 0 calc((100% - 32px)/4);
+  display:grid;grid-template-columns:42% 58%;
+  align-items:end;background:transparent;
+}
+@media(min-width:1400px){.nfx-top10 .nfx-card{flex-basis:calc((100% - 48px)/6)}}
+@media(max-width:1100px){.nfx-top10 .nfx-card{flex-basis:calc((100% - 24px)/3)}}
+@media(max-width:780px){
+  .nfx-top10 .nfx-card{
+    flex-basis:calc((100% - 20px)/2.2);
+    grid-template-columns:36% 64%;
+  }
+}
 /* poster 2/3 */
-.nfx-top10 .nfx-card-img-wrap{aspect-ratio:2/3;width:100%;border-radius:4px;overflow:hidden;background:#181818}
-.nfx-top10-num{font-family:var(--display);font-size:11vw;line-height:.78;color:#000;-webkit-text-stroke:3px #5a5a5a;letter-spacing:-.06em;font-weight:900;pointer-events:none;user-select:none;text-align:center;align-self:end;justify-self:center;margin-right:-12%;position:relative;z-index:1}
-@media(min-width:1400px){.nfx-top10-num{font-size:9vw}}
-@media(max-width:780px){.nfx-top10-num{font-size:16vw;-webkit-text-stroke:2px #5a5a5a;margin-right:-15%}}
-@media(hover:hover){.nfx-top10 .nfx-card:hover{transform:scale(1.18) translateY(-6%);z-index:30;transition-delay:.4s}}
-@media(hover:none){.nfx-top10 .nfx-card:hover{transform:none !important}}
+.nfx-top10 .nfx-card-img-wrap{
+  aspect-ratio:2/3;width:100%;
+  border-radius:4px;overflow:hidden;background:#181818;
+}
+.nfx-top10-num{
+  font-family:var(--display);font-size:10.5vw;line-height:.8;
+  color:#000;-webkit-text-stroke:3px #5a5a5a;
+  letter-spacing:-.06em;font-weight:900;
+  pointer-events:none;user-select:none;
+  text-align:center;align-self:end;justify-self:center;
+  margin-right:-14%;position:relative;z-index:1;
+}
+@media(min-width:1400px){.nfx-top10-num{font-size:8.5vw}}
+@media(max-width:780px){.nfx-top10-num{font-size:15vw;-webkit-text-stroke:2px #5a5a5a;margin-right:-16%}}
+@media(hover:hover){.nfx-top10 .nfx-card:hover{transform:scale(1.15) translateY(-5%);z-index:30;transition-delay:.38s}}
 .nfx-top10 .nfx-card .nfx-card-expand{display:none}
+.nfx-top10 .nfx-card-label{display:none}
 
 /* ── SPLASH ── */
-.nfx-splash{position:fixed;inset:0;background:#000;z-index:9999;display:flex;align-items:center;justify-content:center;transition:opacity .8s,visibility .8s;flex-direction:column}
+.nfx-splash{
+  position:fixed;inset:0;background:#000;z-index:9999;
+  display:flex;align-items:center;justify-content:center;flex-direction:column;
+  transition:opacity .8s,visibility .8s;
+}
 .nfx-splash.hide{opacity:0;visibility:hidden;pointer-events:none}
 .nfx-splash-logo{display:flex;align-items:center;justify-content:center}
-.nfx-splash-letter{font-family:var(--display);font-size:14vw;color:var(--gold);text-shadow:0 0 40px rgba(255,214,10,.65);opacity:0;animation:tudumLetter 1.6s var(--spring) forwards}
+.nfx-splash-letter{
+  font-family:var(--display);font-size:13vw;
+  color:var(--gold);text-shadow:0 0 40px rgba(255,214,10,.65);
+  opacity:0;animation:tudumLetter 1.5s var(--spring) forwards;
+}
 .nfx-splash-letter:nth-child(1){animation-delay:.1s}
 .nfx-splash-letter:nth-child(2){animation-delay:.2s}
 .nfx-splash-letter:nth-child(3){animation-delay:.3s}
 .nfx-splash-letter:nth-child(4){animation-delay:.4s}
 .nfx-splash-letter:nth-child(5){animation-delay:.5s}
 .nfx-splash-letter:nth-child(6){animation-delay:.6s}
-.nfx-splash-letter:nth-child(7){animation-delay:.7s}
-.nfx-splash-letter:nth-child(8){animation-delay:.75s;color:#fff;font-size:8vw;align-self:flex-start;margin-left:.3rem;text-shadow:0 0 20px rgba(255,255,255,.4)}
-.nfx-splash-bar{width:0;max-width:340px;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin-top:1.2rem;animation:tudumBar 1.4s ease-out .8s forwards;box-shadow:0 0 20px rgba(255,214,10,.7)}
-@keyframes tudumLetter{0%{opacity:0;transform:translateY(28px) scale(.6);filter:blur(6px)}60%{opacity:1;transform:translateY(0) scale(1.06);filter:blur(0)}100%{opacity:1;transform:translateY(0) scale(1)}}
-@keyframes tudumBar{0%{width:0}50%{width:280px}100%{width:0}}
+.nfx-splash-letter:nth-child(7){animation-delay:.68s}
+.nfx-splash-letter:nth-child(8){animation-delay:.74s;color:#fff;font-size:7.5vw;align-self:flex-start;margin-left:.3rem;text-shadow:0 0 18px rgba(255,255,255,.4)}
+.nfx-splash-bar{
+  width:0;max-width:320px;height:3px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  margin-top:1.1rem;
+  animation:tudumBar 1.3s ease-out .8s forwards;
+  box-shadow:0 0 18px rgba(255,214,10,.7);
+}
+@keyframes tudumLetter{
+  0%{opacity:0;transform:translateY(26px) scale(.6);filter:blur(6px)}
+  60%{opacity:1;transform:translateY(0) scale(1.05);filter:blur(0)}
+  100%{opacity:1;transform:translateY(0) scale(1)}
+}
+@keyframes tudumBar{0%{width:0}50%{width:260px}100%{width:0}}
 
 /* ── ROUTE GRID ── */
-.nfx-route-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;padding:0 4% 4rem}
-@media(max-width:780px){.nfx-route-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.7rem}}
-@media(max-width:480px){.nfx-route-grid{grid-template-columns:repeat(2,1fr);gap:.6rem}}
-.nfx-file-card{position:relative;border-radius:6px;overflow:hidden;cursor:pointer;background:#181818;transition:transform .2s var(--ease),box-shadow .2s}
-.nfx-file-card:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 16px 36px rgba(0,0,0,.6)}
+.nfx-route-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:1.1rem;
+  padding:0 var(--row-px) 4rem;
+}
+@media(max-width:780px){
+  .nfx-route-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.7rem}
+}
+@media(max-width:440px){
+  .nfx-route-grid{grid-template-columns:repeat(2,1fr);gap:.5rem}
+}
+.nfx-file-card{
+  position:relative;border-radius:5px;overflow:hidden;
+  cursor:pointer;background:#181818;
+  transition:transform .2s var(--ease),box-shadow .2s;
+}
+.nfx-file-card:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 14px 32px rgba(0,0,0,.65)}
 .nfx-file-thumb{position:relative;aspect-ratio:16/9;overflow:hidden;background:#0a0a0a}
-.nfx-file-thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s ease}
+.nfx-file-thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s ease}
 .nfx-file-card:hover .nfx-file-thumb img{transform:scale(1.05)}
-.nfx-file-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,.55) 100%);pointer-events:none}
-.nfx-file-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:46px;height:46px;border-radius:50%;background:rgba(229,9,20,.92);color:#fff;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s,transform .2s;box-shadow:0 6px 18px rgba(0,0,0,.5)}
-.nfx-file-card:hover .nfx-file-play{opacity:1;transform:translate(-50%,-50%) scale(1.08)}
-@media(hover:none){.nfx-file-play{opacity:.85}}
-.nfx-file-dur{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.78);color:#fff;font-size:.7rem;font-weight:600;padding:.18rem .4rem;border-radius:3px}
-.nfx-file-body{padding:.7rem .85rem .85rem}
-.nfx-file-title{font-size:.88rem;font-weight:600;color:#fff;line-height:1.3;margin-bottom:.25rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.nfx-file-meta{font-size:.74rem;color:#b3b3b3;font-weight:500}
+.nfx-file-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 48%,rgba(0,0,0,.5) 100%);pointer-events:none}
+.nfx-file-play{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:44px;height:44px;border-radius:50%;
+  background:rgba(229,9,20,.9);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .2s;box-shadow:0 6px 16px rgba(0,0,0,.5);
+}
+.nfx-file-card:hover .nfx-file-play{opacity:1}
+@media(hover:none){.nfx-file-play{opacity:.8}}
+.nfx-file-dur{
+  position:absolute;bottom:6px;right:6px;
+  background:rgba(0,0,0,.76);color:#fff;
+  font-size:.68rem;font-weight:600;padding:.15rem .38rem;border-radius:3px;
+}
+.nfx-file-body{padding:.6rem .8rem .8rem}
+.nfx-file-title{
+  font-size:.84rem;font-weight:600;color:#fff;line-height:1.3;
+  margin-bottom:.2rem;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.nfx-file-meta{font-size:.72rem;color:#b3b3b3}
 
-.nfx-route{display:none;padding-top:calc(var(--nav-h) + 2rem)}
+.nfx-route{display:none;padding-top:calc(var(--nav-h) + 1.6rem)}
 .nfx-route.active{display:block}
 
 /* ── MA LISTE vide ── */
-.nfx-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:40vh;gap:1rem;color:var(--text2);text-align:center;padding:2rem}
-.nfx-empty svg{opacity:.3}
-.nfx-empty h2{font-size:1.4rem;font-weight:700;color:#fff}
-.nfx-empty p{font-size:.95rem;max-width:380px;line-height:1.5}
+.nfx-empty{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:40vh;gap:.9rem;color:#b3b3b3;text-align:center;padding:2rem;
+}
+.nfx-empty svg{opacity:.25}
+.nfx-empty h2{font-size:1.3rem;font-weight:700;color:#fff}
+.nfx-empty p{font-size:.9rem;max-width:340px;line-height:1.5}
 
 /* ── MODAL ── */
-.nfx-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:opacity .3s,visibility .3s;backdrop-filter:blur(8px)}
+.nfx-modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:500;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;visibility:hidden;transition:opacity .28s,visibility .28s;
+  backdrop-filter:blur(8px);
+}
 .nfx-modal-overlay.open{opacity:1;visibility:visible}
-.nfx-modal{background:#141414;border-radius:8px;width:min(860px,94vw);max-height:92vh;overflow-y:auto;position:relative;box-shadow:0 32px 80px rgba(0,0,0,.9)}
-.nfx-modal-close{position:absolute;top:12px;right:12px;z-index:10;width:36px;height:36px;border-radius:50%;background:rgba(20,20,20,.9);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.nfx-modal{
+  background:#141414;border-radius:8px;
+  width:min(860px,96vw);max-height:92vh;overflow-y:auto;
+  position:relative;box-shadow:0 28px 72px rgba(0,0,0,.92);
+}
+.nfx-modal-close{
+  position:absolute;top:10px;right:10px;z-index:10;
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(20,20,20,.92);border:none;color:#fff;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:background .2s;
+}
 .nfx-modal-close:hover{background:#333}
 .nfx-modal-hero{position:relative;aspect-ratio:16/9;background:#000;overflow:hidden}
 .nfx-modal-hero img{width:100%;height:100%;object-fit:cover;display:block}
-.nfx-modal-hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,#141414 100%)}
-.nfx-modal-hero-play{position:absolute;bottom:1.4rem;left:1.4rem;display:flex;gap:.7rem;flex-wrap:wrap}
-.nfx-modal-body{padding:1.2rem 1.6rem 2rem}
-.nfx-modal-title{font-family:var(--display);font-size:clamp(1.4rem,3vw,2.2rem);margin-bottom:.5rem}
-.nfx-modal-meta{display:flex;gap:.7rem;align-items:center;font-size:.85rem;color:#dcdcdc;margin-bottom:1rem;flex-wrap:wrap}
+.nfx-modal-hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 38%,#141414 100%)}
+.nfx-modal-hero-play{position:absolute;bottom:1.2rem;left:1.2rem;display:flex;gap:.65rem;flex-wrap:wrap}
+.nfx-modal-body{padding:1.1rem 1.5rem 1.8rem}
+.nfx-modal-title{font-family:var(--display);font-size:clamp(1.3rem,3vw,2rem);margin-bottom:.45rem}
+.nfx-modal-meta{
+  display:flex;gap:.65rem;align-items:center;
+  font-size:.83rem;color:#dcdcdc;margin-bottom:.9rem;flex-wrap:wrap;
+}
 .nfx-modal-meta .match{color:#46d369;font-weight:700}
-.nfx-modal-meta .badge{padding:.18rem .45rem;border:1px solid rgba(255,255,255,.35);border-radius:3px;font-size:.72rem}
-.nfx-modal-desc{font-size:.97rem;line-height:1.55;color:#e5e5e5;margin-bottom:1.2rem}
-.nfx-modal-add{display:inline-flex;align-items:center;gap:.5rem;padding:.55rem 1.2rem;border:2px solid rgba(255,255,255,.35);border-radius:4px;font-size:.88rem;font-weight:600;cursor:pointer;transition:border-color .2s,background .2s;color:#fff;background:transparent}
-.nfx-modal-add:hover{border-color:#fff;background:rgba(255,255,255,.08)}
+.nfx-modal-meta .badge{padding:.16rem .42rem;border:1px solid rgba(255,255,255,.32);border-radius:3px;font-size:.7rem}
+.nfx-modal-desc{font-size:.94rem;line-height:1.52;color:#e5e5e5;margin-bottom:1.1rem}
+.nfx-modal-add{
+  display:inline-flex;align-items:center;gap:.45rem;
+  padding:.52rem 1.1rem;border:2px solid rgba(255,255,255,.32);
+  border-radius:4px;font-size:.86rem;font-weight:600;
+  cursor:pointer;transition:border-color .2s,background .2s;
+  color:#fff;background:transparent;
+}
+.nfx-modal-add:hover{border-color:#fff;background:rgba(255,255,255,.07)}
 .nfx-modal-add.in-list{border-color:var(--gold);color:var(--gold)}
 
 /* ── TOAST ── */
-.nfx-toast{position:fixed;bottom:4rem;left:50%;transform:translateX(-50%) translateY(20px);background:#fff;color:#000;padding:.6rem 1.2rem;border-radius:6px;font-weight:700;font-size:.85rem;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;z-index:600;white-space:nowrap}
+.nfx-toast{
+  position:fixed;bottom:4.2rem;left:50%;transform:translateX(-50%) translateY(18px);
+  background:#fff;color:#000;
+  padding:.55rem 1.1rem;border-radius:6px;
+  font-weight:700;font-size:.83rem;
+  opacity:0;transition:opacity .28s,transform .28s;
+  pointer-events:none;z-index:600;white-space:nowrap;
+}
 .nfx-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* ── MY LIST BADGE ── */
-.nfx-mylist-badge{display:none;position:absolute;top:8px;left:8px;width:26px;height:26px;border-radius:50%;background:var(--gold);color:#000;font-size:.65rem;font-weight:800;align-items:center;justify-content:center;z-index:4}
+.nfx-mylist-badge{
+  display:none;position:absolute;top:7px;left:7px;
+  width:24px;height:24px;border-radius:50%;
+  background:var(--gold);color:#000;
+  font-size:.62rem;font-weight:800;
+  align-items:center;justify-content:center;z-index:4;
+}
 .in-mylist .nfx-mylist-badge{display:flex}
 
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
+}
 </style>
 </head>
 <body>
@@ -325,9 +613,9 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 <!-- TOAST -->
 <div class="nfx-toast" id="nfxToast"></div>
 
-<!-- MODAL PLAYER -->
+<!-- MODAL -->
 <div class="nfx-modal-overlay" id="nfxModal" role="dialog" aria-modal="true" aria-label="Détails">
-  <div class="nfx-modal" id="nfxModalInner">
+  <div class="nfx-modal">
     <button class="nfx-modal-close" id="nfxModalClose" aria-label="Fermer">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
@@ -336,8 +624,7 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
       <div class="nfx-modal-hero-overlay"></div>
       <div class="nfx-modal-hero-play">
         <button class="nfx-btn nfx-btn-play" id="nfxModalPlay">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Lecture
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>Lecture
         </button>
       </div>
     </div>
@@ -346,7 +633,7 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
       <div class="nfx-modal-meta" id="nfxModalMeta"></div>
       <div class="nfx-modal-desc" id="nfxModalDesc"></div>
       <button class="nfx-modal-add" id="nfxModalAdd">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         <span id="nfxModalAddLabel">Ajouter à ma liste</span>
       </button>
     </div>
@@ -355,14 +642,14 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 
 <!-- HEADER -->
 <header class="nfx-header" id="nfxHeader">
-  <a class="nfx-logo" href="#" data-route="home" aria-label="LFIAGtube accueil">
+  <a class="nfx-logo" href="#" data-route="home" aria-label="LFIAGtube">
     <picture>
       <source type="image/webp" srcset="images/logo-alune.webp">
-      <img src="images/logo-alune.webp" alt="LFIAGtube" id="nfxLogoImg" onerror="this.style.display='none'">
+      <img src="images/logo-alune.webp" alt="LFIAGtube" onerror="this.style.display='none'">
     </picture>
     <span class="nfx-logo-text">LFIAG<span class="dim">tube</span></span>
   </a>
-  <ul class="nfx-nav" id="nfxNav">
+  <ul class="nfx-nav">
     <li><button class="active" data-route="home">Accueil</button></li>
     <li><button data-route="series">Séries &amp; Émissions</button></li>
     <li><button data-route="docs">Documentaires</button></li>
@@ -370,10 +657,10 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
     <li><button data-route="mylist">Ma liste</button></li>
   </ul>
   <div class="nfx-header-right">
-    <button class="nfx-search-btn" aria-label="Rechercher">
+    <button class="nfx-icon-btn" aria-label="Rechercher">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
     </button>
-    <button class="nfx-bell" aria-label="Notifications">
+    <button class="nfx-icon-btn" aria-label="Notifications">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
     </button>
     <div class="nfx-profile">N</div>
@@ -383,7 +670,6 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 <!-- HOME -->
 <div id="view-home" class="nfx-route active">
 <section class="nfx-billboard" id="nfxBillboard">
-  <!-- Slide 1 : The Voice 2026 -->
   <div class="nfx-billboard-slide active" data-slide="0">
     <div class="nfx-billboard-bg" style="background-image:url('images/categories-v2/The_Voice_2026.webp')"></div>
     <div class="nfx-billboard-content">
@@ -391,46 +677,44 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
       <h1 class="nfx-bb-title">The Voice 2026</h1>
       <div class="nfx-bb-meta">
         <span style="color:#46d369;font-weight:700">98% Recommandé</span>
-        <span>2026</span><span class="badge">TF1</span><span>Saison en cours</span>
+        <span>2026</span><span class="badge">TF1</span>
       </div>
       <p class="nfx-bb-desc">Lara Fabian sublime la nouvelle saison de The Voice. Diffusion tous les samedis à 21h10 sur TF1, disponible sur LFIAGtube le lundi.</p>
       <div class="nfx-bb-actions">
         <button class="nfx-btn nfx-btn-play" data-action="play" data-idx="0">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>Lecture
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>Lecture
         </button>
         <button class="nfx-btn nfx-btn-info" data-action="info" data-idx="0">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Plus d'infos
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Plus d’infos
         </button>
       </div>
     </div>
-    <button class="nfx-bb-mute" aria-label="Couper le son">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+    <button class="nfx-bb-mute" aria-label="Son">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
     </button>
     <div class="nfx-bb-rating">TV-G</div>
   </div>
-  <!-- Slide 2 : L'Effet Lara -->
   <div class="nfx-billboard-slide" data-slide="1">
     <div class="nfx-billboard-bg" style="background-image:url('images/categories-v2/LEffet_Lara_-_2026.webp')"></div>
     <div class="nfx-billboard-content">
       <div class="nfx-bb-tag">✦ Nouveauté 2026</div>
-      <h1 class="nfx-bb-title">L'Effet Lara</h1>
+      <h1 class="nfx-bb-title">L’Effet Lara</h1>
       <div class="nfx-bb-meta">
         <span style="color:#46d369;font-weight:700">95% Recommandé</span>
-        <span>2026</span><span class="badge">TVA</span><span>Saison 1</span>
+        <span>2026</span><span class="badge">TVA</span>
       </div>
-      <p class="nfx-bb-desc">Lara Fabian au cœur d'une nouvelle aventure musicale sur TVA. Disponible sur LFIAGtube chaque lundi.</p>
+      <p class="nfx-bb-desc">Lara Fabian au cœur d’une nouvelle aventure musicale sur TVA. Disponible chaque lundi sur LFIAGtube.</p>
       <div class="nfx-bb-actions">
         <button class="nfx-btn nfx-btn-play" data-action="play" data-idx="1">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>Lecture
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>Lecture
         </button>
         <button class="nfx-btn nfx-btn-info" data-action="info" data-idx="1">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Plus d'infos
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Plus d’infos
         </button>
       </div>
     </div>
     <div class="nfx-bb-rating">TV-G</div>
   </div>
-  <!-- Slide 3 : Star Académie -->
   <div class="nfx-billboard-slide" data-slide="2">
     <div class="nfx-billboard-bg" style="background-image:url('images/categories-v2/Star_Acadmie_2025.webp')"></div>
     <div class="nfx-billboard-content">
@@ -438,86 +722,104 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
       <h1 class="nfx-bb-title">Star Académie 2025</h1>
       <div class="nfx-bb-meta">
         <span style="color:#46d369;font-weight:700">97% Recommandé</span>
-        <span>2025</span><span class="badge">TVA</span><span>Édition complète</span>
+        <span>2025</span><span class="badge">TVA</span>
       </div>
-      <p class="nfx-bb-desc">Revivez la 7e Académie québécoise avec Lara Fabian au piano. Tous les épisodes, performances et coulisses en exclu sur LFIAGtube.</p>
+      <p class="nfx-bb-desc">Revivez la 7e Académie québécoise avec Lara Fabian au piano. Tous les épisodes en exclu sur LFIAGtube.</p>
       <div class="nfx-bb-actions">
         <button class="nfx-btn nfx-btn-play" data-action="play" data-idx="2">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>Lecture
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>Lecture
         </button>
         <button class="nfx-btn nfx-btn-info" data-action="info" data-idx="2">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Plus d'infos
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Plus d’infos
         </button>
       </div>
     </div>
     <div class="nfx-bb-rating">TV-G</div>
   </div>
   <div class="nfx-bb-dots" id="nfxBbDots">
-    <button class="active" data-dot="0" aria-label="Diapositive 1"></button>
-    <button data-dot="1" aria-label="Diapositive 2"></button>
-    <button data-dot="2" aria-label="Diapositive 3"></button>
+    <button class="active" data-dot="0" aria-label="Slide 1"></button>
+    <button data-dot="1" aria-label="Slide 2"></button>
+    <button data-dot="2" aria-label="Slide 3"></button>
   </div>
 </section>
 
 <div class="nfx-rows">
-  <!-- TOP 10 — utilise categories-v2-poster (2/3) -->
+
   <section class="nfx-row nfx-top10">
-    <div class="nfx-row-header"><h3 class="nfx-row-title">Top 10 LFIAGtube · Cette semaine <span class="nfx-row-explore">Tout explorer ›</span></h3></div>
+    <div class="nfx-row-header">
+      <h3 class="nfx-row-title">Top 10 LFIAGtube · Cette semaine <span class="nfx-row-explore">Tout explorer ›</span></h3>
+      <span class="nfx-row-seeall">Tout voir <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></span>
+    </div>
     <div class="nfx-row-track">
-      <button class="nfx-row-arrow left" aria-label="Précédent"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <button class="nfx-row-arrow left" aria-label="Précédent"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
       <div class="nfx-row-scroll" id="rowTop10"></div>
-      <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
+      <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
     </div>
   </section>
-  <!-- Continuer à regarder -->
+
   <section class="nfx-row">
-    <div class="nfx-row-header"><h3 class="nfx-row-title">Continuer à regarder <span class="nfx-row-explore">Tout explorer ›</span></h3></div>
+    <div class="nfx-row-header">
+      <h3 class="nfx-row-title">Continuer à regarder <span class="nfx-row-explore">Tout explorer ›</span></h3>
+      <span class="nfx-row-seeall">Tout voir <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></span>
+    </div>
     <div class="nfx-row-track">
-      <button class="nfx-row-arrow left" aria-label="Précédent"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <button class="nfx-row-arrow left" aria-label="Précédent"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
       <div class="nfx-row-scroll" id="rowContinue"></div>
-      <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
+      <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
     </div>
   </section>
-  <!-- Nouveautés -->
+
   <section class="nfx-row">
-    <div class="nfx-row-header"><h3 class="nfx-row-title">Nouveautés Lara <span class="nfx-row-explore">Tout explorer ›</span></h3></div>
+    <div class="nfx-row-header">
+      <h3 class="nfx-row-title">Nouveautés Lara <span class="nfx-row-explore">Tout explorer ›</span></h3>
+      <span class="nfx-row-seeall">Tout voir <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></span>
+    </div>
     <div class="nfx-row-track">
-      <button class="nfx-row-arrow left" aria-label="Précédent"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <button class="nfx-row-arrow left" aria-label="Précédent"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
       <div class="nfx-row-scroll" id="rowNew"></div>
-      <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
+      <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
     </div>
   </section>
-  <!-- Choisissez votre univers -->
+
   <section class="nfx-row">
-    <div class="nfx-row-header"><h3 class="nfx-row-title">Choisissez votre univers <span class="nfx-row-explore">Tout explorer ›</span></h3></div>
-    <div class="nfx-row-track">
-      <button class="nfx-row-arrow left" aria-label="Précédent"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <div class="nfx-row-scroll" id="rowAlbums"></div>
-      <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
+    <div class="nfx-row-header">
+      <h3 class="nfx-row-title">Concerts &amp; Émissions <span class="nfx-row-explore">Tout explorer ›</span></h3>
+      <span class="nfx-row-seeall">Tout voir <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></span>
     </div>
-  </section>
-  <!-- Concerts & Émissions -->
-  <section class="nfx-row">
-    <div class="nfx-row-header"><h3 class="nfx-row-title">Concerts &amp; Émissions <span class="nfx-row-explore">Tout explorer ›</span></h3></div>
     <div class="nfx-row-track">
-      <button class="nfx-row-arrow left" aria-label="Précédent"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <button class="nfx-row-arrow left" aria-label="Précédent"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
       <div class="nfx-row-scroll" id="rowLive"></div>
-      <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
+      <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
     </div>
   </section>
-  <!-- Archives par ère -->
+
   <section class="nfx-row">
-    <div class="nfx-row-header"><h3 class="nfx-row-title">Archives — Discographie <span class="nfx-row-explore">Tout explorer ›</span></h3></div>
+    <div class="nfx-row-header">
+      <h3 class="nfx-row-title">Choisissez votre univers <span class="nfx-row-explore">Tout explorer ›</span></h3>
+      <span class="nfx-row-seeall">Tout voir <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></span>
+    </div>
     <div class="nfx-row-track">
-      <button class="nfx-row-arrow left" aria-label="Précédent"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <div class="nfx-row-scroll" id="rowArchives"></div>
-      <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
+      <button class="nfx-row-arrow left" aria-label="Précédent"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="nfx-row-scroll" id="rowAlbums"></div>
+      <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
     </div>
   </section>
+
+  <section class="nfx-row">
+    <div class="nfx-row-header">
+      <h3 class="nfx-row-title">Archives — Discographie <span class="nfx-row-explore">Tout explorer ›</span></h3>
+      <span class="nfx-row-seeall">Tout voir <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></span>
+    </div>
+    <div class="nfx-row-track">
+      <button class="nfx-row-arrow left" aria-label="Précédent"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="nfx-row-scroll" id="rowArchives"></div>
+      <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+  </section>
+
 </div>
 </div>
 
-<!-- ROUTE VIEWS -->
 <div id="view-series" class="nfx-route"><div class="nfx-route-grid" id="grid-series"></div></div>
 <div id="view-docs" class="nfx-route"><div class="nfx-route-grid" id="grid-docs"></div></div>
 <div id="view-concerts" class="nfx-route"><div class="nfx-route-grid" id="grid-concerts"></div></div>
@@ -525,332 +827,273 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 
 <script>
 (function(){
-  'use strict';
+'use strict';
 
-  /* ─────────────────────────────────────────
-     DATA — toutes les vraies images du repo
-  ───────────────────────────────────────── */
-  const ALL = [
-    // === Émissions récentes (series) ===
-    {id:'voice2026',    t:'The Voice 2026',              img:'images/categories-v2/The_Voice_2026.webp',              poster:'images/categories-v2-poster/The_Voice_2026.webp',              meta:'2026 · Émission · TF1',             desc:'Lara Fabian sublime la nouvelle saison de The Voice. Diffusion tous les samedis à 21h10 sur TF1, disponible sur LFIAGtube le lundi.',         cat:'series',   new:1, prog:72},
-    {id:'effetlara',    t:'L\'Effet Lara — 2026',        img:'images/categories-v2/LEffet_Lara_-_2026.webp',          poster:'images/categories-v2-poster/LEffet_Lara_-_2026.webp',          meta:'2026 · Série · TVA',                desc:'Lara Fabian au cœur d\'une nouvelle aventure musicale sur TVA. Disponible chaque lundi sur LFIAGtube.',                                         cat:'series',   new:1, prog:45},
-    {id:'starac2025',   t:'Star Académie 2025',          img:'images/categories-v2/Star_Acadmie_2025.webp',           poster:'images/categories-v2-poster/Star_Acadmie_2025.webp',           meta:'2025 · Émission · TVA',             desc:'Revivez la 7e Académie québécoise avec Lara Fabian au piano. Tous les épisodes et coulisses en exclu.',                                        cat:'series',   new:1, prog:91},
-    {id:'voicekids24',  t:'The Voice Kids 2024',         img:'images/categories-v2/The_Voice_Kids_2024.webp',         poster:'images/categories-v2-poster/The_Voice_Kids_2024.webp',         meta:'2024 · Émission · TF1',             desc:'Lara Fabian coach de The Voice Kids 2024. Toutes les battles et les lives.',                                                                    cat:'series',   new:0, prog:38},
-    // === Concerts ===
-    {id:'concerts',     t:'Concerts — Lara Fabian',      img:'images/categories-v2/Lara_Fabian_-_Concerts.webp',      poster:'images/categories-v2-poster/Lara_Fabian_-_Concerts.webp',      meta:'2000–2024 · Concerts · Scènes monde',desc:'Toutes les tournées mondiales et concerts événements de Lara Fabian, de Montréal à Paris.',                                                    cat:'concerts', new:0, prog:28},
-    {id:'today',        t:'2024 · Aujourd\'hui',         img:'images/categories-v2/2024_-_Aujourdhui.webp',           poster:'images/categories-v2-poster/2024_-_Aujourdhui.webp',           meta:'2024 · Concerts · Actualité',       desc:'La période actuelle de Lara Fabian — concerts et projets récents.',                                                                            cat:'concerts', new:1, prog:15},
-    {id:'enfoirs',      t:'Les Enfoirés — Lara Fabian',  img:'images/categories-v2/Lara_Fabian_aux_Enfoirs.webp',     poster:'images/categories-v2-poster/Lara_Fabian_aux_Enfoirs.webp',     meta:'1993–2020 · Événements · TF1',      desc:'Toutes les participations de Lara Fabian aux Restos du Cœur — les moments les plus émouvants.',                                                cat:'concerts', new:0, prog:55},
-    // === Documentaires / Divers ===
-    {id:'docs',         t:'Documentaires',               img:'images/categories-v2/Lara_Fabian_Documentaires.webp',   poster:'images/categories-v2-poster/Lara_Fabian_Documentaires.webp',   meta:'2010–2024 · Documentaires',         desc:'Les documentaires consacrés à la vie et la carrière de Lara Fabian — de l\'intime au mondial.',                                                  cat:'docs',     new:0, prog:63},
-    {id:'cinema',       t:'Lara Fabian au Cinéma',       img:'images/categories-v2/Lara_Fabian_au_Cinma.webp',        poster:'images/categories-v2-poster/Lara_Fabian_au_Cinma.webp',        meta:'1995–2010 · Films · Cinéma',        desc:'Les apparitions et rôles de Lara Fabian au cinéma — actrice et chanteuse de bandes originales.',                                               cat:'docs',     new:0, prog:20},
-    {id:'divers',       t:'Divers',                      img:'images/categories-v2/Lara_Fabian_-_Divers.webp',        poster:'images/categories-v2-poster/Lara_Fabian_-_Divers.webp',        meta:'Tous formats · Interviews · TV',    desc:'Interviews, émissions TV et apparitions variées de Lara Fabian à travers les années.',                                                          cat:'docs',     new:0, prog:42},
-    {id:'livres',       t:'Livres & Lectures',           img:'images/categories-v2/Lara_Fabian_-_Livres.webp',        poster:'images/categories-v2-poster/Lara_Fabian_-_Livres.webp',        meta:'2000–2020 · Livres · Lecture',      desc:'Lara Fabian auteure et lectrice — présentation de ses ouvrages et dédicaces.',                                                                  cat:'docs',     new:0, prog:10},
-    // === Archives par ère ===
-    {id:'debuts',       t:'1985–1990 · Les Débuts',      img:'images/categories-v2/1985_-_1990_Les_dbuts.webp',       poster:'images/categories-v2-poster/1985_-_1990_Les_dbuts.webp',       meta:'1985–1990 · Archives · Belgique',   desc:'Les premières années de carrière de Lara Fabian en Belgique — ses débuts sur scène.',                                                           cat:'docs',     new:0, prog:5},
-    {id:'francais91',   t:'1991–1993 · Lara Fabian',     img:'images/categories-v2/1991_-_1993_Lara_Fabian_Franais.webp',poster:'images/categories-v2-poster/1991_-_1993_Lara_Fabian_Franais.webp',meta:'1991–1993 · Albums · France',   desc:'Premier album français et début de la notoriété en Francophonie.',                                                                             cat:'docs',     new:0, prog:8},
-    {id:'carpediem',    t:'1994–1995 · Carpe Diem',      img:'images/categories-v2/1994_-_1995_Carpe_Diem.webp',      poster:'images/categories-v2-poster/1994_-_1995_Carpe_Diem.webp',      meta:'1994–1995 · Album · International', desc:'L\'album Carpe Diem et la percée internationale de Lara Fabian.',                                                                              cat:'docs',     new:0, prog:12},
-    {id:'pure',         t:'1996–1999 · Pure',            img:'images/categories-v2/1996_-_1999_Pure.webp',            poster:'images/categories-v2-poster/1996_-_1999_Pure.webp',            meta:'1996–1999 · Album · Mondial',       desc:'L\'ère Pure — le succès mondial de «Je t\'aime» et la consécration internationale.',                                                          cat:'docs',     new:0, prog:18},
-    {id:'anglais',      t:'1999–2001 · Album Anglais',   img:'images/categories-v2/1999_-2001_Lara_Fabian_Anglais.webp',poster:'images/categories-v2-poster/1999_-2001_Lara_Fabian_Anglais.webp',meta:'1999–2001 · Album · USA',        desc:'L\'album anglophone et la conquête du marché américain.',                                                                                     cat:'docs',     new:0, prog:22},
-    {id:'nue',          t:'2001–2003 · Nue / ETI',       img:'images/categories-v2/2001_-_2003_Nue__ETI.webp',        poster:'images/categories-v2-poster/2001_-_2003_Nue__ETI.webp',        meta:'2001–2003 · Albums · France/USA',   desc:'Les albums Nue et Every Time I See You — une période créative intense.',                                                                       cat:'docs',     new:0, prog:30},
-    {id:'wonderful',    t:'2004 · A Wonderful Life',     img:'images/categories-v2/2004_A_Wonderful_Life.webp',       poster:'images/categories-v2-poster/2004_A_Wonderful_Life.webp',       meta:'2004 · Album · International',      desc:'L\'album A Wonderful Life — un virage pop élégant.',                                                                                           cat:'docs',     new:0, prog:35},
-    {id:'nine',         t:'2005–2008 · 9',               img:'images/categories-v2/2005_-_2008_9.webp',               poster:'images/categories-v2-poster/2005_-_2008_9.webp',               meta:'2005–2008 · Album · International', desc:'L\'album 9 et la période créative foisonnante de Lara Fabian.',                                                                                cat:'docs',     new:0, prog:40},
-    {id:'tlfm',         t:'2009–2010 · TLFM / EWIM',     img:'images/categories-v2/2009_-_2010_TLFM__EWIM.webp',      poster:'images/categories-v2-poster/2009_-_2010_TLFM__EWIM.webp',      meta:'2009–2010 · Albums · France',       desc:'Two Lonely Hearts on the Map et Embrasse-moi — retour au Québec.',                                                                             cat:'docs',     new:0, prog:48},
-    {id:'zhivago',      t:'2010–2012 · Mademoiselle Zhivago',img:'images/categories-v2/2010_-_2012_Mademoiselle_Zhivago.webp',poster:'images/categories-v2-poster/2010_-_2012_Mademoiselle_Zhivago.webp',meta:'2010–2012 · Album',    desc:'L\'album Mademoiselle Zhivago — audace et élégance.',                                                                                          cat:'docs',     new:0, prog:52},
-    {id:'secret',       t:'2013–2014 · Le Secret',       img:'images/categories-v2/2013_-_2014_Le_Secret.webp',       poster:'images/categories-v2-poster/2013_-_2014_Le_Secret.webp',       meta:'2013–2014 · Album · Intime',        desc:'L\'album Le Secret — un retour au style intime et poétique.',                                                                                  cat:'docs',     new:0, prog:58},
-    {id:'mavie',        t:'2015–2016 · Ma Vie dans La Tienne',img:'images/categories-v2/2015_-_2016_Ma_Vie_dans_La_Tienne.webp',poster:'images/categories-v2-poster/2015_-_2016_Ma_Vie_dans_La_Tienne.webp',meta:'2015–2016 · Album', desc:'L\'album Ma Vie dans la Tienne — une offrande musicale.',                                                                                 cat:'docs',     new:0, prog:65},
-    {id:'camouflage',   t:'2017–2018 · Camouflage',      img:'images/categories-v2/2017_-_2018_Camouflage.webp',      poster:'images/categories-v2-poster/2017_-_2018_Camouflage.webp',      meta:'2017–2018 · Album · Tournée monde', desc:'L\'album Camouflage et la tournée mondiale de 2018.',                                                                                          cat:'docs',     new:0, prog:70},
-    {id:'papillon',     t:'2019–2021 · Papillon',        img:'images/categories-v2/2019_-_2021_Papillon.webp',        poster:'images/categories-v2-poster/2019_-_2021_Papillon.webp',        meta:'2019–2021 · Album · Liberté',       desc:'L\'album Papillon — un nouveau chapitre de liberté et de renaissance.',                                                                       cat:'docs',     new:0, prog:78},
-  ];
+const ALL=[
+  {id:'voice2026',t:'The Voice 2026',img:'images/categories-v2/The_Voice_2026.webp',poster:'images/categories-v2-poster/The_Voice_2026.webp',meta:'2026 · Émission · TF1',desc:'Lara Fabian sublime la nouvelle saison de The Voice. Diffusion tous les samedis à 21h10 sur TF1.',cat:'series',new:1,prog:72},
+  {id:'effetlara',t:'L\'Effet Lara — 2026',img:'images/categories-v2/LEffet_Lara_-_2026.webp',poster:'images/categories-v2-poster/LEffet_Lara_-_2026.webp',meta:'2026 · Série · TVA',desc:'Lara Fabian au cœur d\'une nouvelle aventure musicale sur TVA. Disponible chaque lundi.',cat:'series',new:1,prog:45},
+  {id:'starac2025',t:'Star Académie 2025',img:'images/categories-v2/Star_Acadmie_2025.webp',poster:'images/categories-v2-poster/Star_Acadmie_2025.webp',meta:'2025 · Émission · TVA',desc:'Revivez la 7e Académie québécoise avec Lara Fabian au piano. Tous les épisodes en exclu.',cat:'series',new:1,prog:91},
+  {id:'voicekids24',t:'The Voice Kids 2024',img:'images/categories-v2/The_Voice_Kids_2024.webp',poster:'images/categories-v2-poster/The_Voice_Kids_2024.webp',meta:'2024 · Émission · TF1',desc:'Lara Fabian coach de The Voice Kids 2024.',cat:'series',new:0,prog:38},
+  {id:'concerts',t:'Concerts — Lara Fabian',img:'images/categories-v2/Lara_Fabian_-_Concerts.webp',poster:'images/categories-v2-poster/Lara_Fabian_-_Concerts.webp',meta:'2000–2024 · Concerts',desc:'Toutes les tournées mondiales et concerts événements de Lara Fabian.',cat:'concerts',new:0,prog:28},
+  {id:'today',t:'2024 · Aujourd\'hui',img:'images/categories-v2/2024_-_Aujourdhui.webp',poster:'images/categories-v2-poster/2024_-_Aujourdhui.webp',meta:'2024 · Concerts',desc:'La période actuelle de Lara Fabian — concerts et projets récents.',cat:'concerts',new:1,prog:15},
+  {id:'enfoirs',t:'Les Enfoirés — Lara Fabian',img:'images/categories-v2/Lara_Fabian_aux_Enfoirs.webp',poster:'images/categories-v2-poster/Lara_Fabian_aux_Enfoirs.webp',meta:'1993–2020 · Événements',desc:'Toutes les participations de Lara Fabian aux Restos du Cœur.',cat:'concerts',new:0,prog:55},
+  {id:'docs',t:'Documentaires',img:'images/categories-v2/Lara_Fabian_Documentaires.webp',poster:'images/categories-v2-poster/Lara_Fabian_Documentaires.webp',meta:'2010–2024 · Documentaires',desc:'Les documentaires consacrés à la vie et la carrière de Lara Fabian.',cat:'docs',new:0,prog:63},
+  {id:'cinema',t:'Lara Fabian au Cinéma',img:'images/categories-v2/Lara_Fabian_au_Cinma.webp',poster:'images/categories-v2-poster/Lara_Fabian_au_Cinma.webp',meta:'1995–2010 · Films',desc:'Les apparitions et rôles de Lara Fabian au cinéma.',cat:'docs',new:0,prog:20},
+  {id:'divers',t:'Divers',img:'images/categories-v2/Lara_Fabian_-_Divers.webp',poster:'images/categories-v2-poster/Lara_Fabian_-_Divers.webp',meta:'Interviews · TV',desc:'Interviews, émissions TV et apparitions variées.',cat:'docs',new:0,prog:42},
+  {id:'livres',t:'Livres & Lectures',img:'images/categories-v2/Lara_Fabian_-_Livres.webp',poster:'images/categories-v2-poster/Lara_Fabian_-_Livres.webp',meta:'2000–2020 · Livres',desc:'Lara Fabian auteure — présentation de ses ouvrages.',cat:'docs',new:0,prog:10},
+  {id:'debuts',t:'1985–1990 · Les Débuts',img:'images/categories-v2/1985_-_1990_Les_dbuts.webp',poster:'images/categories-v2-poster/1985_-_1990_Les_dbuts.webp',meta:'1985–1990 · Archives',desc:'Les premières années de Lara Fabian en Belgique.',cat:'docs',new:0,prog:5},
+  {id:'francais91',t:'1991–1993 · Lara Fabian',img:'images/categories-v2/1991_-_1993_Lara_Fabian_Franais.webp',poster:'images/categories-v2-poster/1991_-_1993_Lara_Fabian_Franais.webp',meta:'1991–1993 · Albums',desc:'Premier album français et début de la notoriété.',cat:'docs',new:0,prog:8},
+  {id:'carpediem',t:'1994–1995 · Carpe Diem',img:'images/categories-v2/1994_-_1995_Carpe_Diem.webp',poster:'images/categories-v2-poster/1994_-_1995_Carpe_Diem.webp',meta:'1994–1995 · Album',desc:'L\'album Carpe Diem et la percée internationale.',cat:'docs',new:0,prog:12},
+  {id:'pure',t:'1996–1999 · Pure',img:'images/categories-v2/1996_-_1999_Pure.webp',poster:'images/categories-v2-poster/1996_-_1999_Pure.webp',meta:'1996–1999 · Album',desc:'L\'album Pure et le succès mondial de «Je t\'aime».',cat:'docs',new:0,prog:18},
+  {id:'anglais',t:'1999–2001 · Album Anglais',img:'images/categories-v2/1999_-2001_Lara_Fabian_Anglais.webp',poster:'images/categories-v2-poster/1999_-2001_Lara_Fabian_Anglais.webp',meta:'1999–2001 · Album',desc:'L\'album anglophone et la conquête du marché américain.',cat:'docs',new:0,prog:22},
+  {id:'nue',t:'2001–2003 · Nue / ETI',img:'images/categories-v2/2001_-_2003_Nue__ETI.webp',poster:'images/categories-v2-poster/2001_-_2003_Nue__ETI.webp',meta:'2001–2003 · Albums',desc:'Les albums Nue et Every Time I See You.',cat:'docs',new:0,prog:30},
+  {id:'wonderful',t:'2004 · A Wonderful Life',img:'images/categories-v2/2004_A_Wonderful_Life.webp',poster:'images/categories-v2-poster/2004_A_Wonderful_Life.webp',meta:'2004 · Album',desc:'L\'album A Wonderful Life.',cat:'docs',new:0,prog:35},
+  {id:'nine',t:'2005–2008 · 9',img:'images/categories-v2/2005_-_2008_9.webp',poster:'images/categories-v2-poster/2005_-_2008_9.webp',meta:'2005–2008 · Album',desc:'L\'album 9 et la période créative de Lara Fabian.',cat:'docs',new:0,prog:40},
+  {id:'tlfm',t:'2009–2010 · TLFM / EWIM',img:'images/categories-v2/2009_-_2010_TLFM__EWIM.webp',poster:'images/categories-v2-poster/2009_-_2010_TLFM__EWIM.webp',meta:'2009–2010 · Albums',desc:'Two Lonely Hearts on the Map et Embrasse-moi.',cat:'docs',new:0,prog:48},
+  {id:'zhivago',t:'2010–2012 · M. Zhivago',img:'images/categories-v2/2010_-_2012_Mademoiselle_Zhivago.webp',poster:'images/categories-v2-poster/2010_-_2012_Mademoiselle_Zhivago.webp',meta:'2010–2012 · Album',desc:'L\'album Mademoiselle Zhivago.',cat:'docs',new:0,prog:52},
+  {id:'secret',t:'2013–2014 · Le Secret',img:'images/categories-v2/2013_-_2014_Le_Secret.webp',poster:'images/categories-v2-poster/2013_-_2014_Le_Secret.webp',meta:'2013–2014 · Album',desc:'L\'album Le Secret.',cat:'docs',new:0,prog:58},
+  {id:'mavie',t:'2015–2016 · Ma Vie dans La Tienne',img:'images/categories-v2/2015_-_2016_Ma_Vie_dans_La_Tienne.webp',poster:'images/categories-v2-poster/2015_-_2016_Ma_Vie_dans_La_Tienne.webp',meta:'2015–2016 · Album',desc:'L\'album Ma Vie dans la Tienne.',cat:'docs',new:0,prog:65},
+  {id:'camouflage',t:'2017–2018 · Camouflage',img:'images/categories-v2/2017_-_2018_Camouflage.webp',poster:'images/categories-v2-poster/2017_-_2018_Camouflage.webp',meta:'2017–2018 · Album',desc:'L\'album Camouflage et la tournée mondiale.',cat:'docs',new:0,prog:70},
+  {id:'papillon',t:'2019–2021 · Papillon',img:'images/categories-v2/2019_-_2021_Papillon.webp',poster:'images/categories-v2-poster/2019_-_2021_Papillon.webp',meta:'2019–2021 · Album',desc:'L\'album Papillon — renaissance et liberté.',cat:'docs',new:0,prog:78},
+];
 
-  const BILLBOARD_ITEMS = ALL.slice(0,3);
+const BB=ALL.slice(0,3);
+const TOP10=['voice2026','effetlara','starac2025','today','concerts','voicekids24','enfoirs','docs','camouflage','papillon']
+  .map(id=>ALL.find(x=>x.id===id)).filter(Boolean);
+const CONTINUE=[...ALL].reverse().slice(0,14);
+const NEW_I=ALL.filter(x=>x.new);
+const LIVE=ALL.filter(x=>x.cat==='concerts'||x.cat==='series');
+const ALBUMS=ALL.slice(4,16);
+const ARC=ALL.filter(x=>['debuts','francais91','carpediem','pure','anglais','nue','wonderful','nine','tlfm','zhivago','secret','mavie','camouflage','papillon'].includes(x.id));
 
-  /* Top10 — use poster images */
-  const TOP10_IDS = ['voice2026','effetlara','starac2025','today','concerts','voicekids24','enfoirs','docs','camouflage','papillon'];
-  const TOP10 = TOP10_IDS.map(id=>ALL.find(x=>x.id===id)).filter(Boolean).slice(0,10);
+const $=q=>document.querySelector(q);
+const $$=q=>Array.from(document.querySelectorAll(q));
 
-  /* Rows */
-  const CONTINUE  = [...ALL].reverse().slice(0,12);
-  const NEW_ITEMS = ALL.filter(x=>x.new);
-  const ALBUMS    = ALL.slice(4,14);
-  const LIVE      = ALL.filter(x=>x.cat==='concerts'||x.cat==='series');
-  const ARCHIVES  = ALL.filter(x=>['debuts','francais91','carpediem','pure','anglais','nue','wonderful','nine','tlfm','zhivago','secret','mavie','camouflage','papillon'].includes(x.id));
-
-  /* ── UTILS ── */
-  const $ = q => document.querySelector(q);
-  const $$ = q => Array.from(document.querySelectorAll(q));
-
-  /* ── MY LIST ── */
-  function getList(){ try{return JSON.parse(localStorage.getItem('lfiag_mylist')||'[]');}catch(e){return [];} }
-  function saveList(arr){ localStorage.setItem('lfiag_mylist',JSON.stringify(arr)); }
-  function inList(id){ return getList().includes(id); }
-  function toggleList(id){
-    let arr=getList();
-    if(arr.includes(id)){arr=arr.filter(x=>x!==id);toast('Retiré de votre liste');}
-    else{arr.push(id);toast('Ajouté à votre liste ✓');}
-    saveList(arr);
-    refreshMyListBadges();
-    if($('#view-mylist.active')) renderMyList();
-    return arr.includes(id);
+/* ── MY LIST ── */
+const getList=()=>{try{return JSON.parse(localStorage.getItem('lfiag_mylist')||'[]');}catch{return[];}};
+const saveList=a=>localStorage.setItem('lfiag_mylist',JSON.stringify(a));
+const inList=id=>getList().includes(id);
+function toggleList(id){
+  let a=getList();
+  if(a.includes(id)){a=a.filter(x=>x!==id);toast('Retiré de votre liste');}
+  else{a.push(id);toast('Ajouté à votre liste ✓');}
+  saveList(a);refreshBadges();
+  if($('#view-mylist.active'))renderMyList();
+}
+function refreshBadges(){
+  const l=getList();
+  $$('.nfx-card[data-id],.nfx-file-card[data-id]').forEach(el=>el.classList.toggle('in-mylist',l.includes(el.dataset.id)));
+  const btn=$('#nfxModalAdd');
+  if(btn&&btn.dataset.id){
+    const y=l.includes(btn.dataset.id);
+    btn.classList.toggle('in-list',y);
+    $('#nfxModalAddLabel').textContent=y?'Dans ma liste ✓':'Ajouter à ma liste';
   }
-  function refreshMyListBadges(){
-    const list=getList();
-    $$('.nfx-card[data-id],.nfx-file-card[data-id]').forEach(el=>{
-      el.classList.toggle('in-mylist',list.includes(el.dataset.id));
-    });
-    const btn=$('#nfxModalAdd');
-    if(btn&&btn.dataset.id){
-      const yes=list.includes(btn.dataset.id);
-      btn.classList.toggle('in-list',yes);
-      $('#nfxModalAddLabel').textContent=yes?'Dans ma liste ✓':'Ajouter à ma liste';
-    }
-  }
+}
 
-  /* ── TOAST ── */
-  function toast(msg){
-    const t=$('#nfxToast');
-    t.textContent=msg;t.classList.add('show');
-    clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2400);
-  }
+/* ── TOAST ── */
+function toast(msg){
+  const t=$('#nfxToast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2200);
+}
 
-  /* ── SPLASH ── */
-  const splash=$('#nfxSplash');
-  setTimeout(()=>splash.classList.add('hide'),2600);
-  const replayBtn=$('#replaySplashBtn');
-  if(replayBtn) replayBtn.addEventListener('click',()=>{
-    splash.classList.remove('hide');
-    setTimeout(()=>splash.classList.add('hide'),2600);
+/* ── SPLASH ── */
+const splash=$('#nfxSplash');
+setTimeout(()=>splash.classList.add('hide'),2500);
+$('#replaySplashBtn').addEventListener('click',()=>{
+  splash.classList.remove('hide');
+  setTimeout(()=>splash.classList.add('hide'),2500);
+});
+
+/* ── HEADER SCROLL ── */
+window.addEventListener('scroll',()=>$('#nfxHeader').classList.toggle('scrolled',scrollY>30),{passive:true});
+
+/* ── MODAL ── */
+const modal=$('#nfxModal');
+let cur=null;
+function openModal(item){
+  cur=item;
+  $('#nfxModalImg').src=item.img;
+  $('#nfxModalImg').alt=item.t;
+  $('#nfxModalTitle').textContent=item.t;
+  const parts=item.meta.split('·').map(s=>s.trim());
+  $('#nfxModalMeta').innerHTML=`<span class="match">98% Match</span>${parts.map(p=>`<span>${p}</span>`).join('')}`;
+  $('#nfxModalDesc').textContent=item.desc||'';
+  const btn=$('#nfxModalAdd');
+  btn.dataset.id=item.id;
+  const y=inList(item.id);
+  btn.classList.toggle('in-list',y);
+  $('#nfxModalAddLabel').textContent=y?'Dans ma liste ✓':'Ajouter à ma liste';
+  modal.classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeModal(){
+  modal.classList.remove('open');
+  document.body.style.overflow='';
+  cur=null;
+}
+$('#nfxModalClose').addEventListener('click',closeModal);
+modal.addEventListener('click',e=>{if(e.target===modal)closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+$('#nfxModalAdd').addEventListener('click',()=>{
+  if(!cur)return;
+  toggleList(cur.id);
+  const y=inList(cur.id);
+  $('#nfxModalAdd').classList.toggle('in-list',y);
+  $('#nfxModalAddLabel').textContent=y?'Dans ma liste ✓':'Ajouter à ma liste';
+});
+$('#nfxModalPlay').addEventListener('click',()=>{if(cur)toast('▶ '+cur.t);});
+
+/* ── ROUTING ── */
+function setRoute(name){
+  $$('.nfx-route').forEach(el=>el.classList.remove('active'));
+  const t=$(`#view-${name}`);if(t)t.classList.add('active');
+  $$('.nfx-nav button').forEach(b=>b.classList.toggle('active',b.dataset.route===name));
+  if(name!=='home')scrollTo({top:0,behavior:'smooth'});
+  if(name==='mylist')renderMyList();
+}
+$$('.nfx-nav [data-route],.nfx-logo[data-route]').forEach(el=>{
+  el.addEventListener('click',e=>{e.preventDefault();setRoute(el.dataset.route);});
+});
+
+/* ── BILLBOARD ── */
+$$('.nfx-btn[data-action]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const item=BB[+btn.dataset.idx||0];
+    if(!item)return;
+    btn.dataset.action==='info'?openModal(item):toast('▶ '+item.t);
   });
+});
+const slides=$$('.nfx-billboard-slide');
+const dots=$$('#nfxBbDots button');
+let bbI=0,bbT;
+function showSlide(i){
+  slides.forEach((s,j)=>s.classList.toggle('active',j===i));
+  dots.forEach((d,j)=>d.classList.toggle('active',j===i));
+  bbI=i;
+}
+dots.forEach((d,i)=>d.addEventListener('click',()=>{showSlide(i);clearInterval(bbT);bbT=setInterval(()=>showSlide((bbI+1)%slides.length),8000);}));
+bbT=setInterval(()=>showSlide((bbI+1)%slides.length),8000);
 
-  /* ── HEADER SCROLL ── */
-  window.addEventListener('scroll',()=>{
-    $('#nfxHeader').classList.toggle('scrolled',window.scrollY>40);
-  },{passive:true});
+/* ── ROW ARROWS (desktop) ── */
+$$('.nfx-row-track').forEach(track=>{
+  const sc=track.querySelector('.nfx-row-scroll');
+  if(!sc)return;
+  track.querySelector('.nfx-row-arrow.left')?.addEventListener('click',()=>sc.scrollBy({left:-sc.clientWidth*.8,behavior:'smooth'}));
+  track.querySelector('.nfx-row-arrow.right')?.addEventListener('click',()=>sc.scrollBy({left:sc.clientWidth*.8,behavior:'smooth'}));
+});
 
-  /* ── MODAL ── */
-  const modal=$('#nfxModal');
-  let currentCard=null;
-  function openModal(item){
-    currentCard=item;
-    $('#nfxModalImg').src=item.img;
-    $('#nfxModalImg').alt=item.t;
-    $('#nfxModalTitle').textContent=item.t;
-    const parts=item.meta.split('·').map(s=>s.trim());
-    $('#nfxModalMeta').innerHTML=`<span class="match">98% Match</span>${parts.map(p=>`<span>${p}</span>`).join('')}`;
-    $('#nfxModalDesc').textContent=item.desc||'';
-    const addBtn=$('#nfxModalAdd');
-    addBtn.dataset.id=item.id;
-    const yes=inList(item.id);
-    addBtn.classList.toggle('in-list',yes);
-    $('#nfxModalAddLabel').textContent=yes?'Dans ma liste ✓':'Ajouter à ma liste';
-    modal.classList.add('open');
-    document.body.style.overflow='hidden';
-  }
-  function closeModal(){
-    modal.classList.remove('open');
-    document.body.style.overflow='';
-    currentCard=null;
-  }
-  $('#nfxModalClose').addEventListener('click',closeModal);
-  modal.addEventListener('click',e=>{if(e.target===modal)closeModal();});
-  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
-  $('#nfxModalAdd').addEventListener('click',()=>{
-    if(!currentCard)return;
-    toggleList(currentCard.id);
-    const yes=inList(currentCard.id);
-    $('#nfxModalAdd').classList.toggle('in-list',yes);
-    $('#nfxModalAddLabel').textContent=yes?'Dans ma liste ✓':'Ajouter à ma liste';
-  });
-  $('#nfxModalPlay').addEventListener('click',()=>{if(currentCard)toast('▶ Lecture de : '+currentCard.t);});
+/* ── BUILD CARDS ── */
+const mlBadge=()=>'<span class="nfx-mylist-badge" aria-hidden="true">✓</span>';
 
-  /* ── ROUTING ── */
-  function setRoute(name){
-    $$('.nfx-route').forEach(el=>el.classList.remove('active'));
-    const t=$(`#view-${name}`);if(t)t.classList.add('active');
-    $$('.nfx-nav button').forEach(b=>b.classList.toggle('active',b.dataset.route===name));
-    if(name!=='home')window.scrollTo({top:0,behavior:'smooth'});
-    if(name==='mylist')renderMyList();
-  }
-  $$('.nfx-nav [data-route], .nfx-logo[data-route]').forEach(el=>{
-    el.addEventListener('click',e=>{e.preventDefault();if(el.dataset.route)setRoute(el.dataset.route);});
-  });
+function card(item,i,top10=false){
+  if(top10) return `<div class="nfx-card" data-id="${item.id}" tabindex="0" role="button" aria-label="${item.t}">
+    <span class="nfx-top10-num">${i+1}</span>
+    <div class="nfx-card-img-wrap">
+      <img class="nfx-card-img" src="${item.poster||item.img}" alt="${item.t}" loading="lazy" draggable="false">
+    </div>
+  </div>`;
+  return `<div class="nfx-card${inList(item.id)?' in-mylist':''}" data-id="${item.id}" tabindex="0" role="button" aria-label="${item.t}">
+    ${mlBadge()}
+    <div class="nfx-card-img-wrap">
+      <img class="nfx-card-img" src="${item.img}" alt="${item.t}" loading="lazy" draggable="false">
+      ${item.new?'<span class="nfx-card-badge-new">Nouveau</span>':''}
+      <div class="nfx-card-progress"><div class="nfx-card-progress-fill" style="width:${item.prog||50}%"></div></div>
+    </div>
+    <div class="nfx-card-label">${item.t}</div>
+    <div class="nfx-card-expand">
+      <div class="nfx-card-expand-img"><img src="${item.img}" alt="" draggable="false"></div>
+      <div class="nfx-card-expand-body">
+        <div class="nfx-card-expand-actions">
+          <button class="nfx-action-btn primary" data-action="play" data-id="${item.id}" aria-label="Lire"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></button>
+          <button class="nfx-action-btn" data-action="addlist" data-id="${item.id}" aria-label="+ liste"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+          <button class="nfx-action-btn right" data-action="info" data-id="${item.id}" aria-label="Infos"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></button>
+        </div>
+        <div class="nfx-card-expand-meta"><span class="match">98%</span><span class="badge">HD</span></div>
+        <div class="nfx-card-expand-title">${item.t}</div>
+        <div class="nfx-card-expand-tags"><span>Music</span><span class="dot">•</span><span>Lara Fabian</span></div>
+      </div>
+    </div>
+  </div>`;
+}
 
-  /* ── BILLBOARD ── */
-  $$('.nfx-btn[data-action]').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      const idx=parseInt(btn.dataset.idx,10)||0;
-      const item=BILLBOARD_ITEMS[idx];
+function gridCard(item){
+  return `<div class="nfx-file-card${inList(item.id)?' in-mylist':''}" data-id="${item.id}" tabindex="0" role="button" aria-label="${item.t}">
+    ${mlBadge()}
+    <div class="nfx-file-thumb">
+      <img src="${item.img}" alt="${item.t}" loading="lazy" draggable="false">
+      <div class="nfx-file-overlay"></div>
+      <div class="nfx-file-play"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
+    </div>
+    <div class="nfx-file-body">
+      <div class="nfx-file-title">${item.t}</div>
+      <div class="nfx-file-meta">${item.meta}</div>
+    </div>
+  </div>`;
+}
+
+/* ── FILL ── */
+function fill(id,items,top10=false){
+  const el=document.getElementById(id);
+  if(el)el.innerHTML=items.map((it,i)=>card(it,i,top10)).join('');
+}
+fill('rowTop10',TOP10,true);
+fill('rowContinue',CONTINUE);
+fill('rowNew',NEW_I);
+fill('rowLive',LIVE);
+fill('rowAlbums',ALBUMS);
+fill('rowArchives',ARC);
+
+/* ── GRIDS ── */
+['series','docs','concerts'].forEach(r=>{
+  const g=document.getElementById('grid-'+r);
+  const items=ALL.filter(x=>x.cat===r);
+  if(g){g.innerHTML=items.map(gridCard).join('');bindGrid(g);}
+});
+
+/* ── MA LISTE ── */
+function renderMyList(){
+  const g=$('#grid-mylist');
+  if(!g)return;
+  const items=ALL.filter(x=>getList().includes(x.id));
+  if(!items.length){
+    g.innerHTML=`<div class="nfx-empty">
+      <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <h2>Votre liste est vide</h2>
+      <p>Ajoutez des vidéos depuis l’accueil en cliquant sur une carte</p></div>`;
+  }else{g.innerHTML=items.map(gridCard).join('');bindGrid(g);}
+}
+
+/* ── EVENTS ── */
+function bindRows(container){
+  container.addEventListener('click',e=>{
+    const btn=e.target.closest('[data-action]');
+    if(btn){
+      e.stopPropagation();
+      const item=ALL.find(x=>x.id===btn.dataset.id);
       if(!item)return;
+      if(btn.dataset.action==='play')toast('▶ '+item.t);
       if(btn.dataset.action==='info')openModal(item);
-      else toast('▶ Lecture de : '+item.t);
-    });
-  });
-  const slides=$$('.nfx-billboard-slide');
-  const dots=$$('#nfxBbDots button');
-  let bbIndex=0,bbTimer;
-  function showSlide(i){
-    slides.forEach((s,idx)=>s.classList.toggle('active',idx===i));
-    dots.forEach((d,idx)=>d.classList.toggle('active',idx===i));
-    bbIndex=i;
-  }
-  dots.forEach((d,i)=>d.addEventListener('click',()=>{showSlide(i);clearInterval(bbTimer);bbTimer=setInterval(()=>showSlide((bbIndex+1)%slides.length),8000);}));
-  bbTimer=setInterval(()=>showSlide((bbIndex+1)%slides.length),8000);
-
-  /* ── ROW ARROWS ── */
-  $$('.nfx-row-track').forEach(track=>{
-    const scroll=track.querySelector('.nfx-row-scroll');
-    if(!scroll)return;
-    const left=track.querySelector('.nfx-row-arrow.left');
-    const right=track.querySelector('.nfx-row-arrow.right');
-    if(left)left.addEventListener('click',()=>scroll.scrollBy({left:-scroll.clientWidth*.85,behavior:'smooth'}));
-    if(right)right.addEventListener('click',()=>scroll.scrollBy({left:scroll.clientWidth*.85,behavior:'smooth'}));
-  });
-
-  /* ── FIX CRITIQUE: désactiver le hover pendant le scroll tactile ──
-     Quand on scroll, les cartes ne doivent pas partir en scale.
-     On ajoute/retire une classe "scrolling" sur le scroll container
-     qui désactive les transitions transform côté JS. */
-  $$('.nfx-row-scroll').forEach(sc=>{
-    let scrollTimer;
-    sc.addEventListener('scroll',()=>{
-      sc.style.pointerEvents='none';
-      clearTimeout(scrollTimer);
-      scrollTimer=setTimeout(()=>{
-        sc.style.pointerEvents='';
-      },150);
-    },{passive:true});
-  });
-
-  /* ── BUILD CARDS ── */
-  function mylistBadge(){return '<span class="nfx-mylist-badge" aria-hidden="true">✓</span>';}
-
-  function makeCard(item,idx,isTop10=false){
-    if(isTop10){
-      // Top10 : poster format 2/3
-      return `<div class="nfx-card" data-id="${item.id}" tabindex="0" role="button" aria-label="${item.t}">
-        <span class="nfx-top10-num">${idx+1}</span>
-        <div class="nfx-card-img-wrap">
-          <img class="nfx-card-img" src="${item.poster||item.img}" alt="${item.t}" loading="lazy" draggable="false">
-        </div>
-      </div>`;
+      if(btn.dataset.action==='addlist'){toggleList(item.id);refreshBadges();}
+      return;
     }
-    return `<div class="nfx-card${inList(item.id)?' in-mylist':''}" data-id="${item.id}" tabindex="0" role="button" aria-label="${item.t}">
-      ${mylistBadge()}
-      <div class="nfx-card-img-wrap">
-        <img class="nfx-card-img" src="${item.img}" alt="${item.t}" loading="lazy" draggable="false">
-        ${item.new?'<span class="nfx-card-badge-new">Nouveau</span>':''}
-        <div class="nfx-card-progress"><div class="nfx-card-progress-fill" style="width:${item.prog||50}%"></div></div>
-      </div>
-      <div class="nfx-card-expand">
-        <div class="nfx-card-expand-img"><img src="${item.img}" alt="" draggable="false"></div>
-        <div class="nfx-card-expand-body">
-          <div class="nfx-card-expand-actions">
-            <button class="nfx-action-btn primary" data-action="play" data-id="${item.id}" aria-label="Lire"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></button>
-            <button class="nfx-action-btn" data-action="addlist" data-id="${item.id}" aria-label="Ajouter à ma liste"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
-            <button class="nfx-action-btn right" data-action="info" data-id="${item.id}" aria-label="Plus d'infos"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></button>
-          </div>
-          <div class="nfx-card-expand-meta"><span class="match">98%</span><span class="badge">HD</span><span>${item.meta.split('·').pop().trim()}</span></div>
-          <div class="nfx-card-expand-title">${item.t}</div>
-          <div class="nfx-card-expand-tags"><span>Music</span><span class="dot">•</span><span>Lara Fabian</span><span class="dot">•</span><span>Francophonie</span></div>
-        </div>
-      </div>
-    </div>`;
-  }
-
-  function makeGridCard(item){
-    return `<div class="nfx-file-card${inList(item.id)?' in-mylist':''}" data-id="${item.id}" tabindex="0" role="button" aria-label="${item.t}">
-      ${mylistBadge()}
-      <div class="nfx-file-thumb">
-        <img src="${item.img}" alt="${item.t}" loading="lazy" draggable="false">
-        <div class="nfx-file-overlay"></div>
-        <div class="nfx-file-play"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
-        <span class="nfx-file-dur">${item.meta.split('·').pop().trim()}</span>
-      </div>
-      <div class="nfx-file-body">
-        <div class="nfx-file-title">${item.t}</div>
-        <div class="nfx-file-meta">${item.meta}</div>
-      </div>
-    </div>`;
-  }
-
-  /* ── FILL ROWS ── */
-  function fill(id,items,top10=false){
-    const el=document.getElementById(id);
-    if(!el)return;
-    el.innerHTML=items.map((it,i)=>makeCard(it,i,top10)).join('');
-  }
-  fill('rowTop10',  TOP10,   true);
-  fill('rowContinue',CONTINUE);
-  fill('rowNew',    NEW_ITEMS);
-  fill('rowAlbums', ALBUMS);
-  fill('rowLive',   LIVE);
-  fill('rowArchives',ARCHIVES);
-
-  /* ── ROUTE GRIDS ── */
-  ['series','docs','concerts'].forEach(r=>{
-    const grid=document.getElementById('grid-'+r);
-    const items=ALL.filter(x=>x.cat===r);
-    if(grid)grid.innerHTML=items.map(makeGridCard).join('');
-    if(grid)bindGridCards(grid);
+    const c=e.target.closest('.nfx-card[data-id]');
+    if(c){const item=ALL.find(x=>x.id===c.dataset.id);if(item)openModal(item);}
   });
-
-  /* ── MA LISTE ── */
-  function renderMyList(){
-    const grid=$('#grid-mylist');
-    if(!grid)return;
-    const list=getList();
-    const items=ALL.filter(x=>list.includes(x.id));
-    if(!items.length){
-      grid.innerHTML=`<div class="nfx-empty">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        <h2>Votre liste est vide</h2><p>Ajoutez des vidéos depuis l'accueil en survolant une carte et en cliquant sur +</p></div>`;
-    }else{
-      grid.innerHTML=items.map(makeGridCard).join('');
-      bindGridCards(grid);
-    }
-  }
-
-  /* ── EVENT DELEGATION ── */
-  function bindCardActions(container){
-    container.addEventListener('click',e=>{
-      const btn=e.target.closest('[data-action]');
-      if(btn){
-        e.stopPropagation();
-        const id=btn.dataset.id;
-        const item=ALL.find(x=>x.id===id);
-        if(!item)return;
-        if(btn.dataset.action==='play')toast('▶ Lecture de : '+item.t);
-        if(btn.dataset.action==='info')openModal(item);
-        if(btn.dataset.action==='addlist'){toggleList(id);refreshMyListBadges();}
-        return;
-      }
-      const card=e.target.closest('.nfx-card[data-id]');
-      if(card){const item=ALL.find(x=>x.id===card.dataset.id);if(item)openModal(item);}
-    });
-    container.addEventListener('keydown',e=>{
-      if(e.key==='Enter'||e.key===' '){
-        const card=e.target.closest('.nfx-card[data-id]');
-        if(card){e.preventDefault();const item=ALL.find(x=>x.id===card.dataset.id);if(item)openModal(item);}
-      }
-    });
-  }
-
-  function bindGridCards(container){
-    container.addEventListener('click',e=>{
-      const card=e.target.closest('.nfx-file-card[data-id]');
-      if(card){const item=ALL.find(x=>x.id===card.dataset.id);if(item)openModal(item);}
-    });
-    container.addEventListener('keydown',e=>{
-      if(e.key==='Enter'||e.key===' '){const card=e.target.closest('.nfx-file-card');if(card){e.preventDefault();card.click();}}
-    });
-  }
-
-  ['rowTop10','rowContinue','rowNew','rowAlbums','rowLive','rowArchives'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el)bindCardActions(el);
+}
+function bindGrid(container){
+  container.addEventListener('click',e=>{
+    const c=e.target.closest('.nfx-file-card[data-id]');
+    if(c){const item=ALL.find(x=>x.id===c.dataset.id);if(item)openModal(item);}
   });
+}
+['rowTop10','rowContinue','rowNew','rowLive','rowAlbums','rowArchives'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el)bindRows(el);
+});
 
-  refreshMyListBadges();
-
+refreshBadges();
 })();
 </script>
 </body>
