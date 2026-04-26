@@ -40,7 +40,7 @@ body{-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
 button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 
-/* ── DEMO BAR — repositionnée sous le header, ne bloque plus la nav ── */
+/* ── DEMO BAR ── */
 .demo-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:200;background:rgba(0,0,0,.85);backdrop-filter:blur(20px);color:#fff;padding:.4rem .9rem;border-radius:12px 12px 0 0;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;display:flex;gap:1rem;align-items:center;border:1px solid rgba(255,255,255,.15);border-bottom:none}
 .demo-bar strong{color:var(--gold)}
 .demo-bar button{padding:.25rem .55rem;border:1px solid rgba(255,255,255,.2);border-radius:6px;background:rgba(255,255,255,.06);color:#fff;font-size:.65rem;letter-spacing:.05em;cursor:pointer}
@@ -74,8 +74,6 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 .nfx-billboard-slide{position:absolute;inset:0;opacity:0;transition:opacity .9s ease;pointer-events:none}
 .nfx-billboard-slide.active{opacity:1;pointer-events:auto}
 .nfx-billboard-bg{position:absolute;inset:0;background-size:cover;background-position:center top;will-change:transform;animation:bbZoom 20s ease-out forwards}
-.nfx-billboard-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .8s}
-.nfx-billboard-video.show{opacity:1}
 @keyframes bbZoom{from{transform:scale(1.04)}to{transform:scale(1)}}
 .nfx-billboard::after{content:'';position:absolute;inset:0;background:
   linear-gradient(77deg,rgba(0,0,0,.78) 0%,rgba(0,0,0,.55) 28%,rgba(0,0,0,.18) 55%,transparent 80%),
@@ -86,7 +84,7 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 .nfx-bb-title{font-family:var(--display);font-size:clamp(2.6rem,6vw,5.2rem);line-height:.95;letter-spacing:.01em;margin-bottom:.85rem;text-shadow:0 2px 10px rgba(0,0,0,.7)}
 .nfx-bb-meta{display:flex;gap:.85rem;align-items:center;color:#dcdcdc;font-size:.85rem;font-weight:600;margin-bottom:1rem}
 .nfx-bb-meta .badge{padding:.18rem .5rem;border:1px solid rgba(255,255,255,.4);border-radius:3px;font-size:.7rem}
-.nfx-bb-desc{font-size:1.05rem;line-height:1.45;color:#e5e5e5;text-shadow:0 1px 4px rgba(0,0,0,.6);max-width:520px;margin-bottom:1.6rem;-webkit-line-clamp:3;-webkit-box-orient:vertical;display:-webkit-box;overflow:hidden}
+.nfx-bb-desc{font-size:1.05rem;line-height:1.45;color:#e5e5e5;text-shadow:0 1px 4px rgba(0,0,0,.6);max-width:520px;margin-bottom:1.6rem;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .nfx-bb-actions{display:flex;gap:.7rem;flex-wrap:wrap}
 .nfx-btn{display:inline-flex;align-items:center;gap:.5rem;padding:.7rem 1.55rem;border-radius:4px;font-weight:700;font-size:1rem;cursor:pointer;transition:opacity .15s,background .15s,transform .1s;border:none}
 .nfx-btn:active{transform:scale(.98)}
@@ -118,10 +116,31 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 @media(max-width:840px){.nfx-row-title{font-size:1.1rem}.nfx-row-explore{display:none}}
 
 .nfx-row-track{position:relative;padding:0 4%}
-/* FIX overflow: on utilise clip au lieu de auto pour laisser le hover-expand déborder en Z */
-.nfx-row-scroll{display:flex;gap:4px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;padding:80px 0;margin:-80px 0;-ms-overflow-style:none;scrollbar-width:none}
+
+/* ── FIX CRITIQUE : scroll sans déplacer les vignettes au doigt ── */
+/* overflow-x:scroll + touch-action:pan-x empêche le translateX involontaire sur les cards */
+.nfx-row-scroll{
+  display:flex;
+  gap:4px;
+  overflow-x:scroll;
+  overflow-y:visible;
+  scroll-snap-type:x mandatory;
+  scroll-behavior:smooth;
+  /* Espace pour le hover-expand vertical sans clipper */
+  padding-top:80px;
+  padding-bottom:60px;
+  margin-top:-80px;
+  margin-bottom:-60px;
+  -ms-overflow-style:none;
+  scrollbar-width:none;
+  /* CRITIQUE: empêche le déplacement des cards lors du scroll tactile */
+  touch-action:pan-x;
+  /* CRITIQUE: évite le glissement du transform au scroll */
+  will-change:scroll-position;
+}
 .nfx-row-scroll::-webkit-scrollbar{display:none}
-.nfx-row-arrow{position:absolute;top:80px;bottom:80px;width:4%;display:flex;align-items:center;justify-content:center;background:rgba(20,20,20,.5);border:none;color:#fff;cursor:pointer;z-index:6;opacity:0;transition:opacity .2s,background .2s}
+
+.nfx-row-arrow{position:absolute;top:0;bottom:0;width:4%;display:flex;align-items:center;justify-content:center;background:rgba(20,20,20,.5);border:none;color:#fff;cursor:pointer;z-index:6;opacity:0;transition:opacity .2s,background .2s}
 .nfx-row:hover .nfx-row-arrow{opacity:1}
 .nfx-row-arrow:hover{background:rgba(20,20,20,.85)}
 .nfx-row-arrow.left{left:0}
@@ -131,29 +150,47 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 @media(hover:none){.nfx-row-arrow{display:none}}
 
 /* ── CARDS ── */
-.nfx-card{flex:0 0 calc((100% - 16px)/5);scroll-snap-align:start;position:relative;border-radius:4px;overflow:visible;cursor:pointer;transition:transform .25s var(--ease)}
+.nfx-card{
+  flex:0 0 calc((100% - 16px)/5);
+  scroll-snap-align:start;
+  position:relative;
+  border-radius:4px;
+  cursor:pointer;
+  /* CRITIQUE: transition uniquement au hover, pas pendant scroll */
+  transition:transform .35s var(--ease);
+  /* CRITIQUE: empêche le mouvement pendant le scroll tactile */
+  touch-action:pan-x;
+}
 @media(min-width:1400px){.nfx-card{flex-basis:calc((100% - 20px)/6)}}
 @media(max-width:1100px){.nfx-card{flex-basis:calc((100% - 12px)/4)}}
 @media(max-width:780px){.nfx-card{flex-basis:calc((100% - 8px)/3)}}
 @media(max-width:520px){.nfx-card{flex-basis:calc((100% - 4px)/2.3)}}
 
 .nfx-card-img-wrap{position:relative;aspect-ratio:16/9;border-radius:4px;overflow:hidden;background:#181818}
-.nfx-card-img{width:100%;height:100%;object-fit:cover;transition:transform .3s;display:block}
-/* fallback image cassée */
-.nfx-card-img[data-broken]{filter:brightness(.3)}
+.nfx-card-img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none}
 .nfx-card-progress{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.18)}
 .nfx-card-progress-fill{height:100%;background:#e50914}
 .nfx-card-badge-new{position:absolute;top:8px;right:8px;background:#e50914;color:#fff;font-size:.6rem;font-weight:800;letter-spacing:.06em;padding:.18rem .4rem;border-radius:3px;text-transform:uppercase;z-index:3}
 
-/* ── HOVER EXPAND — FIX COMPLET ── */
+/* ── HOVER EXPAND — DESKTOP UNIQUEMENT — CORRIGÉ ── */
+/* On applique le scale uniquement sur desktop (hover:hover) et seulement après un délai */
+/* Les cartes ne bougent PAS pendant le scroll tactile (touch-action:pan-x + pas de transform au toucher) */
 @media(hover:hover){
-  .nfx-card{transition:transform .35s var(--ease) .1s}
-  .nfx-card:hover{transform:scale(1.38) translateY(-14%);z-index:30;transition-delay:.4s}
+  .nfx-card:hover{
+    transform:scale(1.38) translateY(-14%);
+    z-index:30;
+    transition:transform .35s var(--ease) .4s;
+  }
   .nfx-row-scroll>.nfx-card:first-child:hover{transform:scale(1.38) translate(12%,-14%)}
   .nfx-row-scroll>.nfx-card:last-child:hover{transform:scale(1.38) translate(-12%,-14%)}
-  /* Expand apparaît au hover */
   .nfx-card:hover .nfx-card-expand{opacity:1;pointer-events:auto;transform:translateY(0);transition-delay:.4s}
+  /* Pendant le scroll, on retire le hover via JS — fallback CSS : no hover on scrolling row */
 }
+/* Sur mobile (touch), jamais de scale */
+@media(hover:none){
+  .nfx-card:hover{transform:none !important}
+}
+
 .nfx-card-expand{position:absolute;left:0;right:0;top:0;background:#181818;border-radius:6px;box-shadow:0 24px 60px rgba(0,0,0,.85);opacity:0;pointer-events:none;transform:translateY(-6px);transition:opacity .25s,transform .25s;overflow:hidden;z-index:20}
 .nfx-card-expand-img{position:relative;aspect-ratio:16/9;overflow:hidden}
 .nfx-card-expand-img img{width:100%;height:100%;object-fit:cover;display:block}
@@ -172,23 +209,25 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 .nfx-card-expand-tags{display:flex;gap:.35rem;flex-wrap:wrap;font-size:.7rem;color:#dcdcdc}
 .nfx-card-expand-tags .dot{color:#646464}
 
-/* ── TOP 10 ── */
-.nfx-top10 .nfx-row-scroll{padding:80px 0 60px;gap:8px}
-.nfx-top10 .nfx-card{flex:0 0 calc((100% - 24px)/4);display:grid;grid-template-columns:42% 58%;align-items:end;overflow:visible;background:transparent}
+/* ── TOP 10 — format poster 2/3 ── */
+.nfx-top10 .nfx-row-scroll{gap:8px}
+.nfx-top10 .nfx-card{flex:0 0 calc((100% - 24px)/4);display:grid;grid-template-columns:42% 58%;align-items:end;background:transparent}
 @media(min-width:1400px){.nfx-top10 .nfx-card{flex-basis:calc((100% - 40px)/6)}}
 @media(max-width:1100px){.nfx-top10 .nfx-card{flex-basis:calc((100% - 16px)/3)}}
 @media(max-width:780px){.nfx-top10 .nfx-card{flex-basis:calc((100% - 8px)/2.3);grid-template-columns:38% 62%}}
+/* poster 2/3 */
 .nfx-top10 .nfx-card-img-wrap{aspect-ratio:2/3;width:100%;border-radius:4px;overflow:hidden;background:#181818}
-.nfx-top10-num{font-family:var(--display);font-size:11vw;line-height:.78;color:#000;-webkit-text-stroke:3px #5a5a5a;letter-spacing:-.06em;font-weight:900;pointer-events:none;user-select:none;text-align:center;align-self:end;justify-self:center;padding-bottom:0;margin-right:-12%;position:relative;z-index:1}
+.nfx-top10-num{font-family:var(--display);font-size:11vw;line-height:.78;color:#000;-webkit-text-stroke:3px #5a5a5a;letter-spacing:-.06em;font-weight:900;pointer-events:none;user-select:none;text-align:center;align-self:end;justify-self:center;margin-right:-12%;position:relative;z-index:1}
 @media(min-width:1400px){.nfx-top10-num{font-size:9vw}}
 @media(max-width:780px){.nfx-top10-num{font-size:16vw;-webkit-text-stroke:2px #5a5a5a;margin-right:-15%}}
-@media(hover:hover){.nfx-top10 .nfx-card:hover{transform:scale(1.18) translateY(-6%);z-index:30}}
+@media(hover:hover){.nfx-top10 .nfx-card:hover{transform:scale(1.18) translateY(-6%);z-index:30;transition-delay:.4s}}
+@media(hover:none){.nfx-top10 .nfx-card:hover{transform:none !important}}
 .nfx-top10 .nfx-card .nfx-card-expand{display:none}
 
 /* ── SPLASH ── */
 .nfx-splash{position:fixed;inset:0;background:#000;z-index:9999;display:flex;align-items:center;justify-content:center;transition:opacity .8s,visibility .8s;flex-direction:column}
 .nfx-splash.hide{opacity:0;visibility:hidden;pointer-events:none}
-.nfx-splash-logo{display:flex;align-items:center;justify-content:center;gap:0;animation:tudumPop 1.4s var(--spring) forwards}
+.nfx-splash-logo{display:flex;align-items:center;justify-content:center}
 .nfx-splash-letter{font-family:var(--display);font-size:14vw;color:var(--gold);text-shadow:0 0 40px rgba(255,214,10,.65);opacity:0;animation:tudumLetter 1.6s var(--spring) forwards}
 .nfx-splash-letter:nth-child(1){animation-delay:.1s}
 .nfx-splash-letter:nth-child(2){animation-delay:.2s}
@@ -200,17 +239,14 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 .nfx-splash-letter:nth-child(8){animation-delay:.75s;color:#fff;font-size:8vw;align-self:flex-start;margin-left:.3rem;text-shadow:0 0 20px rgba(255,255,255,.4)}
 .nfx-splash-bar{width:0;max-width:340px;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin-top:1.2rem;animation:tudumBar 1.4s ease-out .8s forwards;box-shadow:0 0 20px rgba(255,214,10,.7)}
 @keyframes tudumLetter{0%{opacity:0;transform:translateY(28px) scale(.6);filter:blur(6px)}60%{opacity:1;transform:translateY(0) scale(1.06);filter:blur(0)}100%{opacity:1;transform:translateY(0) scale(1)}}
-@keyframes tudumPop{0%,80%{transform:scale(1)}90%{transform:scale(1.04)}100%{transform:scale(1)}}
 @keyframes tudumBar{0%{width:0}50%{width:280px}100%{width:0}}
 
 /* ── ROUTE GRID ── */
 .nfx-route-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;padding:0 4% 4rem}
 @media(max-width:780px){.nfx-route-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.7rem}}
 @media(max-width:480px){.nfx-route-grid{grid-template-columns:repeat(2,1fr);gap:.6rem}}
-
 .nfx-file-card{position:relative;border-radius:6px;overflow:hidden;cursor:pointer;background:#181818;transition:transform .2s var(--ease),box-shadow .2s}
 .nfx-file-card:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 16px 36px rgba(0,0,0,.6)}
-.nfx-file-card:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
 .nfx-file-thumb{position:relative;aspect-ratio:16/9;overflow:hidden;background:#0a0a0a}
 .nfx-file-thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s ease}
 .nfx-file-card:hover .nfx-file-thumb img{transform:scale(1.05)}
@@ -218,22 +254,21 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 .nfx-file-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:46px;height:46px;border-radius:50%;background:rgba(229,9,20,.92);color:#fff;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s,transform .2s;box-shadow:0 6px 18px rgba(0,0,0,.5)}
 .nfx-file-card:hover .nfx-file-play{opacity:1;transform:translate(-50%,-50%) scale(1.08)}
 @media(hover:none){.nfx-file-play{opacity:.85}}
-.nfx-file-dur{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.78);color:#fff;font-size:.7rem;font-weight:600;padding:.18rem .4rem;border-radius:3px;letter-spacing:.02em}
+.nfx-file-dur{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.78);color:#fff;font-size:.7rem;font-weight:600;padding:.18rem .4rem;border-radius:3px}
 .nfx-file-body{padding:.7rem .85rem .85rem}
 .nfx-file-title{font-size:.88rem;font-weight:600;color:#fff;line-height:1.3;margin-bottom:.25rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .nfx-file-meta{font-size:.74rem;color:#b3b3b3;font-weight:500}
-.nfx-file-inlist{position:absolute;top:8px;left:8px;width:28px;height:28px;border-radius:50%;background:rgba(255,214,10,.9);color:#000;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800}
 
 .nfx-route{display:none;padding-top:calc(var(--nav-h) + 2rem)}
 .nfx-route.active{display:block}
 
-/* ── MA LISTE — état vide ── */
+/* ── MA LISTE vide ── */
 .nfx-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:40vh;gap:1rem;color:var(--text2);text-align:center;padding:2rem}
 .nfx-empty svg{opacity:.3}
 .nfx-empty h2{font-size:1.4rem;font-weight:700;color:#fff}
 .nfx-empty p{font-size:.95rem;max-width:380px;line-height:1.5}
 
-/* ── MODAL PLAYER ── */
+/* ── MODAL ── */
 .nfx-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:opacity .3s,visibility .3s;backdrop-filter:blur(8px)}
 .nfx-modal-overlay.open{opacity:1;visibility:visible}
 .nfx-modal{background:#141414;border-radius:8px;width:min(860px,94vw);max-height:92vh;overflow-y:auto;position:relative;box-shadow:0 32px 80px rgba(0,0,0,.9)}
@@ -257,7 +292,7 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 .nfx-toast{position:fixed;bottom:4rem;left:50%;transform:translateX(-50%) translateY(20px);background:#fff;color:#000;padding:.6rem 1.2rem;border-radius:6px;font-weight:700;font-size:.85rem;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;z-index:600;white-space:nowrap}
 .nfx-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* ── MY LIST BADGE sur les cartes ── */
+/* ── MY LIST BADGE ── */
 .nfx-mylist-badge{display:none;position:absolute;top:8px;left:8px;width:26px;height:26px;border-radius:50%;background:var(--gold);color:#000;font-size:.65rem;font-weight:800;align-items:center;justify-content:center;z-index:4}
 .in-mylist .nfx-mylist-badge{display:flex}
 
@@ -266,7 +301,6 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 </head>
 <body>
 
-<!-- DEMO BAR — déplacée en bas pour ne plus bloquer le header -->
 <div class="demo-bar">
   <span><strong>Preview Phase 1</strong> · LFIAGtube</span>
   <button id="replaySplashBtn" type="button">Replay Splash</button>
@@ -330,7 +364,7 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
   </a>
   <ul class="nfx-nav" id="nfxNav">
     <li><button class="active" data-route="home">Accueil</button></li>
-    <li><button data-route="series">Séries</button></li>
+    <li><button data-route="series">Séries &amp; Émissions</button></li>
     <li><button data-route="docs">Documentaires</button></li>
     <li><button data-route="concerts">Concerts</button></li>
     <li><button data-route="mylist">Ma liste</button></li>
@@ -349,9 +383,9 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 <!-- HOME -->
 <div id="view-home" class="nfx-route active">
 <section class="nfx-billboard" id="nfxBillboard">
+  <!-- Slide 1 : The Voice 2026 -->
   <div class="nfx-billboard-slide active" data-slide="0">
     <div class="nfx-billboard-bg" style="background-image:url('images/categories-v2/The_Voice_2026.webp')"></div>
-    <video class="nfx-billboard-video" muted loop playsinline preload="metadata" data-src="images/alune-thevoice-preview.mp4"></video>
     <div class="nfx-billboard-content">
       <div class="nfx-bb-tag">★ Top 1 LFIAGtube · Cette semaine</div>
       <h1 class="nfx-bb-title">The Voice 2026</h1>
@@ -369,14 +403,14 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
         </button>
       </div>
     </div>
-    <button class="nfx-bb-mute" data-mute="1" aria-label="Activer le son">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+    <button class="nfx-bb-mute" aria-label="Couper le son">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
     </button>
     <div class="nfx-bb-rating">TV-G</div>
   </div>
+  <!-- Slide 2 : L'Effet Lara -->
   <div class="nfx-billboard-slide" data-slide="1">
     <div class="nfx-billboard-bg" style="background-image:url('images/categories-v2/LEffet_Lara_-_2026.webp')"></div>
-    <video class="nfx-billboard-video" muted loop playsinline preload="metadata" data-src="images/alune-effetlara-preview.mp4"></video>
     <div class="nfx-billboard-content">
       <div class="nfx-bb-tag">✦ Nouveauté 2026</div>
       <h1 class="nfx-bb-title">L'Effet Lara</h1>
@@ -384,7 +418,7 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
         <span style="color:#46d369;font-weight:700">95% Recommandé</span>
         <span>2026</span><span class="badge">TVA</span><span>Saison 1</span>
       </div>
-      <p class="nfx-bb-desc">Lara Fabian au cœur d'une nouvelle aventure musicale. Diffusion dès le dimanche 12 avril sur TVA, disponible sur LFIAGtube les lundis.</p>
+      <p class="nfx-bb-desc">Lara Fabian au cœur d'une nouvelle aventure musicale sur TVA. Disponible sur LFIAGtube chaque lundi.</p>
       <div class="nfx-bb-actions">
         <button class="nfx-btn nfx-btn-play" data-action="play" data-idx="1">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>Lecture
@@ -394,21 +428,19 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
         </button>
       </div>
     </div>
-    <button class="nfx-bb-mute" data-mute="1" aria-label="Activer le son">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
-    </button>
     <div class="nfx-bb-rating">TV-G</div>
   </div>
+  <!-- Slide 3 : Star Académie -->
   <div class="nfx-billboard-slide" data-slide="2">
     <div class="nfx-billboard-bg" style="background-image:url('images/categories-v2/Star_Acadmie_2025.webp')"></div>
     <div class="nfx-billboard-content">
-      <div class="nfx-bb-tag">⚡ Phénomène</div>
+      <div class="nfx-bb-tag">⚡ Phénomène québécois</div>
       <h1 class="nfx-bb-title">Star Académie 2025</h1>
       <div class="nfx-bb-meta">
         <span style="color:#46d369;font-weight:700">97% Recommandé</span>
         <span>2025</span><span class="badge">TVA</span><span>Édition complète</span>
       </div>
-      <p class="nfx-bb-desc">Revivez la 7e Académie québécoise avec Lara Fabian au piano. Tous les épisodes, performances et coulisses, en exclu sur LFIAGtube.</p>
+      <p class="nfx-bb-desc">Revivez la 7e Académie québécoise avec Lara Fabian au piano. Tous les épisodes, performances et coulisses en exclu sur LFIAGtube.</p>
       <div class="nfx-bb-actions">
         <button class="nfx-btn nfx-btn-play" data-action="play" data-idx="2">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>Lecture
@@ -428,6 +460,7 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 </section>
 
 <div class="nfx-rows">
+  <!-- TOP 10 — utilise categories-v2-poster (2/3) -->
   <section class="nfx-row nfx-top10">
     <div class="nfx-row-header"><h3 class="nfx-row-title">Top 10 LFIAGtube · Cette semaine <span class="nfx-row-explore">Tout explorer ›</span></h3></div>
     <div class="nfx-row-track">
@@ -436,7 +469,8 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
       <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
     </div>
   </section>
-  <section class="nfx-row" data-row="continue">
+  <!-- Continuer à regarder -->
+  <section class="nfx-row">
     <div class="nfx-row-header"><h3 class="nfx-row-title">Continuer à regarder <span class="nfx-row-explore">Tout explorer ›</span></h3></div>
     <div class="nfx-row-track">
       <button class="nfx-row-arrow left" aria-label="Précédent"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
@@ -444,7 +478,8 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
       <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
     </div>
   </section>
-  <section class="nfx-row" data-row="new">
+  <!-- Nouveautés -->
+  <section class="nfx-row">
     <div class="nfx-row-header"><h3 class="nfx-row-title">Nouveautés Lara <span class="nfx-row-explore">Tout explorer ›</span></h3></div>
     <div class="nfx-row-track">
       <button class="nfx-row-arrow left" aria-label="Précédent"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
@@ -452,7 +487,8 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
       <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
     </div>
   </section>
-  <section class="nfx-row" data-row="albums">
+  <!-- Choisissez votre univers -->
+  <section class="nfx-row">
     <div class="nfx-row-header"><h3 class="nfx-row-title">Choisissez votre univers <span class="nfx-row-explore">Tout explorer ›</span></h3></div>
     <div class="nfx-row-track">
       <button class="nfx-row-arrow left" aria-label="Précédent"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
@@ -460,11 +496,21 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
       <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
     </div>
   </section>
-  <section class="nfx-row" data-row="live">
-    <div class="nfx-row-header"><h3 class="nfx-row-title">Concerts & Émissions <span class="nfx-row-explore">Tout explorer ›</span></h3></div>
+  <!-- Concerts & Émissions -->
+  <section class="nfx-row">
+    <div class="nfx-row-header"><h3 class="nfx-row-title">Concerts &amp; Émissions <span class="nfx-row-explore">Tout explorer ›</span></h3></div>
     <div class="nfx-row-track">
       <button class="nfx-row-arrow left" aria-label="Précédent"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
       <div class="nfx-row-scroll" id="rowLive"></div>
+      <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+  </section>
+  <!-- Archives par ère -->
+  <section class="nfx-row">
+    <div class="nfx-row-header"><h3 class="nfx-row-title">Archives — Discographie <span class="nfx-row-explore">Tout explorer ›</span></h3></div>
+    <div class="nfx-row-track">
+      <button class="nfx-row-arrow left" aria-label="Précédent"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="nfx-row-scroll" id="rowArchives"></div>
       <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
     </div>
   </section>
@@ -481,221 +527,221 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 (function(){
   'use strict';
 
-  /* ── DATA ── */
-  const DEMO_CARDS = [
-    {id:'voice2026',t:'The Voice 2026 — Blind Audition',img:'images/categories-v2/The_Voice_2026.webp',meta:'2026 · Émission · 2h10',desc:'Lara Fabian sublime la nouvelle saison de The Voice. Diffusion tous les samedis à 21h10 sur TF1.',new:1,cat:'series'},
-    {id:'effetlara',t:'L\'Effet Lara — Épisode 1',img:'images/categories-v2/LEffet_Lara_-_2026.webp',meta:'2026 · Série · 45 min',desc:'Lara Fabian au cœur d\'une nouvelle aventure musicale. Diffusion dès le dimanche 12 avril sur TVA.',new:1,cat:'series'},
-    {id:'starac2025',t:'Star Académie — Gala 1',img:'images/categories-v2/Star_Acadmie_2025.webp',meta:'2025 · Émission · 2h',desc:'Revivez la 7e Académie québécoise avec Lara Fabian au piano.',new:0,cat:'series'},
-    {id:'nuitmagique',t:'Lara Fabian — Nuit Magique',img:'images/categories-v2/Concert_Palais.webp',meta:'2024 · Concert · 1h50',desc:'Un concert événement au Palais des congrès de Paris.',new:0,cat:'concerts'},
-    {id:'jetaime',t:'Je t\'aime — Live Symphonique',img:'images/categories-v2/Je_taime_symphonique.webp',meta:'2023 · Concert · 4 min',desc:'La version orchestrale du titre mythique de Lara Fabian.',new:0,cat:'concerts'},
-    {id:'papillon',t:'Papillon — Documentaire',img:'images/categories-v2/Papillon_Doc.webp',meta:'2022 · Doc · 1h20',desc:'Un documentaire intime sur la vie et la carrière de Lara Fabian.',new:0,cat:'docs'},
-    {id:'tour50',t:'50 World Tour — Paris',img:'images/categories-v2/50_World_Tour.webp',meta:'2024 · Concert · 2h05',desc:'Le concert du 50e anniversaire de Lara Fabian à Paris.',new:1,cat:'concerts'},
-    {id:'voicefinale',t:'The Voice — La finale',img:'images/categories-v2/The_Voice_Finale.webp',meta:'2025 · Émission · 2h30',desc:'La grande finale de The Voice 2025 avec Lara Fabian comme coach.',new:0,cat:'series'}
+  /* ─────────────────────────────────────────
+     DATA — toutes les vraies images du repo
+  ───────────────────────────────────────── */
+  const ALL = [
+    // === Émissions récentes (series) ===
+    {id:'voice2026',    t:'The Voice 2026',              img:'images/categories-v2/The_Voice_2026.webp',              poster:'images/categories-v2-poster/The_Voice_2026.webp',              meta:'2026 · Émission · TF1',             desc:'Lara Fabian sublime la nouvelle saison de The Voice. Diffusion tous les samedis à 21h10 sur TF1, disponible sur LFIAGtube le lundi.',         cat:'series',   new:1, prog:72},
+    {id:'effetlara',    t:'L\'Effet Lara — 2026',        img:'images/categories-v2/LEffet_Lara_-_2026.webp',          poster:'images/categories-v2-poster/LEffet_Lara_-_2026.webp',          meta:'2026 · Série · TVA',                desc:'Lara Fabian au cœur d\'une nouvelle aventure musicale sur TVA. Disponible chaque lundi sur LFIAGtube.',                                         cat:'series',   new:1, prog:45},
+    {id:'starac2025',   t:'Star Académie 2025',          img:'images/categories-v2/Star_Acadmie_2025.webp',           poster:'images/categories-v2-poster/Star_Acadmie_2025.webp',           meta:'2025 · Émission · TVA',             desc:'Revivez la 7e Académie québécoise avec Lara Fabian au piano. Tous les épisodes et coulisses en exclu.',                                        cat:'series',   new:1, prog:91},
+    {id:'voicekids24',  t:'The Voice Kids 2024',         img:'images/categories-v2/The_Voice_Kids_2024.webp',         poster:'images/categories-v2-poster/The_Voice_Kids_2024.webp',         meta:'2024 · Émission · TF1',             desc:'Lara Fabian coach de The Voice Kids 2024. Toutes les battles et les lives.',                                                                    cat:'series',   new:0, prog:38},
+    // === Concerts ===
+    {id:'concerts',     t:'Concerts — Lara Fabian',      img:'images/categories-v2/Lara_Fabian_-_Concerts.webp',      poster:'images/categories-v2-poster/Lara_Fabian_-_Concerts.webp',      meta:'2000–2024 · Concerts · Scènes monde',desc:'Toutes les tournées mondiales et concerts événements de Lara Fabian, de Montréal à Paris.',                                                    cat:'concerts', new:0, prog:28},
+    {id:'today',        t:'2024 · Aujourd\'hui',         img:'images/categories-v2/2024_-_Aujourdhui.webp',           poster:'images/categories-v2-poster/2024_-_Aujourdhui.webp',           meta:'2024 · Concerts · Actualité',       desc:'La période actuelle de Lara Fabian — concerts et projets récents.',                                                                            cat:'concerts', new:1, prog:15},
+    {id:'enfoirs',      t:'Les Enfoirés — Lara Fabian',  img:'images/categories-v2/Lara_Fabian_aux_Enfoirs.webp',     poster:'images/categories-v2-poster/Lara_Fabian_aux_Enfoirs.webp',     meta:'1993–2020 · Événements · TF1',      desc:'Toutes les participations de Lara Fabian aux Restos du Cœur — les moments les plus émouvants.',                                                cat:'concerts', new:0, prog:55},
+    // === Documentaires / Divers ===
+    {id:'docs',         t:'Documentaires',               img:'images/categories-v2/Lara_Fabian_Documentaires.webp',   poster:'images/categories-v2-poster/Lara_Fabian_Documentaires.webp',   meta:'2010–2024 · Documentaires',         desc:'Les documentaires consacrés à la vie et la carrière de Lara Fabian — de l\'intime au mondial.',                                                  cat:'docs',     new:0, prog:63},
+    {id:'cinema',       t:'Lara Fabian au Cinéma',       img:'images/categories-v2/Lara_Fabian_au_Cinma.webp',        poster:'images/categories-v2-poster/Lara_Fabian_au_Cinma.webp',        meta:'1995–2010 · Films · Cinéma',        desc:'Les apparitions et rôles de Lara Fabian au cinéma — actrice et chanteuse de bandes originales.',                                               cat:'docs',     new:0, prog:20},
+    {id:'divers',       t:'Divers',                      img:'images/categories-v2/Lara_Fabian_-_Divers.webp',        poster:'images/categories-v2-poster/Lara_Fabian_-_Divers.webp',        meta:'Tous formats · Interviews · TV',    desc:'Interviews, émissions TV et apparitions variées de Lara Fabian à travers les années.',                                                          cat:'docs',     new:0, prog:42},
+    {id:'livres',       t:'Livres & Lectures',           img:'images/categories-v2/Lara_Fabian_-_Livres.webp',        poster:'images/categories-v2-poster/Lara_Fabian_-_Livres.webp',        meta:'2000–2020 · Livres · Lecture',      desc:'Lara Fabian auteure et lectrice — présentation de ses ouvrages et dédicaces.',                                                                  cat:'docs',     new:0, prog:10},
+    // === Archives par ère ===
+    {id:'debuts',       t:'1985–1990 · Les Débuts',      img:'images/categories-v2/1985_-_1990_Les_dbuts.webp',       poster:'images/categories-v2-poster/1985_-_1990_Les_dbuts.webp',       meta:'1985–1990 · Archives · Belgique',   desc:'Les premières années de carrière de Lara Fabian en Belgique — ses débuts sur scène.',                                                           cat:'docs',     new:0, prog:5},
+    {id:'francais91',   t:'1991–1993 · Lara Fabian',     img:'images/categories-v2/1991_-_1993_Lara_Fabian_Franais.webp',poster:'images/categories-v2-poster/1991_-_1993_Lara_Fabian_Franais.webp',meta:'1991–1993 · Albums · France',   desc:'Premier album français et début de la notoriété en Francophonie.',                                                                             cat:'docs',     new:0, prog:8},
+    {id:'carpediem',    t:'1994–1995 · Carpe Diem',      img:'images/categories-v2/1994_-_1995_Carpe_Diem.webp',      poster:'images/categories-v2-poster/1994_-_1995_Carpe_Diem.webp',      meta:'1994–1995 · Album · International', desc:'L\'album Carpe Diem et la percée internationale de Lara Fabian.',                                                                              cat:'docs',     new:0, prog:12},
+    {id:'pure',         t:'1996–1999 · Pure',            img:'images/categories-v2/1996_-_1999_Pure.webp',            poster:'images/categories-v2-poster/1996_-_1999_Pure.webp',            meta:'1996–1999 · Album · Mondial',       desc:'L\'ère Pure — le succès mondial de «Je t\'aime» et la consécration internationale.',                                                          cat:'docs',     new:0, prog:18},
+    {id:'anglais',      t:'1999–2001 · Album Anglais',   img:'images/categories-v2/1999_-2001_Lara_Fabian_Anglais.webp',poster:'images/categories-v2-poster/1999_-2001_Lara_Fabian_Anglais.webp',meta:'1999–2001 · Album · USA',        desc:'L\'album anglophone et la conquête du marché américain.',                                                                                     cat:'docs',     new:0, prog:22},
+    {id:'nue',          t:'2001–2003 · Nue / ETI',       img:'images/categories-v2/2001_-_2003_Nue__ETI.webp',        poster:'images/categories-v2-poster/2001_-_2003_Nue__ETI.webp',        meta:'2001–2003 · Albums · France/USA',   desc:'Les albums Nue et Every Time I See You — une période créative intense.',                                                                       cat:'docs',     new:0, prog:30},
+    {id:'wonderful',    t:'2004 · A Wonderful Life',     img:'images/categories-v2/2004_A_Wonderful_Life.webp',       poster:'images/categories-v2-poster/2004_A_Wonderful_Life.webp',       meta:'2004 · Album · International',      desc:'L\'album A Wonderful Life — un virage pop élégant.',                                                                                           cat:'docs',     new:0, prog:35},
+    {id:'nine',         t:'2005–2008 · 9',               img:'images/categories-v2/2005_-_2008_9.webp',               poster:'images/categories-v2-poster/2005_-_2008_9.webp',               meta:'2005–2008 · Album · International', desc:'L\'album 9 et la période créative foisonnante de Lara Fabian.',                                                                                cat:'docs',     new:0, prog:40},
+    {id:'tlfm',         t:'2009–2010 · TLFM / EWIM',     img:'images/categories-v2/2009_-_2010_TLFM__EWIM.webp',      poster:'images/categories-v2-poster/2009_-_2010_TLFM__EWIM.webp',      meta:'2009–2010 · Albums · France',       desc:'Two Lonely Hearts on the Map et Embrasse-moi — retour au Québec.',                                                                             cat:'docs',     new:0, prog:48},
+    {id:'zhivago',      t:'2010–2012 · Mademoiselle Zhivago',img:'images/categories-v2/2010_-_2012_Mademoiselle_Zhivago.webp',poster:'images/categories-v2-poster/2010_-_2012_Mademoiselle_Zhivago.webp',meta:'2010–2012 · Album',    desc:'L\'album Mademoiselle Zhivago — audace et élégance.',                                                                                          cat:'docs',     new:0, prog:52},
+    {id:'secret',       t:'2013–2014 · Le Secret',       img:'images/categories-v2/2013_-_2014_Le_Secret.webp',       poster:'images/categories-v2-poster/2013_-_2014_Le_Secret.webp',       meta:'2013–2014 · Album · Intime',        desc:'L\'album Le Secret — un retour au style intime et poétique.',                                                                                  cat:'docs',     new:0, prog:58},
+    {id:'mavie',        t:'2015–2016 · Ma Vie dans La Tienne',img:'images/categories-v2/2015_-_2016_Ma_Vie_dans_La_Tienne.webp',poster:'images/categories-v2-poster/2015_-_2016_Ma_Vie_dans_La_Tienne.webp',meta:'2015–2016 · Album', desc:'L\'album Ma Vie dans la Tienne — une offrande musicale.',                                                                                 cat:'docs',     new:0, prog:65},
+    {id:'camouflage',   t:'2017–2018 · Camouflage',      img:'images/categories-v2/2017_-_2018_Camouflage.webp',      poster:'images/categories-v2-poster/2017_-_2018_Camouflage.webp',      meta:'2017–2018 · Album · Tournée monde', desc:'L\'album Camouflage et la tournée mondiale de 2018.',                                                                                          cat:'docs',     new:0, prog:70},
+    {id:'papillon',     t:'2019–2021 · Papillon',        img:'images/categories-v2/2019_-_2021_Papillon.webp',        poster:'images/categories-v2-poster/2019_-_2021_Papillon.webp',        meta:'2019–2021 · Album · Liberté',       desc:'L\'album Papillon — un nouveau chapitre de liberté et de renaissance.',                                                                       cat:'docs',     new:0, prog:78},
   ];
 
-  /* Progress fixes — stable par item */
-  const PROGRESS = {voice2026:72,effetlara:45,starac2025:91,nuitmagique:28,jetaime:55,papillon:15,tour50:38,voicefinale:63};
-  const TOP10 = DEMO_CARDS.slice(0,6);
+  const BILLBOARD_ITEMS = ALL.slice(0,3);
+
+  /* Top10 — use poster images */
+  const TOP10_IDS = ['voice2026','effetlara','starac2025','today','concerts','voicekids24','enfoirs','docs','camouflage','papillon'];
+  const TOP10 = TOP10_IDS.map(id=>ALL.find(x=>x.id===id)).filter(Boolean).slice(0,10);
+
+  /* Rows */
+  const CONTINUE  = [...ALL].reverse().slice(0,12);
+  const NEW_ITEMS = ALL.filter(x=>x.new);
+  const ALBUMS    = ALL.slice(4,14);
+  const LIVE      = ALL.filter(x=>x.cat==='concerts'||x.cat==='series');
+  const ARCHIVES  = ALL.filter(x=>['debuts','francais91','carpediem','pure','anglais','nue','wonderful','nine','tlfm','zhivago','secret','mavie','camouflage','papillon'].includes(x.id));
 
   /* ── UTILS ── */
   const $ = q => document.querySelector(q);
   const $$ = q => Array.from(document.querySelectorAll(q));
 
-  /* ── MY LIST — localStorage ── */
-  function getList(){ try{ return JSON.parse(localStorage.getItem('lfiag_mylist')||'[]'); }catch(e){ return []; } }
-  function saveList(arr){ localStorage.setItem('lfiag_mylist', JSON.stringify(arr)); }
+  /* ── MY LIST ── */
+  function getList(){ try{return JSON.parse(localStorage.getItem('lfiag_mylist')||'[]');}catch(e){return [];} }
+  function saveList(arr){ localStorage.setItem('lfiag_mylist',JSON.stringify(arr)); }
   function inList(id){ return getList().includes(id); }
   function toggleList(id){
-    let arr = getList();
-    if(arr.includes(id)){ arr = arr.filter(x=>x!==id); toast('Retiré de votre liste'); }
-    else { arr.push(id); toast('Ajouté à votre liste ✓'); }
+    let arr=getList();
+    if(arr.includes(id)){arr=arr.filter(x=>x!==id);toast('Retiré de votre liste');}
+    else{arr.push(id);toast('Ajouté à votre liste ✓');}
     saveList(arr);
     refreshMyListBadges();
-    if($('.nfx-route#view-mylist.active')) renderMyList();
+    if($('#view-mylist.active')) renderMyList();
     return arr.includes(id);
   }
-
   function refreshMyListBadges(){
-    const list = getList();
-    $$('.nfx-card[data-id], .nfx-file-card[data-id]').forEach(el=>{
-      el.classList.toggle('in-mylist', list.includes(el.dataset.id));
+    const list=getList();
+    $$('.nfx-card[data-id],.nfx-file-card[data-id]').forEach(el=>{
+      el.classList.toggle('in-mylist',list.includes(el.dataset.id));
     });
-    // modal add btn
-    const btn = $('#nfxModalAdd');
-    if(btn && btn.dataset.id){
-      const yes = list.includes(btn.dataset.id);
-      btn.classList.toggle('in-list', yes);
-      $('#nfxModalAddLabel').textContent = yes ? 'Dans ma liste ✓' : 'Ajouter à ma liste';
+    const btn=$('#nfxModalAdd');
+    if(btn&&btn.dataset.id){
+      const yes=list.includes(btn.dataset.id);
+      btn.classList.toggle('in-list',yes);
+      $('#nfxModalAddLabel').textContent=yes?'Dans ma liste ✓':'Ajouter à ma liste';
     }
   }
 
   /* ── TOAST ── */
   function toast(msg){
-    const t = $('#nfxToast');
-    t.textContent = msg;
-    t.classList.add('show');
-    clearTimeout(t._timer);
-    t._timer = setTimeout(()=>t.classList.remove('show'), 2400);
+    const t=$('#nfxToast');
+    t.textContent=msg;t.classList.add('show');
+    clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2400);
   }
 
   /* ── SPLASH ── */
-  const splash = $('#nfxSplash');
-  setTimeout(()=> splash.classList.add('hide'), 2600);
-  const replayBtn = $('#replaySplashBtn');
-  if(replayBtn) replayBtn.addEventListener('click', ()=>{
+  const splash=$('#nfxSplash');
+  setTimeout(()=>splash.classList.add('hide'),2600);
+  const replayBtn=$('#replaySplashBtn');
+  if(replayBtn) replayBtn.addEventListener('click',()=>{
     splash.classList.remove('hide');
-    setTimeout(()=> splash.classList.add('hide'), 2600);
+    setTimeout(()=>splash.classList.add('hide'),2600);
   });
 
   /* ── HEADER SCROLL ── */
-  const header = $('#nfxHeader');
-  window.addEventListener('scroll', ()=>{
-    header.classList.toggle('scrolled', window.scrollY > 40);
-  }, {passive:true});
+  window.addEventListener('scroll',()=>{
+    $('#nfxHeader').classList.toggle('scrolled',window.scrollY>40);
+  },{passive:true});
 
   /* ── MODAL ── */
-  const modal = $('#nfxModal');
-  let currentCard = null;
-
+  const modal=$('#nfxModal');
+  let currentCard=null;
   function openModal(item){
-    currentCard = item;
-    $('#nfxModalImg').src = item.img;
-    $('#nfxModalImg').alt = item.t;
-    $('#nfxModalTitle').textContent = item.t;
-    const [year,type,dur] = item.meta.split('·').map(s=>s.trim());
-    $('#nfxModalMeta').innerHTML = `<span class="match">98% Match</span><span>${year}</span><span class="badge">${type}</span><span>${dur}</span>`;
-    $('#nfxModalDesc').textContent = item.desc || '';
-    const addBtn = $('#nfxModalAdd');
-    addBtn.dataset.id = item.id;
-    const yes = inList(item.id);
-    addBtn.classList.toggle('in-list', yes);
-    $('#nfxModalAddLabel').textContent = yes ? 'Dans ma liste ✓' : 'Ajouter à ma liste';
+    currentCard=item;
+    $('#nfxModalImg').src=item.img;
+    $('#nfxModalImg').alt=item.t;
+    $('#nfxModalTitle').textContent=item.t;
+    const parts=item.meta.split('·').map(s=>s.trim());
+    $('#nfxModalMeta').innerHTML=`<span class="match">98% Match</span>${parts.map(p=>`<span>${p}</span>`).join('')}`;
+    $('#nfxModalDesc').textContent=item.desc||'';
+    const addBtn=$('#nfxModalAdd');
+    addBtn.dataset.id=item.id;
+    const yes=inList(item.id);
+    addBtn.classList.toggle('in-list',yes);
+    $('#nfxModalAddLabel').textContent=yes?'Dans ma liste ✓':'Ajouter à ma liste';
     modal.classList.add('open');
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow='hidden';
   }
-
   function closeModal(){
     modal.classList.remove('open');
-    document.body.style.overflow = '';
-    currentCard = null;
+    document.body.style.overflow='';
+    currentCard=null;
   }
-
-  $('#nfxModalClose').addEventListener('click', closeModal);
-  modal.addEventListener('click', e=>{ if(e.target===modal) closeModal(); });
-  document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
-
-  $('#nfxModalAdd').addEventListener('click', ()=>{
-    if(!currentCard) return;
+  $('#nfxModalClose').addEventListener('click',closeModal);
+  modal.addEventListener('click',e=>{if(e.target===modal)closeModal();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+  $('#nfxModalAdd').addEventListener('click',()=>{
+    if(!currentCard)return;
     toggleList(currentCard.id);
-    const yes = inList(currentCard.id);
-    $('#nfxModalAdd').classList.toggle('in-list', yes);
-    $('#nfxModalAddLabel').textContent = yes ? 'Dans ma liste ✓' : 'Ajouter à ma liste';
+    const yes=inList(currentCard.id);
+    $('#nfxModalAdd').classList.toggle('in-list',yes);
+    $('#nfxModalAddLabel').textContent=yes?'Dans ma liste ✓':'Ajouter à ma liste';
   });
-
-  $('#nfxModalPlay').addEventListener('click', ()=>{
-    if(currentCard) toast('▶ Lecture de : ' + currentCard.t);
-  });
+  $('#nfxModalPlay').addEventListener('click',()=>{if(currentCard)toast('▶ Lecture de : '+currentCard.t);});
 
   /* ── ROUTING ── */
   function setRoute(name){
     $$('.nfx-route').forEach(el=>el.classList.remove('active'));
-    const target = $(`#view-${name}`);
-    if(target) target.classList.add('active');
-    $$('.nfx-nav button').forEach(b=>b.classList.toggle('active', b.dataset.route===name));
-    if(name!=='home') window.scrollTo({top:0,behavior:'smooth'});
-    if(name==='mylist') renderMyList();
+    const t=$(`#view-${name}`);if(t)t.classList.add('active');
+    $$('.nfx-nav button').forEach(b=>b.classList.toggle('active',b.dataset.route===name));
+    if(name!=='home')window.scrollTo({top:0,behavior:'smooth'});
+    if(name==='mylist')renderMyList();
   }
-
   $$('.nfx-nav [data-route], .nfx-logo[data-route]').forEach(el=>{
-    el.addEventListener('click', e=>{
-      e.preventDefault();
-      if(el.dataset.route) setRoute(el.dataset.route);
-    });
+    el.addEventListener('click',e=>{e.preventDefault();if(el.dataset.route)setRoute(el.dataset.route);});
   });
 
-  /* ── BILLBOARD ACTIONS ── */
+  /* ── BILLBOARD ── */
   $$('.nfx-btn[data-action]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const idx = parseInt(btn.dataset.idx,10)||0;
-      const item = DEMO_CARDS[idx];
-      if(!item) return;
-      if(btn.dataset.action==='info') openModal(item);
-      else toast('▶ Lecture de : ' + item.t);
+    btn.addEventListener('click',()=>{
+      const idx=parseInt(btn.dataset.idx,10)||0;
+      const item=BILLBOARD_ITEMS[idx];
+      if(!item)return;
+      if(btn.dataset.action==='info')openModal(item);
+      else toast('▶ Lecture de : '+item.t);
     });
   });
-
-  /* ── BILLBOARD CAROUSEL ── */
-  const slides = $$('.nfx-billboard-slide');
-  const dots = $$('#nfxBbDots button');
-  let bbIndex=0, bbTimer;
-
+  const slides=$$('.nfx-billboard-slide');
+  const dots=$$('#nfxBbDots button');
+  let bbIndex=0,bbTimer;
   function showSlide(i){
-    slides.forEach((s,idx)=>{
-      s.classList.toggle('active', idx===i);
-      const vid = s.querySelector('video');
-      if(vid){
-        if(idx===i){
-          if(vid.dataset.src && !vid.src) vid.src=vid.dataset.src;
-          vid.play().catch(()=>{});
-          setTimeout(()=>vid.classList.add('show'),200);
-        }else{
-          vid.classList.remove('show');
-          vid.pause(); vid.currentTime=0;
-        }
-      }
-    });
+    slides.forEach((s,idx)=>s.classList.toggle('active',idx===i));
     dots.forEach((d,idx)=>d.classList.toggle('active',idx===i));
     bbIndex=i;
   }
-  dots.forEach((d,i)=>d.addEventListener('click',()=>{ showSlide(i); clearInterval(bbTimer); bbTimer=setInterval(()=>showSlide((bbIndex+1)%slides.length),8000); }));
+  dots.forEach((d,i)=>d.addEventListener('click',()=>{showSlide(i);clearInterval(bbTimer);bbTimer=setInterval(()=>showSlide((bbIndex+1)%slides.length),8000);}));
   bbTimer=setInterval(()=>showSlide((bbIndex+1)%slides.length),8000);
-
-  /* ── BILLBOARD MUTE ── */
-  $$('.nfx-bb-mute').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      const vid=btn.closest('.nfx-billboard-slide').querySelector('video');
-      if(!vid) return;
-      vid.muted=!vid.muted;
-      btn.setAttribute('aria-label', vid.muted?'Activer le son':'Couper le son');
-      btn.dataset.mute=vid.muted?'1':'0';
-      btn.innerHTML=vid.muted
-        ?'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>'
-        :'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
-    });
-  });
 
   /* ── ROW ARROWS ── */
   $$('.nfx-row-track').forEach(track=>{
     const scroll=track.querySelector('.nfx-row-scroll');
-    if(!scroll) return;
+    if(!scroll)return;
     const left=track.querySelector('.nfx-row-arrow.left');
     const right=track.querySelector('.nfx-row-arrow.right');
-    if(left) left.addEventListener('click',()=>scroll.scrollBy({left:-scroll.clientWidth*.85,behavior:'smooth'}));
-    if(right) right.addEventListener('click',()=>scroll.scrollBy({left:scroll.clientWidth*.85,behavior:'smooth'}));
+    if(left)left.addEventListener('click',()=>scroll.scrollBy({left:-scroll.clientWidth*.85,behavior:'smooth'}));
+    if(right)right.addEventListener('click',()=>scroll.scrollBy({left:scroll.clientWidth*.85,behavior:'smooth'}));
+  });
+
+  /* ── FIX CRITIQUE: désactiver le hover pendant le scroll tactile ──
+     Quand on scroll, les cartes ne doivent pas partir en scale.
+     On ajoute/retire une classe "scrolling" sur le scroll container
+     qui désactive les transitions transform côté JS. */
+  $$('.nfx-row-scroll').forEach(sc=>{
+    let scrollTimer;
+    sc.addEventListener('scroll',()=>{
+      sc.style.pointerEvents='none';
+      clearTimeout(scrollTimer);
+      scrollTimer=setTimeout(()=>{
+        sc.style.pointerEvents='';
+      },150);
+    },{passive:true});
   });
 
   /* ── BUILD CARDS ── */
-  function mylistBadge(){ return '<span class="nfx-mylist-badge" aria-label="Dans ma liste">✓</span>'; }
+  function mylistBadge(){return '<span class="nfx-mylist-badge" aria-hidden="true">✓</span>';}
 
   function makeCard(item,idx,isTop10=false){
     if(isTop10){
-      return `<div class="nfx-card" data-id="${item.id}">
+      // Top10 : poster format 2/3
+      return `<div class="nfx-card" data-id="${item.id}" tabindex="0" role="button" aria-label="${item.t}">
         <span class="nfx-top10-num">${idx+1}</span>
         <div class="nfx-card-img-wrap">
-          <img class="nfx-card-img" src="${item.img}" alt="${item.t}" loading="lazy" onerror="this.dataset.broken=1">
+          <img class="nfx-card-img" src="${item.poster||item.img}" alt="${item.t}" loading="lazy" draggable="false">
         </div>
       </div>`;
     }
-    const prog=PROGRESS[item.id]||50;
-    return `<div class="nfx-card${inList(item.id)?' in-mylist':''}" data-id="${item.id}">
+    return `<div class="nfx-card${inList(item.id)?' in-mylist':''}" data-id="${item.id}" tabindex="0" role="button" aria-label="${item.t}">
       ${mylistBadge()}
       <div class="nfx-card-img-wrap">
-        <img class="nfx-card-img" src="${item.img}" alt="${item.t}" loading="lazy" onerror="this.dataset.broken=1">
-        ${item.new?'<span class="nfx-card-badge-new">Nouveau</span>':''} 
-        <div class="nfx-card-progress"><div class="nfx-card-progress-fill" style="width:${prog}%"></div></div>
+        <img class="nfx-card-img" src="${item.img}" alt="${item.t}" loading="lazy" draggable="false">
+        ${item.new?'<span class="nfx-card-badge-new">Nouveau</span>':''}
+        <div class="nfx-card-progress"><div class="nfx-card-progress-fill" style="width:${item.prog||50}%"></div></div>
       </div>
       <div class="nfx-card-expand">
-        <div class="nfx-card-expand-img"><img src="${item.img}" alt=""></div>
+        <div class="nfx-card-expand-img"><img src="${item.img}" alt="" draggable="false"></div>
         <div class="nfx-card-expand-body">
           <div class="nfx-card-expand-actions">
             <button class="nfx-action-btn primary" data-action="play" data-id="${item.id}" aria-label="Lire"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></button>
@@ -704,7 +750,7 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
           </div>
           <div class="nfx-card-expand-meta"><span class="match">98%</span><span class="badge">HD</span><span>${item.meta.split('·').pop().trim()}</span></div>
           <div class="nfx-card-expand-title">${item.t}</div>
-          <div class="nfx-card-expand-tags"><span>Music</span><span class="dot">•</span><span>Français</span><span class="dot">•</span><span>Lara Fabian</span></div>
+          <div class="nfx-card-expand-tags"><span>Music</span><span class="dot">•</span><span>Lara Fabian</span><span class="dot">•</span><span>Francophonie</span></div>
         </div>
       </div>
     </div>`;
@@ -714,7 +760,7 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
     return `<div class="nfx-file-card${inList(item.id)?' in-mylist':''}" data-id="${item.id}" tabindex="0" role="button" aria-label="${item.t}">
       ${mylistBadge()}
       <div class="nfx-file-thumb">
-        <img src="${item.img}" alt="${item.t}" loading="lazy" onerror="this.dataset.broken=1">
+        <img src="${item.img}" alt="${item.t}" loading="lazy" draggable="false">
         <div class="nfx-file-overlay"></div>
         <div class="nfx-file-play"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
         <span class="nfx-file-dur">${item.meta.split('·').pop().trim()}</span>
@@ -729,79 +775,78 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
   /* ── FILL ROWS ── */
   function fill(id,items,top10=false){
     const el=document.getElementById(id);
-    if(!el) return;
+    if(!el)return;
     el.innerHTML=items.map((it,i)=>makeCard(it,i,top10)).join('');
   }
-  fill('rowTop10',TOP10,true);
-  fill('rowContinue',DEMO_CARDS.slice().reverse());
-  fill('rowNew',DEMO_CARDS.filter(x=>x.new));
-  fill('rowAlbums',DEMO_CARDS.slice(2,6));
-  fill('rowLive',DEMO_CARDS.filter(x=>x.meta.includes('Concert')||x.meta.includes('Émission')));
+  fill('rowTop10',  TOP10,   true);
+  fill('rowContinue',CONTINUE);
+  fill('rowNew',    NEW_ITEMS);
+  fill('rowAlbums', ALBUMS);
+  fill('rowLive',   LIVE);
+  fill('rowArchives',ARCHIVES);
 
+  /* ── ROUTE GRIDS ── */
   ['series','docs','concerts'].forEach(r=>{
     const grid=document.getElementById('grid-'+r);
-    const items = r==='series'?DEMO_CARDS.filter(x=>x.cat==='series')
-                 :r==='docs'?DEMO_CARDS.filter(x=>x.cat==='docs')
-                 :DEMO_CARDS.filter(x=>x.cat==='concerts');
-    if(grid) grid.innerHTML=items.map(makeGridCard).join('');
+    const items=ALL.filter(x=>x.cat===r);
+    if(grid)grid.innerHTML=items.map(makeGridCard).join('');
+    if(grid)bindGridCards(grid);
   });
 
   /* ── MA LISTE ── */
   function renderMyList(){
     const grid=$('#grid-mylist');
-    if(!grid) return;
+    if(!grid)return;
     const list=getList();
-    const items=DEMO_CARDS.filter(x=>list.includes(x.id));
+    const items=ALL.filter(x=>list.includes(x.id));
     if(!items.length){
       grid.innerHTML=`<div class="nfx-empty">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        <h2>Votre liste est vide</h2>
-        <p>Ajoutez des vidéos depuis l'accueil ou en survolant une carte et en cliquant sur +</p>
-      </div>`;
-    } else {
+        <h2>Votre liste est vide</h2><p>Ajoutez des vidéos depuis l'accueil en survolant une carte et en cliquant sur +</p></div>`;
+    }else{
       grid.innerHTML=items.map(makeGridCard).join('');
       bindGridCards(grid);
     }
   }
 
-  /* ── EVENT DELEGATION sur les cartes ── */
+  /* ── EVENT DELEGATION ── */
   function bindCardActions(container){
     container.addEventListener('click',e=>{
       const btn=e.target.closest('[data-action]');
       if(btn){
         e.stopPropagation();
         const id=btn.dataset.id;
-        const item=DEMO_CARDS.find(x=>x.id===id);
-        if(!item) return;
-        if(btn.dataset.action==='play') toast('▶ Lecture de : '+item.t);
-        if(btn.dataset.action==='info') openModal(item);
-        if(btn.dataset.action==='addlist'){ toggleList(id); refreshMyListBadges(); }
+        const item=ALL.find(x=>x.id===id);
+        if(!item)return;
+        if(btn.dataset.action==='play')toast('▶ Lecture de : '+item.t);
+        if(btn.dataset.action==='info')openModal(item);
+        if(btn.dataset.action==='addlist'){toggleList(id);refreshMyListBadges();}
         return;
       }
-      // click sur la carte elle-même → modal
       const card=e.target.closest('.nfx-card[data-id]');
-      if(card){ const item=DEMO_CARDS.find(x=>x.id===card.dataset.id); if(item) openModal(item); }
+      if(card){const item=ALL.find(x=>x.id===card.dataset.id);if(item)openModal(item);}
+    });
+    container.addEventListener('keydown',e=>{
+      if(e.key==='Enter'||e.key===' '){
+        const card=e.target.closest('.nfx-card[data-id]');
+        if(card){e.preventDefault();const item=ALL.find(x=>x.id===card.dataset.id);if(item)openModal(item);}
+      }
     });
   }
 
   function bindGridCards(container){
     container.addEventListener('click',e=>{
       const card=e.target.closest('.nfx-file-card[data-id]');
-      if(card){ const item=DEMO_CARDS.find(x=>x.id===card.dataset.id); if(item) openModal(item); }
+      if(card){const item=ALL.find(x=>x.id===card.dataset.id);if(item)openModal(item);}
     });
     container.addEventListener('keydown',e=>{
-      if(e.key==='Enter'||e.key===' '){ const card=e.target.closest('.nfx-file-card'); if(card) card.click(); }
+      if(e.key==='Enter'||e.key===' '){const card=e.target.closest('.nfx-file-card');if(card){e.preventDefault();card.click();}}
     });
   }
 
-  // Bind toutes les zones
-  ['rowTop10','rowContinue','rowNew','rowAlbums','rowLive'].forEach(id=>{
+  ['rowTop10','rowContinue','rowNew','rowAlbums','rowLive','rowArchives'].forEach(id=>{
     const el=document.getElementById(id);
-    if(el) bindCardActions(el);
-  });
-  ['grid-series','grid-docs','grid-concerts'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el) bindGridCards(el);
+    if(el)bindCardActions(el);
   });
 
   refreshMyListBadges();
