@@ -787,12 +787,10 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 const BACKEND = 'https://script.google.com/macros/s/AKfycbxnNSmAUGIuzBJ2s2f5MmnqZrMjZO9VqNjd7kCyELD-KdZ2XBjWTrW7qpl4HcLgk4bB/exec';
 const CACHE_KEY = 'lfiag_catalogue_v1';
 const CACHE_TS_KEY = 'lfiag_catalogue_ts_v1';
-// Durée du cache local navigateur : 30 min (le backend lui gère 6h côté serveur)
 const LOCAL_TTL = 30 * 60 * 1000;
 
 let ALL = [];
 
-// ── Catégories Drive → section/cat interne
 const CAT_MAP = {
   'lara fabian - concerts': 'concerts',
   "2024 - aujourd'hui": 'series',
@@ -818,9 +816,42 @@ function mapCat(raw) {
   return 'docs';
 }
 
-// ── Fetch backend (avec bust-cache optionnel)
+// ── Parsing robuste : accepte data.videos, data.data, data.items, ou tableau direct
+function extractVideos(data) {
+  if (!data) return [];
+  // Cas 1 : { status:'ok', videos: [...] }
+  if (data.status === 'ok' && Array.isArray(data.videos) && data.videos.length) return data.videos;
+  // Cas 2 : { videos: [...] } sans status
+  if (Array.isArray(data.videos) && data.videos.length) return data.videos;
+  // Cas 3 : { data: [...] }
+  if (Array.isArray(data.data) && data.data.length) return data.data;
+  // Cas 4 : { items: [...] }
+  if (Array.isArray(data.items) && data.items.length) return data.items;
+  // Cas 5 : tableau direct
+  if (Array.isArray(data) && data.length) return data;
+  // Cas 6 : { status:'ok', files: [...] }
+  if (Array.isArray(data.files) && data.files.length) return data.files;
+  return [];
+}
+
+function normalizeVideo(v) {
+  return {
+    id: v.id || v.fileId || v.driveId || '',
+    t: v.name || v.titre || v.title || v.nom || v.id || '',
+    img: v.thumbnailLink || v.thumbnail || ('https://drive.google.com/thumbnail?id=' + (v.id||v.fileId) + '&sz=w640'),
+    poster: v.thumbnailLink || v.thumbnail || ('https://drive.google.com/thumbnail?id=' + (v.id||v.fileId) + '&sz=w640'),
+    embed: v.webViewLink || v.embedLink || ('https://drive.google.com/file/d/' + (v.id||v.fileId) + '/preview'),
+    meta: (v._category || v.category || v.categorie || 'Lara Fabian') + ' · Vidéo',
+    desc: v.description || v.desc || '',
+    cat: mapCat(v._category || v.category || v.categorie || ''),
+    _category: v._category || v.category || v.categorie || '',
+    new: isNew(v),
+    prog: 0,
+    mimeType: v.mimeType || '',
+  };
+}
+
 async function fetchCatalogue(bustCache = false) {
-  // Lire cache navigateur
   if (!bustCache) {
     try {
       const ts = parseInt(localStorage.getItem(CACHE_TS_KEY) || '0');
@@ -836,23 +867,12 @@ async function fetchCatalogue(bustCache = false) {
   if (!resp.ok) throw new Error('HTTP ' + resp.status);
   const data = await resp.json();
 
-  let videos = [];
-  if (data.status === 'ok' && Array.isArray(data.videos)) {
-    videos = data.videos.map(v => ({
-      id: v.id,
-      t: v.name || v.titre || v.id,
-      img: v.thumbnailLink || ('https://drive.google.com/thumbnail?id=' + v.id + '&sz=w640'),
-      poster: v.thumbnailLink || ('https://drive.google.com/thumbnail?id=' + v.id + '&sz=w640'),
-      embed: v.webViewLink || ('https://drive.google.com/file/d/' + v.id + '/preview'),
-      meta: (v._category || 'Lara Fabian') + ' · Vidéo',
-      desc: v.description || '',
-      cat: mapCat(v._category),
-      _category: v._category || '',
-      new: isNew(v),
-      prog: 0,
-      mimeType: v.mimeType || '',
-    }));
-  }
+  const raw = extractVideos(data);
+  const videos = raw.map(normalizeVideo).filter(v => v.id);
+
+  // Debug : afficher le nombre de vidéos reçues
+  console.log('[LFIAGtube] Backend response keys:', Object.keys(data));
+  console.log('[LFIAGtube] Videos parsed:', videos.length, '— raw count:', raw.length);
 
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify(videos));
@@ -868,7 +888,6 @@ function isNew(v) {
   return (Date.now() - t) < 30 * 24 * 60 * 60 * 1000 ? 1 : 0;
 }
 
-// ── Helpers UI
 const $ = q => document.querySelector(q);
 const $$ = q => Array.from(document.querySelectorAll(q));
 
@@ -916,9 +935,7 @@ const modal = $('#nfxModal');
 let cur = null;
 function openModal(item) {
   cur = item;
-  // Afficher thumbnail par défaut, remplacé par iframe au clic sur Lecture
   const hero = $('#nfxModalHero');
-  // Remettre l'image (au cas où iframe déjà injectée)
   let img = $('#nfxModalImg');
   if (!img) {
     hero.innerHTML = '<img id="nfxModalImg" src="" alt=""><div class="nfx-modal-hero-overlay" id="nfxModalOverlay"></div><div class="nfx-modal-hero-play" id="nfxModalHeroPlay"><button class="nfx-btn nfx-btn-play" id="nfxModalPlay"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>Lecture</button></div>';
@@ -945,7 +962,6 @@ function openModal(item) {
 function closeModal() {
   modal.classList.remove('open');
   document.body.style.overflow = '';
-  // Arrêter la lecture en remettant l'image
   const hero = $('#nfxModalHero');
   if (hero.querySelector('iframe')) {
     hero.innerHTML = '<img id="nfxModalImg" src="" alt=""><div class="nfx-modal-hero-overlay" id="nfxModalOverlay"></div><div class="nfx-modal-hero-play" id="nfxModalHeroPlay"><button class="nfx-btn nfx-btn-play" id="nfxModalPlay"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>Lecture</button></div>';
@@ -1097,7 +1113,6 @@ function top10RowHtml() {
 
 function renderHome() {
   const rows = $('#nfxRows');
-  // Construire les rangées dynamiquement par catégorie Drive
   const cats = {};
   ALL.forEach(v => { (cats[v._category] = cats[v._category] || []).push(v); });
 
@@ -1112,17 +1127,24 @@ function renderHome() {
     html += rowHtml(safeId, cat);
   });
 
+  // Si aucune donnée : message d'erreur utile
+  if (!ALL.length) {
+    rows.innerHTML = `<div class="nfx-empty" style="margin-top:4rem">
+      <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <h2>Catalogue indisponible</h2>
+      <p>Le backend n'a pas renvoyé de vidéos. Vérifiez la console (F12) et cliquez sur 🔄 Mettre à jour.</p>
+    </div>`;
+    return;
+  }
+
   rows.innerHTML = html;
 
-  // Remplir top10
   const t10 = $('#row-top10');
   if (t10) { t10.innerHTML = top10.map((it, i) => card(it, i, true)).join(''); bindRows(t10); }
 
-  // Remplir nouveautés
   const rNew = $('#row-new');
   if (rNew) { rNew.innerHTML = newItems.map((it, i) => card(it, i)).join(''); bindRows(rNew); }
 
-  // Remplir rangées par catégorie
   Object.entries(cats).forEach(([cat, items]) => {
     if (!cat) return;
     const safeId = cat.replace(/[^a-z0-9]/gi, '_').toLowerCase();
@@ -1130,7 +1152,6 @@ function renderHome() {
     if (el) { el.innerHTML = items.map((it, i) => card(it, i)).join(''); bindRows(el); }
   });
 
-  // Rebind flèches
   $$('.nfx-row-track').forEach(track => {
     const sc = track.querySelector('.nfx-row-scroll');
     if (!sc) return;
@@ -1191,33 +1212,34 @@ refreshBtn.addEventListener('click', async () => {
   refreshBtn.classList.add('loading');
   toast('🔄 Mise à jour en cours…');
   try {
-    // 1. Invalider le cache côté backend Apps Script
     await fetch(BACKEND + '?action=invalidate&email=admin');
-    // 2. Refetch sans cache local
     ALL = await fetchCatalogue(true);
     renderHome();
     renderGrids();
     refreshBadges();
-    toast('✅ Catalogue mis à jour !');
+    toast(ALL.length ? `✅ ${ALL.length} vidéos chargées !` : '⚠️ Catalogue vide — voir console');
   } catch (e) {
+    console.error('[LFIAGtube] Erreur refresh:', e);
     toast('⚠️ Erreur de mise à jour');
   } finally {
     refreshBtn.classList.remove('loading');
   }
 });
 
-// ── Init : chargement initial
+// ── Init
 async function init() {
   try {
     ALL = await fetchCatalogue(false);
+    console.log('[LFIAGtube] Init — vidéos chargées:', ALL.length);
   } catch(e) {
-    console.warn('Backend inaccessible, catalogue vide', e);
+    console.warn('[LFIAGtube] Backend inaccessible:', e);
     ALL = [];
   }
   $('#nfxLoadingHome').style.display = 'none';
   renderHome();
   renderGrids();
   refreshBadges();
+  if (!ALL.length) toast('⚠️ Backend vide — vérifiez la console (F12)');
 }
 
 init();
