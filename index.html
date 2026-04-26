@@ -26,8 +26,8 @@
   --red:#e50914;
   --gold:#ffd60a;
   --nav-h:68px;
-  --row-gap:2.6rem;     /* espace vertical entre rangées — aéré */
-  --row-px:4%;          /* padding latéral identique Netflix */
+  --row-gap:2.4rem;
+  --row-px:4%;
   --font:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
   --display:'Anton','Bebas Neue',Impact,sans-serif;
   --ease:cubic-bezier(.25,.1,.25,1);
@@ -37,8 +37,6 @@ html,body{background:#000;color:#fff;font-family:var(--font);min-height:100vh;ov
 body{-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
 button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
-
-/* ── SCROLLBAR desktop ── */
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:999px}
@@ -79,7 +77,7 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 @media(max-width:840px){
   .nfx-nav{display:none}
   .nfx-header{padding:0 16px;height:52px}
-  :root{--nav-h:52px;--row-px:16px}
+  :root{--nav-h:52px;--row-px:12px}
   .nfx-logo img{height:32px}
   .nfx-logo-text{font-size:1.35rem}
 }
@@ -88,7 +86,6 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 .nfx-billboard{
   position:relative;height:82vh;min-height:520px;
   width:100%;overflow:hidden;
-  /* chevauchement naturel avec les rangées, comme Netflix */
   margin-bottom:-120px;
 }
 @media(max-width:780px){
@@ -177,27 +174,21 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
   .nfx-bb-actions .nfx-btn{font-size:.88rem;padding:.58rem 1.1rem}
 }
 
-/* ════════════════════════════════════════
-   ROWS — espacement aéré façon Netflix mobile
-   ════════════════════════════════════════ */
+/* ── ROWS ── */
 .nfx-rows{
   position:relative;z-index:5;
-  /* espace en bas pour la demo-bar */
   padding-bottom:4.5rem;
 }
 .nfx-row{
-  /* espacement vertical généreux entre sections */
   margin-bottom:var(--row-gap);
   position:relative;
 }
-
-/* Titre de section — plus grand et respirant, comme Netflix */
 .nfx-row-header{
   display:flex;align-items:center;justify-content:space-between;
-  padding:0 var(--row-px) .7rem;
+  padding:0 var(--row-px) .65rem;
 }
 .nfx-row-title{
-  font-size:1.05rem;          /* desktop */
+  font-size:1.05rem;
   font-weight:700;
   color:#e5e5e5;
   letter-spacing:-.01em;
@@ -209,14 +200,11 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
   font-size:.78rem;font-weight:600;color:#54b9c5;
   opacity:0;transform:translateX(-6px);transition:opacity .25s,transform .25s;
 }
-/* Sur mobile : titre plus petit mais texte clair */
 @media(max-width:840px){
   .nfx-row-title{font-size:.92rem;font-weight:700}
   .nfx-row-explore{display:none}
-  :root{--row-gap:2rem}
+  :root{--row-gap:1.8rem}
 }
-
-/* Lien "Tout voir" affiché en permanence sur mobile (comme Netflix) */
 .nfx-row-seeall{
   display:none;
   font-size:.82rem;font-weight:600;
@@ -226,46 +214,45 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 }
 @media(max-width:840px){.nfx-row-seeall{display:flex}}
 
-/* ── Track + scroll ── */
+/* ── TRACK ── */
 .nfx-row-track{
   position:relative;
   padding:0 var(--row-px);
 }
 
 /*
-  SCROLL NATIF FLUIDE — principe Netflix mobile :
-  - overflow-x:scroll avec -webkit-overflow-scrolling:touch = momentum iOS natif
-  - PAS de scroll-snap sur mobile (Netflix n'en utilise pas, le scroll est libre)
-  - PAS de touch-action restrictif sur les cartes
-  - PAS de pointerEvents hack JS
-  - will-change uniquement sur le conteneur
+  SCROLL MOBILE :
+  - Pas de padding/margin négatifs sur mobile (cause l'écrasement du texte)
+  - overflow-y:hidden pour éviter le débordement vertical
+  - -webkit-overflow-scrolling:touch pour le momentum iOS
 */
 .nfx-row-scroll{
   display:flex;
-  gap:8px;             /* espace entre cartes — plus respirant */
+  gap:8px;
   overflow-x:scroll;
-  overflow-y:visible;
-  -webkit-overflow-scrolling:touch;   /* momentum iOS */
+  overflow-y:hidden;   /* FIX: empêche le texte de déborder verticalement */
+  -webkit-overflow-scrolling:touch;
   -ms-overflow-style:none;
   scrollbar-width:none;
-  /* Espace pour hover-expand vertical (desktop) */
-  padding-top:72px;
-  padding-bottom:48px;
-  margin-top:-72px;
-  margin-bottom:-48px;
   will-change:scroll-position;
 }
 .nfx-row-scroll::-webkit-scrollbar{display:none}
-/* Desktop uniquement : scroll-snap */
+
+/* Desktop uniquement : espace hover-expand + snap */
 @media(hover:hover){
   .nfx-row-scroll{
+    overflow-y:visible;
+    padding-top:72px;
+    padding-bottom:48px;
+    margin-top:-72px;
+    margin-bottom:-48px;
     scroll-snap-type:x mandatory;
     scroll-behavior:smooth;
   }
   .nfx-card{scroll-snap-align:start}
 }
 
-/* Flèches de navigation — desktop uniquement */
+/* ── ARROWS desktop ── */
 .nfx-row-arrow{
   position:absolute;top:0;bottom:0;width:4%;
   display:flex;align-items:center;justify-content:center;
@@ -281,25 +268,23 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 .nfx-row-arrow:hover svg{transform:scale(1.35)}
 @media(hover:none){.nfx-row-arrow{display:none}}
 
-/* ── CARDS — taille et aspect ── */
+/* ── CARDS ── */
 .nfx-card{
-  /* Desktop : 5 par rangée */
   flex:0 0 calc((100% - 40px)/5);
   position:relative;
   border-radius:4px;
   cursor:pointer;
-  /* Transition UNIQUEMENT sur desktop/hover */
   transition:transform .3s var(--ease);
 }
 @media(min-width:1400px){.nfx-card{flex-basis:calc((100% - 48px)/6)}}
 @media(max-width:1100px){.nfx-card{flex-basis:calc((100% - 32px)/4)}}
-/* Mobile : 2 cartes visibles + 1/3 de la suivante = scroll naturel */
 @media(max-width:780px){
   .nfx-card{flex-basis:calc((100% - 16px)/2.4)}
-  .nfx-row-scroll{gap:6px}
+  .nfx-row-scroll{gap:7px}
 }
 @media(max-width:440px){
-  .nfx-card{flex-basis:calc((100% - 12px)/2.1)}
+  .nfx-card{flex-basis:calc((100% - 10px)/2.1)}
+  .nfx-row-scroll{gap:5px}
 }
 
 .nfx-card-img-wrap{
@@ -310,8 +295,6 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 .nfx-card-img{
   width:100%;height:100%;object-fit:cover;display:block;
   pointer-events:none;user-select:none;-webkit-user-drag:none;
-  /* Optimisation rendu mobile */
-  will-change:auto;
 }
 .nfx-card-progress{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.16)}
 .nfx-card-progress-fill{height:100%;background:#e50914}
@@ -322,18 +305,44 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
   padding:.15rem .38rem;border-radius:3px;text-transform:uppercase;z-index:3;
 }
 
-/* Titre sous la carte sur mobile (comme Netflix) */
+/*
+  LABEL sous carte (mobile) :
+  - height fixe pour éviter l'écrasement
+  - overflow:hidden + text-overflow:ellipsis
+*/
 .nfx-card-label{
   display:none;
-  padding:.45rem .1rem .1rem;
-  font-size:.78rem;font-weight:600;
-  color:#e5e5e5;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  padding:.42rem .1rem 0;
+  font-size:.75rem;
+  font-weight:600;
+  color:#d0d0d0;
+  height:2rem;           /* FIX: hauteur fixe = pas d'écrasement */
+  line-height:1.25rem;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
 }
 @media(max-width:840px){.nfx-card-label{display:block}}
 
-/* ── HOVER EXPAND — desktop uniquement ── */
+/*
+  EXPAND :
+  - Sur mobile (hover:none) → display:none TOTAL, jamais déclenché
+  - Sur desktop (hover:hover) → comportement normal
+*/
+.nfx-card-expand{
+  display:none;  /* caché par défaut — activé seulement en hover:hover */
+}
 @media(hover:hover){
+  .nfx-card-expand{
+    display:block;
+    position:absolute;left:0;right:0;top:0;
+    background:#181818;border-radius:6px;
+    box-shadow:0 20px 55px rgba(0,0,0,.88);
+    opacity:0;pointer-events:none;
+    transform:translateY(-4px);
+    transition:opacity .22s,transform .22s;
+    overflow:hidden;z-index:20;
+  }
   .nfx-card:hover{
     transform:scale(1.36) translateY(-13%);
     z-index:30;
@@ -346,20 +355,11 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
     transition-delay:.38s;
   }
 }
+/* Sécurité supplémentaire : jamais de transform sur touch */
 @media(hover:none){
-  .nfx-card:hover,.nfx-top10 .nfx-card:hover{transform:none !important}
+  .nfx-card,.nfx-top10 .nfx-card{transform:none !important}
 }
 
-/* Expand card */
-.nfx-card-expand{
-  position:absolute;left:0;right:0;top:0;
-  background:#181818;border-radius:6px;
-  box-shadow:0 20px 55px rgba(0,0,0,.88);
-  opacity:0;pointer-events:none;
-  transform:translateY(-4px);
-  transition:opacity .22s,transform .22s;
-  overflow:hidden;z-index:20;
-}
 .nfx-card-expand-img{position:relative;aspect-ratio:16/9;overflow:hidden}
 .nfx-card-expand-img img{width:100%;height:100%;object-fit:cover;display:block}
 .nfx-card-expand-img::after{
@@ -378,15 +378,9 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 .nfx-action-btn.primary{background:#fff;color:#000;border-color:#fff}
 .nfx-action-btn.primary:hover{background:rgba(255,255,255,.8)}
 .nfx-action-btn.right{margin-left:auto}
-.nfx-card-expand-meta{
-  display:flex;gap:.5rem;align-items:center;
-  font-size:.73rem;color:#dcdcdc;margin-bottom:.3rem;
-}
+.nfx-card-expand-meta{display:flex;gap:.5rem;align-items:center;font-size:.73rem;color:#dcdcdc;margin-bottom:.3rem}
 .nfx-card-expand-meta .match{color:#46d369;font-weight:700}
-.nfx-card-expand-meta .badge{
-  padding:.03rem .32rem;border:1px solid rgba(255,255,255,.38);
-  border-radius:2px;font-size:.6rem;
-}
+.nfx-card-expand-meta .badge{padding:.03rem .32rem;border:1px solid rgba(255,255,255,.38);border-radius:2px;font-size:.6rem}
 .nfx-card-expand-title{font-size:.9rem;font-weight:700;color:#fff;margin-bottom:.28rem}
 .nfx-card-expand-tags{display:flex;gap:.32rem;flex-wrap:wrap;font-size:.68rem;color:#dcdcdc}
 .nfx-card-expand-tags .dot{color:#555}
@@ -406,7 +400,6 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
     grid-template-columns:36% 64%;
   }
 }
-/* poster 2/3 */
 .nfx-top10 .nfx-card-img-wrap{
   aspect-ratio:2/3;width:100%;
   border-radius:4px;overflow:hidden;background:#181818;
@@ -422,8 +415,7 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 @media(min-width:1400px){.nfx-top10-num{font-size:8.5vw}}
 @media(max-width:780px){.nfx-top10-num{font-size:15vw;-webkit-text-stroke:2px #5a5a5a;margin-right:-16%}}
 @media(hover:hover){.nfx-top10 .nfx-card:hover{transform:scale(1.15) translateY(-5%);z-index:30;transition-delay:.38s}}
-.nfx-top10 .nfx-card .nfx-card-expand{display:none}
-.nfx-top10 .nfx-card-label{display:none}
+.nfx-top10 .nfx-card-label{display:none !important}
 
 /* ── SPLASH ── */
 .nfx-splash{
@@ -492,11 +484,6 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 }
 .nfx-file-card:hover .nfx-file-play{opacity:1}
 @media(hover:none){.nfx-file-play{opacity:.8}}
-.nfx-file-dur{
-  position:absolute;bottom:6px;right:6px;
-  background:rgba(0,0,0,.76);color:#fff;
-  font-size:.68rem;font-weight:600;padding:.15rem .38rem;border-radius:3px;
-}
 .nfx-file-body{padding:.6rem .8rem .8rem}
 .nfx-file-title{
   font-size:.84rem;font-weight:600;color:#fff;line-height:1.3;
@@ -685,7 +672,7 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>Lecture
         </button>
         <button class="nfx-btn nfx-btn-info" data-action="info" data-idx="0">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Plus d’infos
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Plus d'infos
         </button>
       </div>
     </div>
@@ -698,18 +685,18 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
     <div class="nfx-billboard-bg" style="background-image:url('images/categories-v2/LEffet_Lara_-_2026.webp')"></div>
     <div class="nfx-billboard-content">
       <div class="nfx-bb-tag">✦ Nouveauté 2026</div>
-      <h1 class="nfx-bb-title">L’Effet Lara</h1>
+      <h1 class="nfx-bb-title">L'Effet Lara</h1>
       <div class="nfx-bb-meta">
         <span style="color:#46d369;font-weight:700">95% Recommandé</span>
         <span>2026</span><span class="badge">TVA</span>
       </div>
-      <p class="nfx-bb-desc">Lara Fabian au cœur d’une nouvelle aventure musicale sur TVA. Disponible chaque lundi sur LFIAGtube.</p>
+      <p class="nfx-bb-desc">Lara Fabian au cœur d'une nouvelle aventure musicale sur TVA. Disponible chaque lundi sur LFIAGtube.</p>
       <div class="nfx-bb-actions">
         <button class="nfx-btn nfx-btn-play" data-action="play" data-idx="1">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>Lecture
         </button>
         <button class="nfx-btn nfx-btn-info" data-action="info" data-idx="1">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Plus d’infos
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Plus d'infos
         </button>
       </div>
     </div>
@@ -730,7 +717,7 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>Lecture
         </button>
         <button class="nfx-btn nfx-btn-info" data-action="info" data-idx="2">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Plus d’infos
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Plus d'infos
         </button>
       </div>
     </div>
@@ -869,7 +856,6 @@ const ARC=ALL.filter(x=>['debuts','francais91','carpediem','pure','anglais','nue
 const $=q=>document.querySelector(q);
 const $$=q=>Array.from(document.querySelectorAll(q));
 
-/* ── MY LIST ── */
 const getList=()=>{try{return JSON.parse(localStorage.getItem('lfiag_mylist')||'[]');}catch{return[];}};
 const saveList=a=>localStorage.setItem('lfiag_mylist',JSON.stringify(a));
 const inList=id=>getList().includes(id);
@@ -891,14 +877,12 @@ function refreshBadges(){
   }
 }
 
-/* ── TOAST ── */
 function toast(msg){
   const t=$('#nfxToast');
   t.textContent=msg;t.classList.add('show');
   clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2200);
 }
 
-/* ── SPLASH ── */
 const splash=$('#nfxSplash');
 setTimeout(()=>splash.classList.add('hide'),2500);
 $('#replaySplashBtn').addEventListener('click',()=>{
@@ -906,10 +890,8 @@ $('#replaySplashBtn').addEventListener('click',()=>{
   setTimeout(()=>splash.classList.add('hide'),2500);
 });
 
-/* ── HEADER SCROLL ── */
 window.addEventListener('scroll',()=>$('#nfxHeader').classList.toggle('scrolled',scrollY>30),{passive:true});
 
-/* ── MODAL ── */
 const modal=$('#nfxModal');
 let cur=null;
 function openModal(item){
@@ -945,7 +927,6 @@ $('#nfxModalAdd').addEventListener('click',()=>{
 });
 $('#nfxModalPlay').addEventListener('click',()=>{if(cur)toast('▶ '+cur.t);});
 
-/* ── ROUTING ── */
 function setRoute(name){
   $$('.nfx-route').forEach(el=>el.classList.remove('active'));
   const t=$(`#view-${name}`);if(t)t.classList.add('active');
@@ -957,7 +938,6 @@ $$('.nfx-nav [data-route],.nfx-logo[data-route]').forEach(el=>{
   el.addEventListener('click',e=>{e.preventDefault();setRoute(el.dataset.route);});
 });
 
-/* ── BILLBOARD ── */
 $$('.nfx-btn[data-action]').forEach(btn=>{
   btn.addEventListener('click',()=>{
     const item=BB[+btn.dataset.idx||0];
@@ -976,7 +956,6 @@ function showSlide(i){
 dots.forEach((d,i)=>d.addEventListener('click',()=>{showSlide(i);clearInterval(bbT);bbT=setInterval(()=>showSlide((bbI+1)%slides.length),8000);}));
 bbT=setInterval(()=>showSlide((bbI+1)%slides.length),8000);
 
-/* ── ROW ARROWS (desktop) ── */
 $$('.nfx-row-track').forEach(track=>{
   const sc=track.querySelector('.nfx-row-scroll');
   if(!sc)return;
@@ -984,7 +963,6 @@ $$('.nfx-row-track').forEach(track=>{
   track.querySelector('.nfx-row-arrow.right')?.addEventListener('click',()=>sc.scrollBy({left:sc.clientWidth*.8,behavior:'smooth'}));
 });
 
-/* ── BUILD CARDS ── */
 const mlBadge=()=>'<span class="nfx-mylist-badge" aria-hidden="true">✓</span>';
 
 function card(item,i,top10=false){
@@ -1033,7 +1011,6 @@ function gridCard(item){
   </div>`;
 }
 
-/* ── FILL ── */
 function fill(id,items,top10=false){
   const el=document.getElementById(id);
   if(el)el.innerHTML=items.map((it,i)=>card(it,i,top10)).join('');
@@ -1045,14 +1022,12 @@ fill('rowLive',LIVE);
 fill('rowAlbums',ALBUMS);
 fill('rowArchives',ARC);
 
-/* ── GRIDS ── */
 ['series','docs','concerts'].forEach(r=>{
   const g=document.getElementById('grid-'+r);
   const items=ALL.filter(x=>x.cat===r);
   if(g){g.innerHTML=items.map(gridCard).join('');bindGrid(g);}
 });
 
-/* ── MA LISTE ── */
 function renderMyList(){
   const g=$('#grid-mylist');
   if(!g)return;
@@ -1061,11 +1036,10 @@ function renderMyList(){
     g.innerHTML=`<div class="nfx-empty">
       <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       <h2>Votre liste est vide</h2>
-      <p>Ajoutez des vidéos depuis l’accueil en cliquant sur une carte</p></div>`;
+      <p>Ajoutez des vidéos depuis l'accueil en cliquant sur une carte</p></div>`;
   }else{g.innerHTML=items.map(gridCard).join('');bindGrid(g);}
 }
 
-/* ── EVENTS ── */
 function bindRows(container){
   container.addEventListener('click',e=>{
     const btn=e.target.closest('[data-action]');
