@@ -627,12 +627,15 @@ window.handleGoogleCredential=async function(response){
   const email=payload.email, name=payload.name||email;
   showLoginLoader('Vérification pour '+email+'\u2026');
   try{
-    const url=BACKEND+'?action=checkAccess&email='+encodeURIComponent(email);
+    // FIX: action=check (et non checkAccess) — correspond au doGet Apps Script
+    const url=BACKEND+'?action=check&email='+encodeURIComponent(email);
     const resp=await fetch(url);
     if(!resp.ok)throw new Error('HTTP '+resp.status);
     const data=await resp.json();
-    if(data.status==='ok'||data.access===true||data.authorized===true){
-      grantAccess({email,name});
+    if(data.status==='ok'&&data.authorized===true){
+      grantAccess({email,name,role:data.role||'user'});
+    }else if(data.status==='error'&&data.message==='Compte désactivé'){
+      showLoginUnauth(email);
     }else{
       showLoginUnauth(email);
     }
@@ -677,10 +680,9 @@ function initGoogleBtn(){
   google.accounts.id.initialize({
     client_id:GOOGLE_CLIENT_ID,
     callback:handleGoogleCredential,
-    ux_mode:'popup',          // <-- clé : popup (pas redirect, pas One Tap)
+    ux_mode:'popup',
     auto_select:false,
   });
-  // Rendu du bouton Google officiel dans #googleBtnWrap
   google.accounts.id.renderButton(
     googleBtnWrap,
     {
@@ -722,7 +724,6 @@ document.getElementById('loginRetryBtn').addEventListener('click',()=>{
   showLoginMain();
   if(window.google&&google.accounts&&google.accounts.id){
     google.accounts.id.disableAutoSelect();
-    // Re-rendre le bouton si besoin
     if(!googleBtnWrap.querySelector('iframe'))initGoogleBtn();
   }
 });
@@ -738,7 +739,6 @@ document.getElementById('nfxLogoutBtn').addEventListener('click',()=>{
   clearSession();currentUser=null;ALL=[];
   if(window.google&&google.accounts&&google.accounts.id)google.accounts.id.disableAutoSelect();
   profileMenu.classList.remove('open');
-  // Ré-afficher l'écran de login et re-rendre le bouton
   loginScreen.classList.remove('hide');
   googleBtnWrap.innerHTML='';
   showLoginMain();
