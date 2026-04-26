@@ -86,10 +86,13 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 .nfx-billboard{
   position:relative;height:82vh;min-height:520px;
   width:100%;overflow:hidden;
-  margin-bottom:-120px;
+  margin-bottom:-120px;   /* chevauchement sur desktop */
 }
 @media(max-width:780px){
-  .nfx-billboard{height:68vw;min-height:360px;max-height:520px;margin-bottom:-80px}
+  .nfx-billboard{
+    height:68vw;min-height:360px;max-height:520px;
+    margin-bottom:0;   /* FIX: plus de chevauchement sur mobile */
+  }
 }
 .nfx-billboard-slide{position:absolute;inset:0;opacity:0;transition:opacity .8s ease;pointer-events:none}
 .nfx-billboard-slide.active{opacity:1;pointer-events:auto}
@@ -168,16 +171,22 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 }
 .nfx-bb-dots button.active{background:#fff;width:22px}
 @media(max-width:780px){
-  .nfx-billboard-content{bottom:20%;left:16px;right:16px;max-width:none}
-  .nfx-bb-desc{-webkit-line-clamp:2;font-size:.9rem}
+  .nfx-billboard-content{bottom:18%;left:16px;right:16px;max-width:none}
+  .nfx-bb-desc{display:none}  /* masquer la description pour gagner de la place */
+  .nfx-bb-meta{display:none}  /* masquer les meta également */
   .nfx-bb-mute,.nfx-bb-rating{display:none}
-  .nfx-bb-actions .nfx-btn{font-size:.88rem;padding:.58rem 1.1rem}
+  .nfx-bb-actions .nfx-btn{font-size:.82rem;padding:.5rem .9rem}
 }
 
 /* ── ROWS ── */
 .nfx-rows{
   position:relative;z-index:5;
   padding-bottom:4.5rem;
+  padding-top:.8rem;  /* petit espace au-dessus des rangées sur mobile */
+}
+/* Sur desktop, compenser le margin-bottom négatif du billboard */
+@media(min-width:781px){
+  .nfx-rows{padding-top:0}
 }
 .nfx-row{
   margin-bottom:var(--row-gap);
@@ -220,17 +229,11 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
   padding:0 var(--row-px);
 }
 
-/*
-  SCROLL MOBILE :
-  - Pas de padding/margin négatifs sur mobile (cause l'écrasement du texte)
-  - overflow-y:hidden pour éviter le débordement vertical
-  - -webkit-overflow-scrolling:touch pour le momentum iOS
-*/
 .nfx-row-scroll{
   display:flex;
   gap:8px;
   overflow-x:scroll;
-  overflow-y:hidden;   /* FIX: empêche le texte de déborder verticalement */
+  overflow-y:hidden;
   -webkit-overflow-scrolling:touch;
   -ms-overflow-style:none;
   scrollbar-width:none;
@@ -305,18 +308,13 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
   padding:.15rem .38rem;border-radius:3px;text-transform:uppercase;z-index:3;
 }
 
-/*
-  LABEL sous carte (mobile) :
-  - height fixe pour éviter l'écrasement
-  - overflow:hidden + text-overflow:ellipsis
-*/
 .nfx-card-label{
   display:none;
   padding:.42rem .1rem 0;
   font-size:.75rem;
   font-weight:600;
   color:#d0d0d0;
-  height:2rem;           /* FIX: hauteur fixe = pas d'écrasement */
+  height:2rem;
   line-height:1.25rem;
   overflow:hidden;
   white-space:nowrap;
@@ -324,13 +322,9 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
 }
 @media(max-width:840px){.nfx-card-label{display:block}}
 
-/*
-  EXPAND :
-  - Sur mobile (hover:none) → display:none TOTAL, jamais déclenché
-  - Sur desktop (hover:hover) → comportement normal
-*/
+/* EXPAND : desktop uniquement */
 .nfx-card-expand{
-  display:none;  /* caché par défaut — activé seulement en hover:hover */
+  display:none;
 }
 @media(hover:hover){
   .nfx-card-expand{
@@ -355,7 +349,6 @@ button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
     transition-delay:.38s;
   }
 }
-/* Sécurité supplémentaire : jamais de transform sur touch */
 @media(hover:none){
   .nfx-card,.nfx-top10 .nfx-card{transform:none !important}
 }
