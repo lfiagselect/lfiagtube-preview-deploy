@@ -1,803 +1,243 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'self';">
-<meta http-equiv="X-Content-Type-Options" content="nosniff">
-<meta name="referrer" content="strict-origin-when-cross-origin">
-<meta name="theme-color" content="#000000">
-<meta name="description" content="LFIAGtube — Bibliothèque vidéo Lara Fabian. Preview Netflix.">
-<meta property="og:title" content="LFIAGtube">
-<meta property="og:description" content="Bibliothèque vidéo Lara Fabian — design Netflix.">
-<meta property="og:type" content="website">
-<title>LFIAGtube — Preview</title>
-<link rel="icon" type="image/jpeg" href="icon-192.jpeg">
-<link rel="apple-touch-icon" href="icon-192.jpeg">
-<link rel="manifest" href="manifest.json">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Anton&family=Bebas+Neue&display=swap" rel="stylesheet">
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#000;--bg2:#0a0a0a;--bg3:#141414;
-  --text:#fff;--text2:#b3b3b3;--text3:#737373;
-  --red:#e50914;--red-h:#f40612;
-  --gold:#ffd60a;
-  --r:6px;
-  --nav-h:68px;
-  --font:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
-  --display:'Anton','Bebas Neue',Impact,sans-serif;
-  --ease:cubic-bezier(.25,.1,.25,1);
-  --spring:cubic-bezier(.34,1.56,.64,1)
-}
-html,body{background:#000;color:#fff;font-family:var(--font);min-height:100vh;overflow-x:hidden}
-body{-webkit-font-smoothing:antialiased}
-::-webkit-scrollbar{width:8px;height:8px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:999px}
-
-a{color:inherit;text-decoration:none}
-button{cursor:pointer;background:none;border:none;color:inherit;font:inherit}
-
-/* ── HEADER Netflix-style ── */
-.nfx-header{position:fixed;top:0;left:0;right:0;z-index:100;height:var(--nav-h);display:flex;align-items:center;padding:0 4%;gap:1.5rem;background:linear-gradient(180deg,rgba(0,0,0,.85) 0%,rgba(0,0,0,.4) 60%,transparent 100%);transition:background .3s}
-.nfx-header.scrolled{background:rgba(0,0,0,.95)}
-.nfx-logo{display:flex;align-items:center;gap:.7rem;flex-shrink:0;cursor:pointer}
-.nfx-logo img{height:42px;width:auto;display:block;filter:drop-shadow(0 2px 12px rgba(255,214,10,.25))}
-.nfx-logo-text{font-family:var(--display);font-size:1.7rem;letter-spacing:.06em;color:#fff;font-weight:400;line-height:1}
-.nfx-logo-text .dim{color:var(--gold)}
-@media(max-width:600px){.nfx-logo img{height:34px}.nfx-logo-text{font-size:1.3rem}}
-.nfx-nav{display:flex;gap:1.4rem;list-style:none;font-size:.86rem;font-weight:500;color:#e5e5e5}
-.nfx-nav button{transition:color .2s}
-.nfx-nav button:hover{color:var(--text2)}
-.nfx-nav .active{font-weight:700;color:#fff}
-.nfx-header-right{margin-left:auto;display:flex;align-items:center;gap:1rem}
-.nfx-search-btn,.nfx-bell{width:32px;height:32px;display:flex;align-items:center;justify-content:center;color:#fff;border-radius:50%;transition:background .2s}
-.nfx-search-btn:hover,.nfx-bell:hover{background:rgba(255,255,255,.1)}
-.nfx-profile{width:32px;height:32px;border-radius:6px;background:linear-gradient(135deg,#ffd60a,#ff9500);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem;color:#000}
-
-@media(max-width:840px){
-  .nfx-nav{display:none}
-  .nfx-header{padding:0 1rem;height:56px}
-  :root{--nav-h:56px}
-}
-
-/* ── BILLBOARD HERO Netflix-exact ── */
-.nfx-billboard{position:relative;height:85vh;min-height:560px;width:100%;overflow:hidden;margin-bottom:-160px}
-.nfx-billboard-slide{position:absolute;inset:0;opacity:0;transition:opacity .9s ease}
-.nfx-billboard-slide.active{opacity:1}
-.nfx-billboard-bg{position:absolute;inset:0;background-size:cover;background-position:center top;will-change:transform;animation:bbZoom 20s ease-out forwards}
-.nfx-billboard-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .8s}
-.nfx-billboard-video.show{opacity:1}
-@keyframes bbZoom{from{transform:scale(1.04)}to{transform:scale(1)}}
-.nfx-billboard::after{content:'';position:absolute;inset:0;background:
-  linear-gradient(77deg,rgba(0,0,0,.78) 0%,rgba(0,0,0,.55) 28%,rgba(0,0,0,.18) 55%,transparent 80%),
-  linear-gradient(180deg,transparent 50%,rgba(0,0,0,.85) 100%);
-  pointer-events:none;z-index:2}
-.nfx-billboard-content{position:absolute;left:4%;bottom:22%;max-width:600px;z-index:3;color:#fff}
-.nfx-bb-tag{display:inline-flex;align-items:center;gap:.4rem;background:rgba(229,9,20,.92);color:#fff;font-size:.7rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase;padding:.32rem .65rem;border-radius:3px;margin-bottom:1rem}
-.nfx-bb-title{font-family:var(--display);font-size:clamp(2.6rem,6vw,5.2rem);line-height:.95;letter-spacing:.01em;margin-bottom:.85rem;text-shadow:0 2px 10px rgba(0,0,0,.7)}
-.nfx-bb-meta{display:flex;gap:.85rem;align-items:center;color:#dcdcdc;font-size:.85rem;font-weight:600;margin-bottom:1rem}
-.nfx-bb-meta .badge{padding:.18rem .5rem;border:1px solid rgba(255,255,255,.4);border-radius:3px;font-size:.7rem}
-.nfx-bb-desc{font-size:1.05rem;line-height:1.45;color:#e5e5e5;text-shadow:0 1px 4px rgba(0,0,0,.6);max-width:520px;margin-bottom:1.6rem;-webkit-line-clamp:3;-webkit-box-orient:vertical;display:-webkit-box;overflow:hidden}
-.nfx-bb-actions{display:flex;gap:.7rem;flex-wrap:wrap}
-.nfx-btn{display:inline-flex;align-items:center;gap:.5rem;padding:.7rem 1.55rem;border-radius:4px;font-weight:700;font-size:1rem;cursor:pointer;transition:opacity .15s,background .15s,transform .1s;border:none}
-.nfx-btn:active{transform:scale(.98)}
-.nfx-btn-play{background:#fff;color:#000}
-.nfx-btn-play:hover{background:rgba(255,255,255,.78)}
-.nfx-btn-info{background:rgba(109,109,110,.7);color:#fff}
-.nfx-btn-info:hover{background:rgba(109,109,110,.4)}
-.nfx-bb-mute{position:absolute;right:5%;bottom:32%;width:42px;height:42px;border-radius:50%;border:2px solid rgba(255,255,255,.6);background:transparent;color:#fff;display:flex;align-items:center;justify-content:center;z-index:4;transition:border-color .2s}
-.nfx-bb-mute:hover{border-color:#fff}
-.nfx-bb-rating{position:absolute;right:0;bottom:32%;background:rgba(0,0,0,.6);border-left:3px solid rgba(255,255,255,.6);padding:.4rem 1.5rem .4rem .8rem;font-size:.95rem;font-weight:600;z-index:4;letter-spacing:.04em}
-.nfx-bb-dots{position:absolute;left:4%;bottom:11%;display:flex;gap:.4rem;z-index:4}
-.nfx-bb-dots button{width:14px;height:3px;border-radius:2px;background:rgba(255,255,255,.3);transition:background .2s,width .2s}
-.nfx-bb-dots button.active{background:#fff;width:24px}
-
-@media(max-width:780px){
-  .nfx-billboard{height:72vh;min-height:480px;margin-bottom:-100px}
-  .nfx-billboard-content{bottom:24%;left:5%;right:5%;max-width:none}
-  .nfx-bb-desc{font-size:.92rem;-webkit-line-clamp:2}
-  .nfx-bb-mute{display:none}
-  .nfx-bb-rating{display:none}
-}
-
-/* ── ROWS Netflix ── */
-.nfx-rows{position:relative;z-index:5;padding-bottom:5rem}
-.nfx-row{margin-bottom:3vw;position:relative}
-.nfx-row-header{display:flex;align-items:center;justify-content:space-between;padding:0 4% .55rem;color:#e5e5e5}
-.nfx-row-title{font-size:1.4vw;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:.5rem;cursor:pointer;transition:color .2s}
-.nfx-row-title:hover .nfx-row-explore{opacity:1;transform:translateX(0)}
-.nfx-row-explore{font-size:.78rem;font-weight:600;color:#54b9c5;letter-spacing:.04em;opacity:0;transform:translateX(-6px);transition:opacity .25s,transform .25s}
-@media(max-width:840px){
-  .nfx-row-title{font-size:1.1rem}
-  .nfx-row-explore{display:none}
-}
-
-.nfx-row-track{position:relative;padding:0 4%}
-.nfx-row-scroll{display:flex;gap:4px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;padding:60px 0;margin:-60px 0;-ms-overflow-style:none;scrollbar-width:none}
-.nfx-row-scroll::-webkit-scrollbar{display:none}
-.nfx-row-arrow{position:absolute;top:60px;bottom:60px;width:4%;display:flex;align-items:center;justify-content:center;background:rgba(20,20,20,.5);border:none;color:#fff;cursor:pointer;z-index:6;opacity:0;transition:opacity .2s,background .2s}
-.nfx-row:hover .nfx-row-arrow{opacity:1}
-.nfx-row-arrow:hover{background:rgba(20,20,20,.85)}
-.nfx-row-arrow.left{left:0}
-.nfx-row-arrow.right{right:0}
-.nfx-row-arrow svg{transition:transform .2s}
-.nfx-row-arrow:hover svg{transform:scale(1.4)}
-@media(hover:none){.nfx-row-arrow{display:none}}
-
-/* ── CARDS Netflix hover-expand ── */
-.nfx-card{flex:0 0 calc((100% - 16px)/5);scroll-snap-align:start;position:relative;border-radius:4px;overflow:visible;cursor:pointer;transition:transform .25s var(--ease)}
-@media(min-width:1400px){.nfx-card{flex-basis:calc((100% - 20px)/6)}}
-@media(max-width:1100px){.nfx-card{flex-basis:calc((100% - 12px)/4)}}
-@media(max-width:780px){.nfx-card{flex-basis:calc((100% - 8px)/3)}}
-@media(max-width:520px){.nfx-card{flex-basis:calc((100% - 4px)/2.3)}}
-
-.nfx-card-img-wrap{position:relative;aspect-ratio:16/9;border-radius:4px;overflow:hidden;background:#181818}
-.nfx-card-img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
-.nfx-card-progress{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.18)}
-.nfx-card-progress-fill{height:100%;background:#e50914}
-.nfx-card-badge-new{position:absolute;top:8px;right:8px;background:#e50914;color:#fff;font-size:.6rem;font-weight:800;letter-spacing:.06em;padding:.18rem .4rem;border-radius:3px;text-transform:uppercase;z-index:3}
-
-/* HOVER expand: only desktop hover devices */
-@media(hover:hover){
-  .nfx-card{transition:transform .35s var(--ease) .1s}
-  .nfx-card:hover{transform:scale(1.4) translateY(-12%);z-index:30;transition-delay:.45s}
-  .nfx-card:hover .nfx-card-expand{opacity:1;pointer-events:auto;transform:translateY(0)}
-  /* Adjust edge cards so they don't get clipped */
-  .nfx-row-scroll>.nfx-card:first-child:hover{transform:scale(1.4) translate(13%,-12%)}
-  .nfx-row-scroll>.nfx-card:last-child:hover{transform:scale(1.4) translate(-13%,-12%)}
-}
-.nfx-card-expand{position:absolute;left:0;right:0;top:0;background:#181818;border-radius:6px;box-shadow:0 24px 60px rgba(0,0,0,.85);opacity:0;pointer-events:none;transform:translateY(-6px);transition:opacity .3s,transform .3s;overflow:hidden}
-.nfx-card-expand-img{position:relative;aspect-ratio:16/9;overflow:hidden}
-.nfx-card-expand-img img,.nfx-card-expand-img video{width:100%;height:100%;object-fit:cover;display:block}
-.nfx-card-expand-img::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,#181818 100%)}
-.nfx-card-expand-body{padding:.85rem 1rem 1rem}
-.nfx-card-expand-actions{display:flex;align-items:center;gap:.4rem;margin-bottom:.7rem}
-.nfx-action-btn{width:36px;height:36px;border-radius:50%;border:2px solid rgba(255,255,255,.5);background:rgba(0,0,0,.3);color:#fff;display:flex;align-items:center;justify-content:center;transition:border-color .15s,background .15s}
-.nfx-action-btn:hover{border-color:#fff;background:rgba(255,255,255,.1)}
-.nfx-action-btn.primary{background:#fff;color:#000;border-color:#fff}
-.nfx-action-btn.primary:hover{background:rgba(255,255,255,.78)}
-.nfx-action-btn.right{margin-left:auto}
-.nfx-card-expand-meta{display:flex;gap:.55rem;align-items:center;font-size:.75rem;color:#dcdcdc;margin-bottom:.35rem}
-.nfx-card-expand-meta .match{color:#46d369;font-weight:700}
-.nfx-card-expand-meta .badge{padding:.04rem .35rem;border:1px solid rgba(255,255,255,.4);border-radius:2px;font-size:.62rem}
-.nfx-card-expand-title{font-size:.95rem;font-weight:700;color:#fff;margin-bottom:.3rem}
-.nfx-card-expand-tags{display:flex;gap:.35rem;flex-wrap:wrap;font-size:.7rem;color:#dcdcdc}
-.nfx-card-expand-tags .dot{color:#646464}
-
-/* ── TOP 10 row ── */
-.nfx-top10 .nfx-row-scroll{padding:80px 0 60px;gap:8px}
-.nfx-top10 .nfx-card{flex:0 0 calc((100% - 24px)/4);display:grid;grid-template-columns:42% 58%;align-items:end;overflow:visible;background:transparent}
-@media(min-width:1400px){.nfx-top10 .nfx-card{flex-basis:calc((100% - 40px)/6)}}
-@media(max-width:1100px){.nfx-top10 .nfx-card{flex-basis:calc((100% - 16px)/3)}}
-@media(max-width:780px){.nfx-top10 .nfx-card{flex-basis:calc((100% - 8px)/2.3);grid-template-columns:38% 62%}}
-.nfx-top10 .nfx-card-img-wrap{aspect-ratio:2/3;width:100%;border-radius:4px;overflow:hidden;background:#181818}
-.nfx-top10-num{font-family:var(--display);font-size:11vw;line-height:.78;color:#000;-webkit-text-stroke:3px #5a5a5a;letter-spacing:-.06em;font-weight:900;pointer-events:none;user-select:none;text-align:center;align-self:end;justify-self:center;padding-bottom:0;margin-right:-12%;position:relative;z-index:1}
-@media(min-width:1400px){.nfx-top10-num{font-size:9vw}}
-@media(max-width:780px){.nfx-top10-num{font-size:16vw;-webkit-text-stroke:2px #5a5a5a;margin-right:-15%}}
-@media(hover:hover){.nfx-top10 .nfx-card:hover{transform:scale(1.18) translateY(-6%);z-index:30}}
-.nfx-top10 .nfx-card .nfx-card-expand{display:none}
-
-/* ── SPLASH "TUDUM"-like ── */
-.nfx-splash{position:fixed;inset:0;background:#000;z-index:9999;display:flex;align-items:center;justify-content:center;transition:opacity .8s,visibility .8s;flex-direction:column}
-.nfx-splash.hide{opacity:0;visibility:hidden;pointer-events:none}
-.nfx-splash-logo{display:flex;align-items:center;justify-content:center;gap:0;animation:tudumPop 1.4s var(--spring) forwards}
-.nfx-splash-letter{font-family:var(--display);font-size:14vw;color:var(--gold);text-shadow:0 0 40px rgba(255,214,10,.65);opacity:0;animation:tudumLetter 1.6s var(--spring) forwards}
-.nfx-splash-letter:nth-child(1){animation-delay:.1s}
-.nfx-splash-letter:nth-child(2){animation-delay:.2s}
-.nfx-splash-letter:nth-child(3){animation-delay:.3s}
-.nfx-splash-letter:nth-child(4){animation-delay:.4s}
-.nfx-splash-letter:nth-child(5){animation-delay:.5s}
-.nfx-splash-letter:nth-child(6){animation-delay:.6s}
-.nfx-splash-letter:nth-child(7){animation-delay:.7s}
-.nfx-splash-letter:nth-child(8){animation-delay:.75s;color:#fff;font-size:8vw;align-self:flex-start;margin-left:.3rem;text-shadow:0 0 20px rgba(255,255,255,.4)}
-.nfx-splash-bar{width:0;max-width:340px;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin-top:1.2rem;animation:tudumBar 1.4s ease-out .8s forwards;box-shadow:0 0 20px rgba(255,214,10,.7)}
-@keyframes tudumLetter{0%{opacity:0;transform:translateY(28px) scale(.6);filter:blur(6px)}60%{opacity:1;transform:translateY(0) scale(1.06);filter:blur(0)}100%{opacity:1;transform:translateY(0) scale(1)}}
-@keyframes tudumPop{0%,80%{transform:scale(1)}90%{transform:scale(1.04)}100%{transform:scale(1)}}
-@keyframes tudumBar{0%{width:0}50%{width:280px}100%{width:0}}
-
-/* ── DEMO BAR (preview only) ── */
-.demo-bar{position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:200;background:rgba(0,0,0,.85);backdrop-filter:blur(20px);color:#fff;padding:.4rem .9rem;border-radius:0 0 12px 12px;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;display:flex;gap:1rem;align-items:center;border:1px solid rgba(255,255,255,.15);border-top:none}
-.demo-bar strong{color:var(--gold)}
-.demo-bar button{padding:.25rem .55rem;border:1px solid rgba(255,255,255,.2);border-radius:6px;background:rgba(255,255,255,.06);color:#fff;font-size:.65rem;letter-spacing:.05em}
-.demo-bar button:hover{background:rgba(255,255,255,.14)}
-@media(max-width:600px){.demo-bar{font-size:.6rem;padding:.3rem .55rem}}
-
-/* ── ROUTE GRID (Documentaires/Concerts/Séries listing) ── */
-.nfx-route-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem 1rem;padding:0 4% 4rem}
-@media(max-width:780px){.nfx-route-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.7rem}}
-@media(max-width:480px){.nfx-route-grid{grid-template-columns:repeat(2,1fr);gap:.6rem}}
-
-.nfx-file-card{position:relative;border-radius:6px;overflow:hidden;cursor:pointer;background:#181818;transition:transform .2s var(--ease),box-shadow .2s}
-.nfx-file-card:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 16px 36px rgba(0,0,0,.6)}
-.nfx-file-card:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
-.nfx-file-thumb{position:relative;aspect-ratio:16/9;overflow:hidden;background:#0a0a0a}
-.nfx-file-thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s ease}
-.nfx-file-card:hover .nfx-file-thumb img{transform:scale(1.05)}
-.nfx-file-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,.55) 100%);pointer-events:none}
-.nfx-file-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:46px;height:46px;border-radius:50%;background:rgba(229,9,20,.92);color:#fff;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s,transform .2s;box-shadow:0 6px 18px rgba(0,0,0,.5)}
-.nfx-file-card:hover .nfx-file-play{opacity:1;transform:translate(-50%,-50%) scale(1)}
-@media(hover:none){.nfx-file-play{opacity:.85}}
-.nfx-file-dur{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.78);color:#fff;font-size:.7rem;font-weight:600;padding:.18rem .4rem;border-radius:3px;letter-spacing:.02em}
-.nfx-file-body{padding:.7rem .85rem .85rem}
-.nfx-file-title{font-size:.88rem;font-weight:600;color:#fff;line-height:1.3;margin-bottom:.25rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.nfx-file-meta{font-size:.74rem;color:#b3b3b3;font-weight:500}
-
-@media (prefers-reduced-motion: reduce){
-  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
-}
-</style>
-</head>
-<body>
-
-<!-- DEMO BAR -->
-<div class="demo-bar">
-  <span><strong>Preview Phase 1</strong> · LFIAGtube → Netflix</span>
-  <button id="replaySplashBtn" type="button">Replay Splash</button>
-</div>
-
-<!-- SPLASH TUDUM-like -->
-<div class="nfx-splash" id="nfxSplash">
-  <div class="nfx-splash-logo">
-    <span class="nfx-splash-letter">L</span>
-    <span class="nfx-splash-letter">F</span>
-    <span class="nfx-splash-letter">I</span>
-    <span class="nfx-splash-letter">A</span>
-    <span class="nfx-splash-letter">G</span>
-    <span class="nfx-splash-letter">t</span>
-    <span class="nfx-splash-letter">u</span>
-    <span class="nfx-splash-letter">b</span>
-    <span class="nfx-splash-letter">e</span>
-  </div>
-  <div class="nfx-splash-bar"></div>
-</div>
-
-<!-- HEADER -->
-<header class="nfx-header" id="nfxHeader">
-  <a class="nfx-logo" href="#" data-route="home" aria-label="LFIAGtube accueil">
-    <picture>
-      <source type="image/webp" srcset="images/logo-alune.webp">
-      <img src="images/logo-alune.webp" alt="LFIAGtube" id="nfxLogoImg">
-    </picture>
-    <span class="nfx-logo-text">LFIAG<span class="dim">tube</span></span>
-  </a>
-  <ul class="nfx-nav" id="nfxNav">
-    <li><button class="active" data-route="home">Accueil</button></li>
-    <li><button data-route="series">Séries</button></li>
-    <li><button data-route="docs">Documentaires</button></li>
-    <li><button data-route="concerts">Concerts</button></li>
-    <li><button data-route="mylist">Ma liste</button></li>
-  </ul>
-  <div class="nfx-header-right">
-    <button class="nfx-search-btn" aria-label="Rechercher">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-    </button>
-    <button class="nfx-bell" aria-label="Notifications">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-    </button>
-    <div class="nfx-profile">N</div>
-  </div>
-</header>
-
-<!-- BILLBOARD -->
-<section class="nfx-billboard" id="nfxBillboard">
-  <!-- Slide 1: The Voice 2026 -->
-  <div class="nfx-billboard-slide active" data-slide="0">
-    <div class="nfx-billboard-bg" style="background-image:url('images/categories-v2/The_Voice_2026.webp')"></div>
-    <video class="nfx-billboard-video" muted loop playsinline preload="metadata" data-src="images/alune-thevoice-preview.mp4"></video>
-    <div class="nfx-billboard-content">
-      <div class="nfx-bb-tag">★ Top 1 LFIAGtube · Cette semaine</div>
-      <h1 class="nfx-bb-title">The Voice 2026</h1>
-      <div class="nfx-bb-meta">
-        <span class="match" style="color:#46d369;font-weight:700">98% Recommandé</span>
-        <span>2026</span>
-        <span class="badge">TF1</span>
-        <span>Saison en cours</span>
-      </div>
-      <p class="nfx-bb-desc">Lara Fabian sublime la nouvelle saison de The Voice. Diffusion tous les samedis à 21h10 sur TF1, disponible sur LFIAGtube le lundi. La plus belle voix.</p>
-      <div class="nfx-bb-actions">
-        <button class="nfx-btn nfx-btn-play">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Lecture
-        </button>
-        <button class="nfx-btn nfx-btn-info">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-          Plus d'infos
-        </button>
-      </div>
-    </div>
-    <button class="nfx-bb-mute" data-mute="1" aria-label="Activer le son">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
-    </button>
-    <div class="nfx-bb-rating">TV-G</div>
-  </div>
-
-  <!-- Slide 2: L'Effet Lara 2026 -->
-  <div class="nfx-billboard-slide" data-slide="1">
-    <div class="nfx-billboard-bg" style="background-image:url('images/categories-v2/LEffet_Lara_-_2026.webp')"></div>
-    <video class="nfx-billboard-video" muted loop playsinline preload="metadata" data-src="images/alune-effetlara-preview.mp4"></video>
-    <div class="nfx-billboard-content">
-      <div class="nfx-bb-tag">✦ Nouveauté 2026</div>
-      <h1 class="nfx-bb-title">L'Effet Lara</h1>
-      <div class="nfx-bb-meta">
-        <span class="match" style="color:#46d369;font-weight:700">95% Recommandé</span>
-        <span>2026</span>
-        <span class="badge">TVA</span>
-        <span>Saison 1</span>
-      </div>
-      <p class="nfx-bb-desc">Lara Fabian au cœur d'une nouvelle aventure musicale. Diffusion dès le dimanche 12 avril sur TVA, disponible sur LFIAGtube les lundis.</p>
-      <div class="nfx-bb-actions">
-        <button class="nfx-btn nfx-btn-play">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Lecture
-        </button>
-        <button class="nfx-btn nfx-btn-info">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-          Plus d'infos
-        </button>
-      </div>
-    </div>
-    <button class="nfx-bb-mute" data-mute="1" aria-label="Activer le son">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
-    </button>
-    <div class="nfx-bb-rating">TV-G</div>
-  </div>
-
-  <!-- Slide 3: Star Académie 2025 -->
-  <div class="nfx-billboard-slide" data-slide="2">
-    <div class="nfx-billboard-bg" style="background-image:url('images/categories-v2/Star_Acadmie_2025.webp')"></div>
-    <div class="nfx-billboard-content">
-      <div class="nfx-bb-tag">⚡ Phénomène</div>
-      <h1 class="nfx-bb-title">Star Académie 2025</h1>
-      <div class="nfx-bb-meta">
-        <span class="match" style="color:#46d369;font-weight:700">97% Recommandé</span>
-        <span>2025</span>
-        <span class="badge">TVA</span>
-        <span>Édition complète</span>
-      </div>
-      <p class="nfx-bb-desc">Revivez la 7e Académie québécoise avec Lara Fabian au piano. Tous les épisodes, performances et coulisses, en exclu sur LFIAGtube.</p>
-      <div class="nfx-bb-actions">
-        <button class="nfx-btn nfx-btn-play">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Lecture
-        </button>
-        <button class="nfx-btn nfx-btn-info">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-          Plus d'infos
-        </button>
-      </div>
-    </div>
-    <div class="nfx-bb-rating">TV-G</div>
-  </div>
-
-  <!-- DOTS -->
-  <div class="nfx-bb-dots" id="nfxBbDots">
-    <button class="active" data-dot="0" aria-label="Diapositive 1"></button>
-    <button data-dot="1" aria-label="Diapositive 2"></button>
-    <button data-dot="2" aria-label="Diapositive 3"></button>
-  </div>
-</section>
-
-<!-- ROWS -->
-<div class="nfx-rows">
-
-  <!-- ROW: Top 10 -->
-  <section class="nfx-row nfx-top10">
-    <div class="nfx-row-header">
-      <h3 class="nfx-row-title">Top 10 LFIAGtube · Cette semaine <span class="nfx-row-explore">Tout explorer ›</span></h3>
-    </div>
-    <div class="nfx-row-track">
-      <button class="nfx-row-arrow left" aria-label="Précédent"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <div class="nfx-row-scroll" id="rowTop10"></div>
-      <button class="nfx-row-arrow right" aria-label="Suivant"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
-    </div>
-  </section>
-
-  <!-- ROW: Continuer à regarder -->
-  <section class="nfx-row" data-row="continue">
-    <div class="nfx-row-header"><h3 class="nfx-row-title">Continuer à regarder <span class="nfx-row-explore">Tout explorer ›</span></h3></div>
-    <div class="nfx-row-track">
-      <button class="nfx-row-arrow left"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <div class="nfx-row-scroll" id="rowContinue"></div>
-      <button class="nfx-row-arrow right"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
-    </div>
-  </section>
-
-  <!-- ROW: Nouveautés Lara -->
-  <section class="nfx-row" data-row="new">
-    <div class="nfx-row-header"><h3 class="nfx-row-title">Nouveautés Lara <span class="nfx-row-explore">Tout explorer ›</span></h3></div>
-    <div class="nfx-row-track">
-      <button class="nfx-row-arrow left"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <div class="nfx-row-scroll" id="rowNew"></div>
-      <button class="nfx-row-arrow right"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
-    </div>
-  </section>
-
-  <!-- ROW: Albums -->
-  <section class="nfx-row" data-row="albums">
-    <div class="nfx-row-header"><h3 class="nfx-row-title">Choisissez votre univers <span class="nfx-row-explore">Tout explorer ›</span></h3></div>
-    <div class="nfx-row-track">
-      <button class="nfx-row-arrow left"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <div class="nfx-row-scroll" id="rowAlbums"></div>
-      <button class="nfx-row-arrow right"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
-    </div>
-  </section>
-
-  <!-- ROW: Concerts & Émissions -->
-  <section class="nfx-row" data-row="live">
-    <div class="nfx-row-header"><h3 class="nfx-row-title">Concerts & Émissions <span class="nfx-row-explore">Tout explorer ›</span></h3></div>
-    <div class="nfx-row-track">
-      <button class="nfx-row-arrow left"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <div class="nfx-row-scroll" id="rowLive"></div>
-      <button class="nfx-row-arrow right"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
-    </div>
-  </section>
-
-</div>
-
-<script>
-// ── Reduce-motion preference (référencé partout) ──
-const _prefersRM = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-
-// ── DATA: catégories visuelles (mock à partir des images existantes) ──
-const CATS = [
-  {id:'effet-lara', name:"L'Effet Lara — 2026", img:'images/categories-v2/LEffet_Lara_-_2026.webp', new:true, progress:42, year:2026, badge:'TVA'},
-  {id:'voice-2026', name:'The Voice 2026', img:'images/categories-v2/The_Voice_2026.webp', new:true, year:2026, badge:'TF1'},
-  {id:'star-aca', name:'Star Académie 2025', img:'images/categories-v2/Star_Acadmie_2025.webp', year:2025, badge:'TVA'},
-  {id:'voice-kids', name:'The Voice Kids 2024', img:'images/categories-v2/The_Voice_Kids_2024.webp', year:2024, badge:'TF1'},
-  {id:'enfoirs', name:'Lara aux Enfoirés', img:'images/categories-v2/Lara_Fabian_aux_Enfoirs.webp', badge:'TF1'},
-  {id:'concerts', name:'Concerts', img:'images/categories-v2/Lara_Fabian_-_Concerts.webp', badge:'Live'},
-  {id:'cinema', name:'Lara au Cinéma', img:'images/categories-v2/Lara_Fabian_au_Cinma.webp', badge:'Film'},
-  {id:'docs', name:'Documentaires', img:'images/categories-v2/Lara_Fabian_Documentaires.webp', badge:'Doc'},
-  {id:'2024', name:'2024 — Aujourd\'hui', img:'images/categories-v2/2024_-_Aujourdhui.webp', year:2024},
-  {id:'papillon', name:'2019-2021 Papillon', img:'images/categories-v2/2019_-_2021_Papillon.webp', year:2021},
-  {id:'camouflage', name:'2017-2018 Camouflage', img:'images/categories-v2/2017_-_2018_Camouflage.webp', year:2018},
-  {id:'mvdlt', name:'2015-2016 Ma Vie dans la Tienne', img:'images/categories-v2/2015_-_2016_Ma_Vie_dans_La_Tienne.webp', year:2016},
-  {id:'secret', name:'2013-2014 Le Secret', img:'images/categories-v2/2013_-_2014_Le_Secret.webp', year:2014},
-  {id:'zhivago', name:'2010-2012 Mademoiselle Zhivago', img:'images/categories-v2/2010_-_2012_Mademoiselle_Zhivago.webp', year:2012},
-  {id:'tlfm', name:'2009-2010 TLFM / EWIM', img:'images/categories-v2/2009_-_2010_TLFM__EWIM.webp', year:2010},
-  {id:'9', name:'2005-2008 — 9', img:'images/categories-v2/2005_-_2008_9.webp', year:2008},
-  {id:'awl', name:'2004 A Wonderful Life', img:'images/categories-v2/2004_A_Wonderful_Life.webp', year:2004},
-  {id:'nue', name:'2001-2003 Nue / ETI', img:'images/categories-v2/2001_-_2003_Nue__ETI.webp', year:2003},
-  {id:'lf-eng', name:'1999-2001 Lara Fabian (Anglais)', img:'images/categories-v2/1999_-2001_Lara_Fabian_Anglais.webp', year:2001},
-  {id:'pure', name:'1996-1999 Pure', img:'images/categories-v2/1996_-_1999_Pure.webp', year:1999},
-  {id:'carpe', name:'1994-1995 Carpe Diem', img:'images/categories-v2/1994_-_1995_Carpe_Diem.webp', year:1995},
-  {id:'lf-fr', name:'1991-1993 Lara Fabian (Français)', img:'images/categories-v2/1991_-_1993_Lara_Fabian_Franais.webp', year:1993},
-  {id:'debuts', name:'1985-1990 Les débuts', img:'images/categories-v2/1985_-_1990_Les_dbuts.webp', year:1990},
-  {id:'divers', name:'Divers', img:'images/categories-v2/Lara_Fabian_-_Divers.webp'},
-  {id:'livres', name:'Livres', img:'images/categories-v2/Lara_Fabian_-_Livres.webp', badge:'Livre'},
-];
-
-// ── Render card markup ──
-function cardHtml(c, opts){
-  opts=opts||{};
-  var name = escTxt(c.name);
-  var img  = escTxt(c.img);
-  var id   = escTxt(c.id);
-  var year = c.year ? escTxt(c.year) : '';
-  var badge = c.badge ? escTxt(c.badge) : '';
-  var newBadge = c.new && !opts.skipNew ? '<div class="nfx-card-badge-new">Nouveau</div>' : '';
-  var progress = c.progress ? '<div class="nfx-card-progress"><div class="nfx-card-progress-fill" style="width:'+(parseInt(c.progress,10)||0)+'%"></div></div>' : '';
-  var expandVidSrc = c.id==='voice-2026' ? 'images/alune-thevoice-preview.mp4'
-                   : c.id==='effet-lara' ? 'images/alune-effetlara-preview.mp4' : null;
-  var expandImg = expandVidSrc
-    ? '<video muted loop playsinline preload="none" data-vsrc="'+escTxt(expandVidSrc)+'"></video>'
-    : '<img src="'+img+'" alt="" loading="lazy">';
-  return ''
-    + '<div class="nfx-card" data-id="'+id+'" tabindex="0">'
-    +   '<div class="nfx-card-img-wrap">'
-    +     '<img class="nfx-card-img" src="'+img+'" alt="'+name+'" loading="lazy">'
-    +     newBadge
-    +     progress
-    +   '</div>'
-    +   '<div class="nfx-card-expand">'
-    +     '<div class="nfx-card-expand-img">'+expandImg+'</div>'
-    +     '<div class="nfx-card-expand-body">'
-    +       '<div class="nfx-card-expand-actions">'
-    +         '<button class="nfx-action-btn primary" aria-label="Lecture"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></button>'
-    +         '<button class="nfx-action-btn" aria-label="Ajouter à ma liste"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>'
-    +         '<button class="nfx-action-btn" aria-label="J\'aime"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/></svg></button>'
-    +         '<button class="nfx-action-btn right" aria-label="Plus d\'infos"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></button>'
-    +       '</div>'
-    +       '<div class="nfx-card-expand-meta">'
-    +         '<span class="match">98% Recommandé</span>'
-    +         (year?'<span>'+year+'</span>':'')
-    +         (badge?'<span class="badge">'+badge+'</span>':'')
-    +       '</div>'
-    +       '<div class="nfx-card-expand-title">'+name+'</div>'
-    +       '<div class="nfx-card-expand-tags"><span>Lara Fabian</span><span class="dot">•</span><span>Musique</span><span class="dot">•</span><span>Émotion</span></div>'
-    +     '</div>'
-    +   '</div>'
-    + '</div>';
-}
-
-// Top 10 specific renderer (Netflix grid: rank | poster portrait 2:3)
-function cardTop10Html(c, rank){
-  var posterImg = escTxt((c.poster || c.img.replace('categories-v2/','categories-v2-poster/')));
-  var name = escTxt(c.name);
-  var id = escTxt(c.id);
-  return ''
-    + '<div class="nfx-card" data-id="'+id+'" tabindex="0" role="button" aria-label="'+name+' · classement '+rank+'">'
-    +   '<span class="nfx-top10-num" aria-hidden="true">'+rank+'</span>'
-    +   '<div class="nfx-card-img-wrap">'
-    +     '<img class="nfx-card-img" src="'+posterImg+'" alt="'+name+'" loading="lazy">'
-    +   '</div>'
-    + '</div>';
-}
-
-// ── Populate rows ──
-const top10Cats = CATS.slice(0,10);
-document.getElementById('rowTop10').innerHTML = top10Cats.map((c,i)=>cardTop10Html(c,i+1)).join('');
-
-const continueCats = [CATS[0], CATS[2], CATS[5], CATS[7], CATS[9], CATS[12]];
-continueCats.forEach((c,i)=>c.progress = c.progress || (20+i*12));
-document.getElementById('rowContinue').innerHTML = continueCats.map(c=>cardHtml(c)).join('');
-
-const newCats = CATS.filter(c=>c.new).concat(CATS.filter(c=>c.year>=2024 && !c.new)).slice(0,10);
-document.getElementById('rowNew').innerHTML = newCats.map(c=>cardHtml(c)).join('');
-
-const albumCats = CATS.filter(c=>['papillon','camouflage','mvdlt','secret','zhivago','tlfm','9','awl','nue','lf-eng','pure','carpe','lf-fr','debuts'].includes(c.id));
-document.getElementById('rowAlbums').innerHTML = albumCats.map(c=>cardHtml(c,{skipNew:true})).join('');
-
-const liveCats = CATS.filter(c=>['enfoirs','concerts','cinema','docs','voice-kids','star-aca','divers','livres'].includes(c.id));
-document.getElementById('rowLive').innerHTML = liveCats.map(c=>cardHtml(c)).join('');
-
-// ── Header scroll bg ──
-const header = document.getElementById('nfxHeader');
-window.addEventListener('scroll',()=>{ header.classList.toggle('scrolled', window.scrollY>40); }, {passive:true});
-
-// ── Splash auto-hide + Replay button ──
-setTimeout(()=>document.getElementById('nfxSplash').classList.add('hide'), _prefersRM ? 600 : 2400);
-const _replayBtn = document.getElementById('replaySplashBtn');
-if (_replayBtn) _replayBtn.addEventListener('click', ()=>{
-  const s = document.getElementById('nfxSplash');
-  s.classList.remove('hide');
-  setTimeout(()=>s.classList.add('hide'), 2400);
-});
-
-// Generic img fallback: any <img data-fallback> hides on error
-document.body.addEventListener('error', (e)=>{
-  const t = e.target;
-  if (t && t.tagName==='IMG' && t.dataset.fallback) t.style.opacity = '.3';
-}, true);
-
-// ── Billboard rotation ──
-const slides = document.querySelectorAll('.nfx-billboard-slide');
-const dots = document.querySelectorAll('#nfxBbDots button');
-let bbIdx = 0, bbTimer = null;
-
-function bbGo(i){
-  slides[bbIdx].classList.remove('active');
-  dots[bbIdx].classList.remove('active');
-  // stop video old
-  const vOld = slides[bbIdx].querySelector('video');
-  if (vOld){ try{vOld.pause();vOld.classList.remove('show');}catch(_){} }
-  bbIdx = (i+slides.length)%slides.length;
-  slides[bbIdx].classList.add('active');
-  dots[bbIdx].classList.add('active');
-  // start video new (if any) after 2s
-  const vNew = slides[bbIdx].querySelector('video');
-  if (vNew && vNew.dataset.src && !vNew.src) vNew.src = vNew.dataset.src;
-  if (vNew){
-    setTimeout(()=>{
-      if (slides[bbIdx].classList.contains('active')){
-        try{ vNew.currentTime = 0; vNew.play().then(()=>vNew.classList.add('show')).catch(()=>{}); }catch(_){}
-      }
-    }, 1800);
-  }
-}
-dots.forEach((d,i)=>d.addEventListener('click',()=>{ bbGo(i); restartBbTimer(); }));
-function restartBbTimer(){
-  clearInterval(bbTimer);
-  if (_prefersRM) return; // pas d'auto-rotate si reduce-motion
-  bbTimer = setInterval(()=>bbGo(bbIdx+1), 9000);
-}
-restartBbTimer();
-// Trigger first video preview (skip if reduce-motion)
-if (!_prefersRM) setTimeout(()=>bbGo(0), 200);
-
-// Mute toggle
-document.querySelectorAll('.nfx-bb-mute').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    const slide = btn.closest('.nfx-billboard-slide');
-    const v = slide.querySelector('video');
-    if (!v) return;
-    v.muted = !v.muted;
-    btn.innerHTML = v.muted
-      ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>'
-      : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
-  });
-});
-
-// ── Row arrows ──
-document.querySelectorAll('.nfx-row-arrow').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    const track = btn.parentElement.querySelector('.nfx-row-scroll');
-    const dir = btn.classList.contains('right') ? 1 : -1;
-    track.scrollBy({left: dir*track.clientWidth*0.85, behavior:'smooth'});
-  });
-});
-
-// ── Drive cache reader (récupère vrais noms via localStorage si dispo) ──
-// Le site prod stocke videos dans `lfiag_videos_cache`. Si preview servi
-// depuis même origine que prod (ex: gh-pages), accès direct au cache.
-// Sinon → fallback mock + bannière "Données démo".
-function loadDriveCache(){
-  try{
-    var raw = localStorage.getItem('lfiag_videos_cache');
-    if (!raw) return null;
-    var p = JSON.parse(raw);
-    if (!p || !Array.isArray(p.videos) || !p.videos.length) return null;
-    return p.videos;
-  }catch(e){ return null; }
-}
-function formatDur(ms){
-  if (!ms) return '';
-  var s = Math.round(ms/1000), h = Math.floor(s/3600), m = Math.floor((s%3600)/60);
-  return h ? h+'h '+(m<10?'0':'')+m+' min' : m+' min';
-}
-function escTxt(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
-function videosToFiles(videos, thumbFallback){
-  return videos.map(function(v){
-    var name = (v.name||'').replace(/\.[^.]+$/,''); // strip extension
-    var year = v.createdTime ? new Date(v.createdTime).getFullYear() : '';
-    var dur = v.videoMediaMetadata && v.videoMediaMetadata.durationMillis
-      ? formatDur(parseInt(v.videoMediaMetadata.durationMillis)) : '';
-    var thumb = v.thumbnailLink ? v.thumbnailLink.replace('=s220','=s560') : thumbFallback;
-    return { id:v.id, name:name, year:year, dur:dur, thumb:thumb };
-  });
-}
-
-const _driveCache = loadDriveCache();
-const _hasDrive = !!_driveCache;
-let _driveDocs = null, _driveConcerts = null;
-if (_hasDrive){
-  _driveDocs     = videosToFiles(_driveCache.filter(function(v){return v._cat==='Lara Fabian Documentaires';}), 'images/categories-v2/Lara_Fabian_Documentaires.webp');
-  _driveConcerts = videosToFiles(_driveCache.filter(function(v){return v._cat==='Lara Fabian - Concerts';}),    'images/categories-v2/Lara_Fabian_-_Concerts.webp');
-}
-
-// ── Header routing (nav filters) ──
-// Mock fichiers (fallback si pas de cache Drive — preview démo)
-const FILES_DOCS = [
-  { name:"Lara Fabian — Sans filtre", year:2024, dur:"52 min", thumb:'images/categories-v2/Lara_Fabian_Documentaires.webp' },
-  { name:"Lara Fabian intime", year:2022, dur:"1h 12 min", thumb:'images/categories-v2/Lara_Fabian_Documentaires.webp' },
-  { name:"Lara Fabian — Itinéraire d'une voix", year:2020, dur:"58 min", thumb:'images/categories-v2/Lara_Fabian_Documentaires.webp' },
-  { name:"Lara Fabian — La femme derrière la chanteuse", year:2019, dur:"45 min", thumb:'images/categories-v2/Lara_Fabian_Documentaires.webp' },
-  { name:"Lara — Une vie d'émotion", year:2018, dur:"1h 05 min", thumb:'images/categories-v2/Lara_Fabian_Documentaires.webp' },
-  { name:"Lara Fabian — 30 ans de carrière", year:2016, dur:"1h 30 min", thumb:'images/categories-v2/Lara_Fabian_Documentaires.webp' },
-  { name:"Lara Fabian — Coulisses Mademoiselle Zhivago", year:2011, dur:"42 min", thumb:'images/categories-v2/2010_-_2012_Mademoiselle_Zhivago.webp' },
-  { name:"Lara Fabian — Tournage Nue", year:2002, dur:"38 min", thumb:'images/categories-v2/2001_-_2003_Nue__ETI.webp' },
-];
-const FILES_CONCERTS = [
-  { name:"Papillon Tour — Live Bruxelles 2020", year:2020, dur:"2h 10 min", thumb:'images/categories-v2/2019_-_2021_Papillon.webp' },
-  { name:"Camouflage Tour — Live Paris 2018", year:2018, dur:"2h 05 min", thumb:'images/categories-v2/2017_-_2018_Camouflage.webp' },
-  { name:"Ma Vie dans la Tienne — Live Olympia 2015", year:2015, dur:"1h 55 min", thumb:'images/categories-v2/2015_-_2016_Ma_Vie_dans_La_Tienne.webp' },
-  { name:"Le Secret Tour — Live Montréal 2013", year:2013, dur:"2h", thumb:'images/categories-v2/2013_-_2014_Le_Secret.webp' },
-  { name:"Mademoiselle Zhivago — Live Russie 2011", year:2011, dur:"1h 50 min", thumb:'images/categories-v2/2010_-_2012_Mademoiselle_Zhivago.webp' },
-  { name:"Toutes les femmes en moi — Live 2010", year:2010, dur:"2h 15 min", thumb:'images/categories-v2/2009_-_2010_TLFM__EWIM.webp' },
-  { name:"9 Tour — Live Bercy 2006", year:2006, dur:"1h 58 min", thumb:'images/categories-v2/2005_-_2008_9.webp' },
-  { name:"A Wonderful Life Tour — Live USA 2004", year:2004, dur:"1h 40 min", thumb:'images/categories-v2/2004_A_Wonderful_Life.webp' },
-  { name:"Nue Tour — Live Paris 2002", year:2002, dur:"2h", thumb:'images/categories-v2/2001_-_2003_Nue__ETI.webp' },
-  { name:"Pure en concert — Live 1998", year:1998, dur:"1h 45 min", thumb:'images/categories-v2/1996_-_1999_Pure.webp' },
-  { name:"Carpe Diem Tour — Live 1995", year:1995, dur:"1h 30 min", thumb:'images/categories-v2/1994_-_1995_Carpe_Diem.webp' },
-];
-const ROUTES = {
-  series:   { title:'Séries',         kind:'cats',  ids:['effet-lara','voice-2026','voice-kids','enfoirs','divers'] },
-  docs:     { title:'Documentaires',  kind:'files', files:(_driveDocs && _driveDocs.length ? _driveDocs : FILES_DOCS),
-              subtitle:(_hasDrive && _driveDocs && _driveDocs.length ? 'Depuis votre Drive · ' : 'Démo · ')+'Tous les documentaires sur Lara Fabian' },
-  concerts: { title:'Concerts',       kind:'files', files:(_driveConcerts && _driveConcerts.length ? _driveConcerts : FILES_CONCERTS),
-              subtitle:(_hasDrive && _driveConcerts && _driveConcerts.length ? 'Depuis votre Drive · ' : 'Démo · ')+'Tous les concerts et tournées' },
-  mylist:   { title:'Ma liste',       kind:'cats',  ids:['voice-2026','effet-lara','papillon','concerts'] }
-};
-const rowsContainer = document.querySelector('.nfx-rows');
-const billboardEl = document.getElementById('nfxBillboard');
-const homeRowsHtml = rowsContainer.innerHTML; // snapshot home
-
-function renderRoute(route){
-  // toggle active nav
-  document.querySelectorAll('#nfxNav button').forEach(b=>b.classList.toggle('active', b.dataset.route===route));
-  if (route==='home'){
-    billboardEl.style.display='';
-    rowsContainer.innerHTML = homeRowsHtml;
-    rebindRows();
-    window.scrollTo({top:0,behavior:'smooth'});
-    return;
-  }
-  const cfg = ROUTES[route];
-  if (!cfg) return;
-  billboardEl.style.display='none';
-  let cards = '', count = 0, subtitle = '';
-  if (cfg.kind === 'cats'){
-    const cats = CATS.filter(c=>cfg.ids.includes(c.id));
-    count = cats.length;
-    cards = cats.length ? cats.map(c=>cardHtml(c)).join('') : '';
-  } else if (cfg.kind === 'files'){
-    count = cfg.files.length;
-    subtitle = cfg.subtitle || '';
-    cards = cfg.files.map(f=>fileCardHtml(f)).join('');
-  }
-  if (!cards) cards = '<p style="color:#737373;padding:0 4%">Aucun contenu pour cette section.</p>';
-  rowsContainer.innerHTML =
-    '<div style="padding:calc(var(--nav-h) + 1.5rem) 4% 1rem">'
-    + '<h2 style="font-family:var(--display);font-size:clamp(1.8rem,3.5vw,2.8rem);letter-spacing:.04em;margin-bottom:.4rem">'+cfg.title+'</h2>'
-    + '<p style="color:#b3b3b3;font-size:.9rem;margin-bottom:1.2rem">'+(subtitle?subtitle+' · ':'')+count+' contenu'+(count>1?'s':'')+' disponible'+(count>1?'s':'')+'</p>'
-    + '</div>'
-    + '<section class="nfx-route-grid">'+cards+'</section>';
-  rebindRows();
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-// File card (vidéo individuelle dans dossier) — affiche nom complet + durée
-function fileCardHtml(f){
-  const safe = escTxt(f.name);
-  const thumb = escTxt(f.thumb);
-  const dur = f.dur ? escTxt(f.dur) : '';
-  const yr = f.year ? escTxt(f.year) : '';
-  const vid = f.id ? ' data-vid="'+escTxt(f.id)+'"' : '';
-  return ''
-    + '<div class="nfx-file-card" tabindex="0" role="button" aria-label="Lire '+safe+'"'+vid+'>'
-    +   '<div class="nfx-file-thumb">'
-    +     '<img src="'+thumb+'" alt="" loading="lazy" data-fallback="1">'
-    +     '<div class="nfx-file-overlay"></div>'
-    +     '<div class="nfx-file-play"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>'
-    +     (dur?'<div class="nfx-file-dur">'+dur+'</div>':'')
-    +   '</div>'
-    +   '<div class="nfx-file-body">'
-    +     '<div class="nfx-file-title">'+safe+'</div>'
-    +     '<div class="nfx-file-meta">'+yr+'</div>'
-    +   '</div>'
-    + '</div>';
-}
-
-function rebindRows(){
-  document.querySelectorAll('.nfx-row-arrow').forEach(function(btn){
-    if (btn._abound) return; btn._abound = true;
-    btn.addEventListener('click', function(){
-      var track = btn.parentElement.querySelector('.nfx-row-scroll');
-      if (!track) return;
-      var dir = btn.classList.contains('right') ? 1 : -1;
-      track.scrollBy({left: dir*track.clientWidth*0.85, behavior:'smooth'});
-    });
-  });
-  bindCardHover();
-  if (document.getElementById('nfxBbDots')){
-    document.querySelectorAll('#nfxBbDots button').forEach(function(d, i){
-      if (d._dbound) return; d._dbound = true;
-      d.addEventListener('click', function(){ bbGo(i); restartBbTimer(); });
-    });
-  }
-}
-document.querySelectorAll('#nfxNav button, .nfx-logo').forEach(function(el){
-  el.addEventListener('click', function(e){
-    e.preventDefault();
-    var r = el.dataset.route || 'home';
-    renderRoute(r);
-  });
-});
-
-function bindCardHover(){
-  if (_prefersRM) return;
-  document.querySelectorAll('.nfx-card').forEach(function(card){
-    if (card._hbound) return; card._hbound = true;
-    var hoverTimer = null;
-    card.addEventListener('mouseenter', function(){
-      hoverTimer = setTimeout(function(){
-        var v = card.querySelector('.nfx-card-expand video');
-        if (v && v.dataset.vsrc && !v.src){ v.src = v.dataset.vsrc; v.play().catch(function(){}); }
-        else if (v) { try{ v.currentTime=0; v.play().catch(function(){}); }catch(_){} }
-      }, 600);
-    });
-    card.addEventListener('mouseleave', function(){
-      clearTimeout(hoverTimer);
-      var v = card.querySelector('.nfx-card-expand video');
-      if (v) try{ v.pause(); }catch(_){}
-    });
-  });
-}
-bindCardHover();
-</script>
-</body>
-</html>
+diff --git a/index.html b/index.html
+index a52d141f338fad03b8a0fee9f104018ceeb8379b..14f0c14cbc5e8922d44d507b6cc029032904bb40 100644
+--- a/index.html
++++ b/index.html
+@@ -618,67 +618,114 @@ document.querySelectorAll('.nfx-row-arrow').forEach(btn=>{
+     const track = btn.parentElement.querySelector('.nfx-row-scroll');
+     const dir = btn.classList.contains('right') ? 1 : -1;
+     track.scrollBy({left: dir*track.clientWidth*0.85, behavior:'smooth'});
+   });
+ });
+ 
+ // ── Drive cache reader (récupère vrais noms via localStorage si dispo) ──
+ // Le site prod stocke videos dans `lfiag_videos_cache`. Si preview servi
+ // depuis même origine que prod (ex: gh-pages), accès direct au cache.
+ // Sinon → fallback mock + bannière "Données démo".
+ function loadDriveCache(){
+   try{
+     var raw = localStorage.getItem('lfiag_videos_cache');
+     if (!raw) return null;
+     var p = JSON.parse(raw);
+     if (!p || !Array.isArray(p.videos) || !p.videos.length) return null;
+     return p.videos;
+   }catch(e){ return null; }
+ }
+ function formatDur(ms){
+   if (!ms) return '';
+   var s = Math.round(ms/1000), h = Math.floor(s/3600), m = Math.floor((s%3600)/60);
+   return h ? h+'h '+(m<10?'0':'')+m+' min' : m+' min';
+ }
+ function escTxt(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
++const DRIVE_ROOT_FOLDER_URL = 'https://drive.google.com/drive/folders/1F_EnvsoJkVzz_gi6w3YaB47YHggME9R9';
++const CATEGORY_ROUTE_BY_CARD_ID = { docs:'docs', concerts:'concerts' };
+ function videosToFiles(videos, thumbFallback){
+   return videos.map(function(v){
+     var name = (v.name||'').replace(/\.[^.]+$/,''); // strip extension
+     var year = v.createdTime ? new Date(v.createdTime).getFullYear() : '';
+     var dur = v.videoMediaMetadata && v.videoMediaMetadata.durationMillis
+       ? formatDur(parseInt(v.videoMediaMetadata.durationMillis)) : '';
+     var thumb = v.thumbnailLink ? v.thumbnailLink.replace('=s220','=s560') : thumbFallback;
+-    return { id:v.id, name:name, year:year, dur:dur, thumb:thumb };
++    var fileLink = v.webViewLink || (v.id ? ('https://drive.google.com/file/d/'+v.id+'/view') : '');
++    var parentId = (Array.isArray(v.parents) && v.parents[0]) ? v.parents[0] : '';
++    return { id:v.id, name:name, year:year, dur:dur, thumb:thumb, link:fileLink, parentId:parentId };
+   });
+ }
+ 
+ const _driveCache = loadDriveCache();
+ const _hasDrive = !!_driveCache;
+ let _driveDocs = null, _driveConcerts = null;
++const _driveCategoryFolders = {};
++const _driveCategoryFoldersByName = {};
++const CATEGORY_DRIVE_HINTS = {
++  'effet-lara': ['L Effet Lara', "L'Effet Lara"],
++  'voice-2026': ['The Voice 2026', 'The Voice'],
++  'star-aca': ['Star Académie 2025', 'Star Academie 2025'],
++  'voice-kids': ['The Voice Kids 2024', 'The Voice Kids'],
++  'enfoirs': ['Lara Fabian aux Enfoirés', 'Lara aux Enfoirés'],
++  'concerts': ['Lara Fabian - Concerts', 'Concerts'],
++  'cinema': ['Lara Fabian au Cinéma', 'Lara au Cinéma'],
++  'docs': ['Lara Fabian Documentaires', 'Documentaires'],
++  '2024': ["2024 - Aujourd'hui", "2024 - Aujourd hui"],
++  'papillon': ['2019 - 2021 Papillon', 'Papillon'],
++  'camouflage': ['2017 - 2018 Camouflage', 'Camouflage'],
++  'mvdlt': ['2015 - 2016 Ma Vie dans la Tienne', 'Ma Vie dans la Tienne'],
++  'secret': ['2013 - 2014 Le Secret', 'Le Secret'],
++  'zhivago': ['2010 - 2012 Mademoiselle Zhivago', 'Mademoiselle Zhivago'],
++  'tlfm': ['2009 - 2010 TLFM / EWIM', 'TLFM', 'EWIM'],
++  '9': ['2005 - 2008 - 9', '2005 - 2008 9'],
++  'awl': ['2004 A Wonderful Life', 'A Wonderful Life'],
++  'nue': ['2001 - 2003 Nue / ETI', 'Nue', 'ETI'],
++  'lf-eng': ['1999 - 2001 Lara Fabian Anglais', 'Lara Fabian Anglais'],
++  'pure': ['1996 - 1999 Pure', 'Pure'],
++  'carpe': ['1994 - 1995 Carpe Diem', 'Carpe Diem'],
++  'lf-fr': ['1991 - 1993 Lara Fabian Français', 'Lara Fabian Français'],
++  'debuts': ['1985 - 1990 Les débuts', 'Les débuts', 'Les debuts'],
++  'divers': ['Lara Fabian - Divers', 'Divers'],
++  'livres': ['Lara Fabian - Livres', 'Livres']
++};
++function normalizeDriveKey(s){
++  return String(s||'')
++    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
++    .replace(/[^a-zA-Z0-9]+/g,' ')
++    .trim().toLowerCase();
++}
+ if (_hasDrive){
+   _driveDocs     = videosToFiles(_driveCache.filter(function(v){return v._cat==='Lara Fabian Documentaires';}), 'images/categories-v2/Lara_Fabian_Documentaires.webp');
+   _driveConcerts = videosToFiles(_driveCache.filter(function(v){return v._cat==='Lara Fabian - Concerts';}),    'images/categories-v2/Lara_Fabian_-_Concerts.webp');
++  if (_driveDocs.length && _driveDocs[0].parentId) _driveCategoryFolders.docs = 'https://drive.google.com/drive/folders/'+_driveDocs[0].parentId;
++  if (_driveConcerts.length && _driveConcerts[0].parentId) _driveCategoryFolders.concerts = 'https://drive.google.com/drive/folders/'+_driveConcerts[0].parentId;
++  _driveCache.forEach(function(v){
++    if (!v || !v._cat || !Array.isArray(v.parents) || !v.parents[0]) return;
++    var catKey = normalizeDriveKey(v._cat);
++    if (!catKey || _driveCategoryFoldersByName[catKey]) return;
++    _driveCategoryFoldersByName[catKey] = 'https://drive.google.com/drive/folders/'+v.parents[0];
++  });
+ }
+ 
+ // ── Header routing (nav filters) ──
+ // Mock fichiers (fallback si pas de cache Drive — preview démo)
+ const FILES_DOCS = [
+   { name:"Lara Fabian — Sans filtre", year:2024, dur:"52 min", thumb:'images/categories-v2/Lara_Fabian_Documentaires.webp' },
+   { name:"Lara Fabian intime", year:2022, dur:"1h 12 min", thumb:'images/categories-v2/Lara_Fabian_Documentaires.webp' },
+   { name:"Lara Fabian — Itinéraire d'une voix", year:2020, dur:"58 min", thumb:'images/categories-v2/Lara_Fabian_Documentaires.webp' },
+   { name:"Lara Fabian — La femme derrière la chanteuse", year:2019, dur:"45 min", thumb:'images/categories-v2/Lara_Fabian_Documentaires.webp' },
+   { name:"Lara — Une vie d'émotion", year:2018, dur:"1h 05 min", thumb:'images/categories-v2/Lara_Fabian_Documentaires.webp' },
+   { name:"Lara Fabian — 30 ans de carrière", year:2016, dur:"1h 30 min", thumb:'images/categories-v2/Lara_Fabian_Documentaires.webp' },
+   { name:"Lara Fabian — Coulisses Mademoiselle Zhivago", year:2011, dur:"42 min", thumb:'images/categories-v2/2010_-_2012_Mademoiselle_Zhivago.webp' },
+   { name:"Lara Fabian — Tournage Nue", year:2002, dur:"38 min", thumb:'images/categories-v2/2001_-_2003_Nue__ETI.webp' },
+ ];
+ const FILES_CONCERTS = [
+   { name:"Papillon Tour — Live Bruxelles 2020", year:2020, dur:"2h 10 min", thumb:'images/categories-v2/2019_-_2021_Papillon.webp' },
+   { name:"Camouflage Tour — Live Paris 2018", year:2018, dur:"2h 05 min", thumb:'images/categories-v2/2017_-_2018_Camouflage.webp' },
+   { name:"Ma Vie dans la Tienne — Live Olympia 2015", year:2015, dur:"1h 55 min", thumb:'images/categories-v2/2015_-_2016_Ma_Vie_dans_La_Tienne.webp' },
+   { name:"Le Secret Tour — Live Montréal 2013", year:2013, dur:"2h", thumb:'images/categories-v2/2013_-_2014_Le_Secret.webp' },
+   { name:"Mademoiselle Zhivago — Live Russie 2011", year:2011, dur:"1h 50 min", thumb:'images/categories-v2/2010_-_2012_Mademoiselle_Zhivago.webp' },
+   { name:"Toutes les femmes en moi — Live 2010", year:2010, dur:"2h 15 min", thumb:'images/categories-v2/2009_-_2010_TLFM__EWIM.webp' },
+   { name:"9 Tour — Live Bercy 2006", year:2006, dur:"1h 58 min", thumb:'images/categories-v2/2005_-_2008_9.webp' },
+   { name:"A Wonderful Life Tour — Live USA 2004", year:2004, dur:"1h 40 min", thumb:'images/categories-v2/2004_A_Wonderful_Life.webp' },
+   { name:"Nue Tour — Live Paris 2002", year:2002, dur:"2h", thumb:'images/categories-v2/2001_-_2003_Nue__ETI.webp' },
+   { name:"Pure en concert — Live 1998", year:1998, dur:"1h 45 min", thumb:'images/categories-v2/1996_-_1999_Pure.webp' },
+@@ -715,52 +762,53 @@ function renderRoute(route){
+     count = cats.length;
+     cards = cats.length ? cats.map(c=>cardHtml(c)).join('') : '';
+   } else if (cfg.kind === 'files'){
+     count = cfg.files.length;
+     subtitle = cfg.subtitle || '';
+     cards = cfg.files.map(f=>fileCardHtml(f)).join('');
+   }
+   if (!cards) cards = '<p style="color:#737373;padding:0 4%">Aucun contenu pour cette section.</p>';
+   rowsContainer.innerHTML =
+     '<div style="padding:calc(var(--nav-h) + 1.5rem) 4% 1rem">'
+     + '<h2 style="font-family:var(--display);font-size:clamp(1.8rem,3.5vw,2.8rem);letter-spacing:.04em;margin-bottom:.4rem">'+cfg.title+'</h2>'
+     + '<p style="color:#b3b3b3;font-size:.9rem;margin-bottom:1.2rem">'+(subtitle?subtitle+' · ':'')+count+' contenu'+(count>1?'s':'')+' disponible'+(count>1?'s':'')+'</p>'
+     + '</div>'
+     + '<section class="nfx-route-grid">'+cards+'</section>';
+   rebindRows();
+   window.scrollTo({top:0,behavior:'smooth'});
+ }
+ 
+ // File card (vidéo individuelle dans dossier) — affiche nom complet + durée
+ function fileCardHtml(f){
+   const safe = escTxt(f.name);
+   const thumb = escTxt(f.thumb);
+   const dur = f.dur ? escTxt(f.dur) : '';
+   const yr = f.year ? escTxt(f.year) : '';
+   const vid = f.id ? ' data-vid="'+escTxt(f.id)+'"' : '';
++  const link = f.link ? ' data-link="'+escTxt(f.link)+'"' : '';
+   return ''
+-    + '<div class="nfx-file-card" tabindex="0" role="button" aria-label="Lire '+safe+'"'+vid+'>'
++    + '<div class="nfx-file-card" tabindex="0" role="button" aria-label="Lire '+safe+'"'+vid+link+'>'
+     +   '<div class="nfx-file-thumb">'
+     +     '<img src="'+thumb+'" alt="" loading="lazy" data-fallback="1">'
+     +     '<div class="nfx-file-overlay"></div>'
+     +     '<div class="nfx-file-play"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>'
+     +     (dur?'<div class="nfx-file-dur">'+dur+'</div>':'')
+     +   '</div>'
+     +   '<div class="nfx-file-body">'
+     +     '<div class="nfx-file-title">'+safe+'</div>'
+     +     '<div class="nfx-file-meta">'+yr+'</div>'
+     +   '</div>'
+     + '</div>';
+ }
+ 
+ function rebindRows(){
+   document.querySelectorAll('.nfx-row-arrow').forEach(function(btn){
+     if (btn._abound) return; btn._abound = true;
+     btn.addEventListener('click', function(){
+       var track = btn.parentElement.querySelector('.nfx-row-scroll');
+       if (!track) return;
+       var dir = btn.classList.contains('right') ? 1 : -1;
+       track.scrollBy({left: dir*track.clientWidth*0.85, behavior:'smooth'});
+     });
+   });
+   bindCardHover();
+   if (document.getElementById('nfxBbDots')){
+@@ -776,28 +824,67 @@ document.querySelectorAll('#nfxNav button, .nfx-logo').forEach(function(el){
+     var r = el.dataset.route || 'home';
+     renderRoute(r);
+   });
+ });
+ 
+ function bindCardHover(){
+   if (_prefersRM) return;
+   document.querySelectorAll('.nfx-card').forEach(function(card){
+     if (card._hbound) return; card._hbound = true;
+     var hoverTimer = null;
+     card.addEventListener('mouseenter', function(){
+       hoverTimer = setTimeout(function(){
+         var v = card.querySelector('.nfx-card-expand video');
+         if (v && v.dataset.vsrc && !v.src){ v.src = v.dataset.vsrc; v.play().catch(function(){}); }
+         else if (v) { try{ v.currentTime=0; v.play().catch(function(){}); }catch(_){} }
+       }, 600);
+     });
+     card.addEventListener('mouseleave', function(){
+       clearTimeout(hoverTimer);
+       var v = card.querySelector('.nfx-card-expand video');
+       if (v) try{ v.pause(); }catch(_){}
+     });
+   });
+ }
+ bindCardHover();
++
++function getCategoryFolderUrl(cardId){
++  var route = CATEGORY_ROUTE_BY_CARD_ID[cardId] || '';
++  if (route && _driveCategoryFolders[route]) return _driveCategoryFolders[route];
++  var hints = CATEGORY_DRIVE_HINTS[cardId] || [];
++  for (var i=0; i<hints.length; i++){
++    var byHint = _driveCategoryFoldersByName[normalizeDriveKey(hints[i])];
++    if (byHint) return byHint;
++  }
++  return DRIVE_ROOT_FOLDER_URL;
++}
++
++function openDriveUrl(url){
++  if (!url) return;
++  window.open(url, '_blank', 'noopener,noreferrer');
++}
++
++document.body.addEventListener('click', function(e){
++  var fileCard = e.target.closest('.nfx-file-card');
++  if (fileCard){
++    e.preventDefault();
++    var fileUrl = fileCard.dataset.link || (fileCard.dataset.vid ? ('https://drive.google.com/file/d/'+fileCard.dataset.vid+'/view') : DRIVE_ROOT_FOLDER_URL);
++    openDriveUrl(fileUrl);
++    return;
++  }
++  var catCard = e.target.closest('.nfx-card');
++  if (catCard){
++    e.preventDefault();
++    openDriveUrl(getCategoryFolderUrl(catCard.dataset.id || ''));
++  }
++});
++
++document.body.addEventListener('keydown', function(e){
++  if (e.key !== 'Enter' && e.key !== ' ') return;
++  var clickable = e.target.closest('.nfx-card, .nfx-file-card');
++  if (!clickable) return;
++  e.preventDefault();
++  clickable.click();
++});
+ </script>
+ </body>
+ </html>
